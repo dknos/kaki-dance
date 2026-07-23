@@ -1,0 +1,35 @@
+{
+  "id": "moonBlockParty",
+  "title": "Moon Block Party",
+  "bpm": 100,
+  "offsetSeconds": 0.084,
+  "beatsPerBar": 4,
+  "barsPerPhrase": 4,
+  "loopBars": 16,
+  "sections": [
+    { "id": "countIn", "startBar": 0, "endBar": 1, "intensity": 0.35 },
+    { "id": "pocketA", "startBar": 1, "endBar": 5, "intensity": 0.62 },
+    { "id": "break", "startBar": 5, "endBar": 7, "intensity": 0.42 },
+    { "id": "pocketB", "startBar": 7, "endBar": 13, "intensity": 0.8 },
+    { "id": "finale", "startBar": 13, "endBar": 16, "intensity": 1.0 }
+  ],
+  "accents": [
+    { "beat": 0, "strength": 1.0, "label": "drop" },
+    { "beat": 2, "strength": 0.72, "label": "snare" },
+    { "beat": 8, "strength": 0.88, "label": "scratch" },
+    { "beat": 16, "strength": 1.0, "label": "phrase" },
+    { "beat": 20, "strength": 0.8, "label": "kick" },
+    { "beat": 24, "strength": 0.92, "label": "break" },
+    { "beat": 28, "strength": 0.86, "label": "fill" },
+    { "beat": 32, "strength": 1.0, "label": "return" },
+    { "beat": 40, "strength": 0.82, "label": "stab" },
+    { "beat": 48, "strength": 1.0, "label": "phrase" },
+    { "beat": 56, "strength": 0.9, "label": "scratch" },
+    { "beat": 60, "strength": 1.0, "label": "finale" }
+  ],
+  "breaks": [
+    { "startBeat": 24, "endBeat": 28 },
+    { "startBeat": 56, "endBeat": 58 }
+  ],
+  "drops": [0, 32, 60]
+}

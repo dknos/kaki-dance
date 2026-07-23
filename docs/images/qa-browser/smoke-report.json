@@ -1,0 +1,76 @@
+{
+  "url": "http://127.0.0.1:4177",
+  "capturedAt": "2026-07-23T19:20:57.740Z",
+  "freezeSnapshot": {
+    "move": "babyFreeze",
+    "family": "freeze",
+    "stamina": 70.771833333332,
+    "contacts": 2,
+    "contactError": 2.220446049250313e-15,
+    "balance": {
+      "offset": 0.09250913145460958,
+      "velocity": 0.02037695581166109,
+      "wobble": 0.08061797948114124,
+      "failed": false,
+      "stableBeats": 1.0061980347694623
+    }
+  },
+  "practiceSnapshot": {
+    "state": "running",
+    "mode": "practice",
+    "move": "",
+    "family": "idle",
+    "stamina": 73.46033333333199,
+    "contacts": 0,
+    "contactError": 0,
+    "beat": 11.024644746787603,
+    "chainIndex": 0,
+    "next": "basicRock"
+  },
+  "pauseResume": {
+    "pausedBeatA": 11.024644746787603,
+    "pausedBeatB": 11.024644746787603,
+    "pausedDriftBeats": 0,
+    "resumedAdvanceBeats": 0.48346560846560926
+  },
+  "settingsVisible": {
+    "scrollHeight": 574,
+    "clientHeight": 574,
+    "crowdControl": true
+  },
+  "soderSnapshot": {
+    "character": "soder",
+    "topology": "soder",
+    "move": "basicRock"
+  },
+  "restartSnapshot": {
+    "state": "running",
+    "character": "soder",
+    "beat": 0.8078647014361297
+  },
+  "frameProfile": {
+    "samples": 120,
+    "averageMs": 16.66583333333333,
+    "p95Ms": 16.799999999999272,
+    "maxMs": 16.80000000000109
+  },
+  "renderProfile": {
+    "samples": 600,
+    "elapsedMs": 239.5,
+    "averageMs": 0.39916666666666667
+  },
+  "labReadout": "clip four  ·  sample 0.500  ·  IK/contact avg 0.00 px  ·  support 26.0 px  ·  rig kaki",
+  "qaCards": 114,
+  "qaFreezeCards": 30,
+  "touchVisible": {
+    "display": "block",
+    "width": 844,
+    "height": 390
+  },
+  "lifecycleDestroy": {
+    "state": "destroyed",
+    "hostChildren": 0
+  },
+  "errors": [],
+  "failedRequests": []
+}

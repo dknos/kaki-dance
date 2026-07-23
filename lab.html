@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#11142d">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./lab.css">
+    <title>Kaki-Dance Labs</title>
+  </head>
+  <body class="lab-body">
+    <header class="lab-mast">
+      <a class="wordmark" href="./"><span class="wordmark__paw">●</span>KAKI—DANCE</a>
+      <div>
+        <a href="./">Play</a>
+        <a href="./qa.html">QA gallery</a>
+      </div>
+    </header>
+    <main class="lab-shell">
+      <section class="lab-stage" aria-labelledby="lab-title">
+        <div>
+          <p class="eyebrow">DETERMINISTIC AUTHORING</p>
+          <h1 id="lab-title">Animation + Rhythm Labs</h1>
+        </div>
+        <canvas id="lab-canvas" width="384" height="216" aria-label="Move animation preview"></canvas>
+        <div class="lab-readout" id="lab-readout"></div>
+      </section>
+
+      <section class="lab-tabs">
+        <div class="lab-tablist" role="tablist">
+          <button type="button" role="tab" aria-selected="true" aria-controls="animation-panel" id="animation-tab">Animation Lab</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="rhythm-panel" id="rhythm-tab">Rhythm Lab</button>
+        </div>
+
+        <div class="lab-panel is-active" id="animation-panel" role="tabpanel" aria-labelledby="animation-tab">
+          <div class="field-pair">
+            <label>Character
+              <select id="lab-character">
+                <option value="kitty">KittyKaki</option>
+                <option value="soder">Soder</option>
+              </select>
+            </label>
+            <label>Move
+              <select id="lab-move"></select>
+            </label>
+          </div>
+          <label>Beat phase <output id="phase-output">0.50</output>
+            <input id="lab-phase" type="range" min="0" max="1" value="0.5" step="0.005">
+          </label>
+          <div class="field-pair">
+            <label>Playback
+              <select id="lab-speed">
+                <option value="0">Paused</option>
+                <option value="0.1">10%</option>
+                <option value="0.25">25%</option>
+                <option value="0.5">50%</option>
+                <option value="0.75">75%</option>
+                <option value="1">100%</option>
+              </select>
+            </label>
+            <label>Forced stamina <output id="stamina-output">72</output>
+              <input id="lab-stamina" type="range" min="0" max="100" value="72">
+            </label>
+          </div>
+          <label>Forced balance <output id="balance-output">0.00</output>
+            <input id="lab-balance" type="range" min="-1.25" max="1.25" value="0" step="0.01">
+          </label>
+          <fieldset class="toggle-grid">
+            <legend>Overlays</legend>
+            <label><input id="lab-mirror" type="checkbox"> Mirrored</label>
+            <label><input id="lab-skeleton" type="checkbox"> Skeleton anchors</label>
+            <label><input id="lab-contacts" type="checkbox" checked> Planted contacts</label>
+            <label><input id="lab-com" type="checkbox" checked> Center of mass</label>
+            <label><input id="lab-support" type="checkbox" checked> Support region</label>
+            <label><input id="lab-reduced" type="checkbox"> Reduced motion</label>
+          </fieldset>
+          <label>Legal transition
+            <select id="lab-transition"></select>
+          </label>
+          <div class="lab-actions">
+            <button type="button" id="test-transition">Test transition</button>
+            <button type="button" id="capture-frame">Capture PNG</button>
+          </div>
+          <pre id="move-data" class="data-card"></pre>
+        </div>
+
+        <div class="lab-panel" id="rhythm-panel" role="tabpanel" aria-labelledby="rhythm-tab" hidden>
+          <p class="lab-copy">The track and visuals read the same <code>AudioContext.currentTime</code>. Tap on kick/snare; the lab keeps the most recent 16 samples.</p>
+          <div class="rhythm-actions">
+            <button type="button" id="rhythm-start">Start beat</button>
+            <button type="button" id="rhythm-pause" disabled>Pause</button>
+            <button type="button" id="rhythm-tap" disabled>Tap beat</button>
+          </div>
+          <label>Calibration offset <output id="calibration-output">0 ms</output>
+            <input id="calibration-offset" type="range" min="-200" max="200" value="0" step="1">
+          </label>
+          <dl class="metric-grid" id="rhythm-metrics">
+            <div><dt>Audio time</dt><dd data-metric="audioTime">0.000</dd></div>
+            <div><dt>Beat</dt><dd data-metric="beat">0.000</dd></div>
+            <div><dt>Phase</dt><dd data-metric="beatPhase">0.000</dd></div>
+            <div><dt>Measure</dt><dd data-metric="measure">1</dd></div>
+            <div><dt>Phrase</dt><dd data-metric="phrase">1</dd></div>
+            <div><dt>Section</dt><dd data-metric="section">—</dd></div>
+            <div><dt>Input time</dt><dd data-metric="inputTime">—</dd></div>
+            <div><dt>Judgment</dt><dd data-metric="judgment">—</dd></div>
+            <div><dt>A/V drift</dt><dd data-metric="drift">0.0 ms</dd></div>
+            <div><dt>Transport</dt><dd data-metric="transport">stopped</dd></div>
+          </dl>
+          <pre id="tap-history" class="data-card">No taps yet.</pre>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./js/lab.js"></script>
+  </body>
+</html>

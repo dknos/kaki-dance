@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#11142d">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./qa.css">
+    <title>Kaki-Dance deterministic QA gallery</title>
+  </head>
+  <body class="qa-body">
+    <header class="qa-mast">
+      <div>
+        <p class="eyebrow">DETERMINISTIC CAPTURE</p>
+        <h1>Kaki-Dance QA gallery</h1>
+      </div>
+      <nav><a href="./">Play</a><a href="./lab.html">Labs</a></nav>
+    </header>
+    <main class="qa-shell">
+      <section class="qa-controls" aria-label="Gallery filters">
+        <label>Character
+          <select id="qa-character"><option value="kitty">KittyKaki</option><option value="soder">Soder</option></select>
+        </label>
+        <label>Family
+          <select id="qa-family"><option value="all">All moves</option></select>
+        </label>
+        <label><input type="checkbox" id="qa-reduced"> Reduced motion</label>
+        <button type="button" id="qa-rebuild">Rebuild captures</button>
+      </section>
+      <section>
+        <h2>Golden chain</h2>
+        <div class="qa-grid qa-grid--golden" id="golden-gallery"></div>
+      </section>
+      <section>
+        <h2>Move phases</h2>
+        <p class="qa-note">Every move renders its declared entry, midpoint, accent, and exit. Click a frame to download its exact PNG.</p>
+        <div class="qa-grid" id="move-gallery"></div>
+      </section>
+      <section>
+        <h2>Edge states</h2>
+        <div class="qa-grid" id="edge-gallery"></div>
+      </section>
+    </main>
+    <script type="module" src="./js/qa-gallery.js"></script>
+  </body>
+</html>

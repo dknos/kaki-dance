@@ -1,0 +1,240 @@
+.lab-body {
+  min-height: 100dvh;
+  overflow: auto;
+}
+
+.lab-mast {
+  width: min(1180px, calc(100% - 28px));
+  margin: 0 auto;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(245,233,201,0.28);
+}
+
+.lab-mast > div {
+  display: flex;
+  gap: 20px;
+}
+
+.lab-mast a {
+  color: var(--moon);
+  font: 800 0.72rem/1 ui-monospace, monospace;
+  text-decoration: none;
+}
+
+.lab-mast a:hover {
+  color: var(--mint);
+}
+
+.lab-shell {
+  width: min(1180px, calc(100% - 28px));
+  margin: 22px auto 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.72fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.lab-stage {
+  position: sticky;
+  top: 12px;
+}
+
+.lab-stage h1 {
+  margin: 0 0 18px;
+  color: var(--moon);
+  font: 1000 clamp(1.7rem, 5vw, 4.4rem)/0.9 Impact, "Arial Black", sans-serif;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+#lab-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 7px solid #26274c;
+  background: var(--midnight);
+  image-rendering: pixelated;
+  box-shadow: 9px 9px 0 var(--ink);
+}
+
+.lab-readout {
+  min-height: 30px;
+  padding: 10px 12px;
+  color: rgba(245,233,201,0.72);
+  background: #202246;
+  font: 700 0.66rem/1.4 ui-monospace, monospace;
+}
+
+.lab-tabs {
+  border: 2px solid var(--lavender);
+  border-radius: 8px;
+  background: rgba(20,22,51,0.95);
+  box-shadow: 7px 7px 0 var(--ink);
+}
+
+.lab-tablist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 2px solid var(--lavender);
+}
+
+.lab-tablist button {
+  border: 0;
+  padding: 12px 8px;
+  color: rgba(245,233,201,0.66);
+  background: transparent;
+  font: 900 0.7rem/1 ui-monospace, monospace;
+  cursor: pointer;
+}
+
+.lab-tablist button[aria-selected="true"] {
+  color: var(--ink);
+  background: var(--mint);
+}
+
+.lab-panel {
+  display: none;
+  padding: 18px;
+}
+
+.lab-panel.is-active {
+  display: grid;
+  gap: 13px;
+}
+
+.lab-panel label,
+.toggle-grid {
+  color: rgba(245,233,201,0.82);
+  font: 700 0.68rem/1.4 ui-monospace, monospace;
+}
+
+.lab-panel label {
+  display: grid;
+  gap: 6px;
+}
+
+.lab-panel select,
+.lab-panel input[type="range"] {
+  width: 100%;
+}
+
+.lab-panel select {
+  border: 1px solid var(--lavender);
+  border-radius: 3px;
+  padding: 8px;
+  color: var(--moon);
+  background: var(--night-2);
+}
+
+.lab-panel input {
+  accent-color: var(--persimmon);
+}
+
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin: 0;
+  border: 1px dashed rgba(245,233,201,0.25);
+  padding: 10px;
+}
+
+.toggle-grid label {
+  display: flex;
+  align-items: center;
+}
+
+.lab-actions,
+.rhythm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.lab-actions button,
+.rhythm-actions button {
+  flex: 1;
+  border: 2px solid var(--moon);
+  border-radius: 4px;
+  padding: 8px;
+  color: var(--ink);
+  background: var(--persimmon);
+  box-shadow: 3px 3px 0 var(--ink);
+  font: 900 0.62rem/1 ui-monospace, monospace;
+  cursor: pointer;
+}
+
+.lab-actions button:last-child,
+.rhythm-actions button:nth-child(2) {
+  color: var(--moon);
+  border-color: var(--lavender);
+  background: var(--night-2);
+}
+
+.lab-actions button:disabled,
+.rhythm-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.data-card {
+  max-width: 100%;
+  margin: 0;
+  overflow: auto;
+  border-left: 3px solid var(--mint);
+  padding: 10px;
+  color: rgba(245,233,201,0.78);
+  background: #0d1027;
+  font: 0.6rem/1.5 ui-monospace, monospace;
+  white-space: pre-wrap;
+}
+
+.lab-copy {
+  margin: 0;
+  color: rgba(245,233,201,0.75);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin: 0;
+}
+
+.metric-grid div {
+  padding: 8px;
+  border-top: 2px solid var(--lavender);
+  background: rgba(143,134,217,0.08);
+}
+
+.metric-grid dt {
+  color: rgba(245,233,201,0.55);
+  font: 700 0.56rem/1 ui-monospace, monospace;
+  text-transform: uppercase;
+}
+
+.metric-grid dd {
+  margin: 6px 0 0;
+  color: var(--moon);
+  font: 900 0.82rem/1 ui-monospace, monospace;
+}
+
+@media (max-width: 850px) {
+  .lab-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-stage {
+    position: static;
+  }
+}

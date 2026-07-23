@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#11142d">
+    <meta name="description" content="Kaki-Dance: catch the beat, build the round, hold the freeze.">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Kaki-Dance — Plush Pocket Breaks</title>
+  </head>
+  <body>
+    <main class="arcade" id="app">
+      <header class="arcade__mast">
+        <a class="wordmark" href="./" aria-label="Kaki-Dance home">
+          <span class="wordmark__paw" aria-hidden="true">●</span>
+          <span>KAKI—DANCE</span>
+        </a>
+        <nav class="utility-nav" aria-label="Development tools">
+          <a href="./lab.html">Labs</a>
+          <a href="./qa.html">QA gallery</a>
+          <button class="sound-toggle" id="mute-button" type="button" aria-pressed="false">Sound on</button>
+        </nav>
+      </header>
+
+      <section class="cabinet" id="game-host" aria-label="Kaki-Dance game">
+        <div class="cabinet__screen">
+          <canvas id="game-canvas" width="384" height="216" tabindex="0"
+            aria-label="Kitty Kaki performs in the Moonlit Oekaki Block Party cypher.">
+            Kaki-Dance needs a browser with Canvas support.
+          </canvas>
+          <div class="crt-glass" aria-hidden="true"></div>
+
+          <section class="screen-layer title-layer is-visible" id="title-layer" aria-labelledby="game-title">
+            <div class="title-lockup">
+              <p class="eyebrow">PLUSH POCKET BREAKS</p>
+              <h1 id="game-title">KAKI<br><span>DANCE</span></h1>
+              <p class="tagline">Catch the beat. Build the round. Hold the freeze.</p>
+            </div>
+            <div class="mode-stitches" role="group" aria-label="Choose a mode">
+              <div class="character-picks" role="radiogroup" aria-label="Choose a dancer">
+                <button class="character-pick is-selected" type="button" role="radio" aria-checked="true" data-character="kitty">
+                  <img src="./assets/portraits/kittykaki.webp" alt="">
+                  <span>KittyKaki</span>
+                </button>
+                <button class="character-pick" type="button" role="radio" aria-checked="false" data-character="soder">
+                  <img src="./assets/portraits/soder.png" alt="">
+                  <span>Soder</span>
+                </button>
+              </div>
+              <button class="mode-card mode-card--primary" type="button" data-start-mode="practice">
+                <span class="mode-card__name">Practice Lab</span>
+                <span class="mode-card__detail">Learn the golden chain</span>
+              </button>
+              <button class="mode-card" type="button" data-start-mode="freestyle">
+                <span class="mode-card__name">60s Freestyle</span>
+                <span class="mode-card__detail">Build your own round</span>
+              </button>
+              <button class="mode-card" type="button" data-start-mode="battle">
+                <span class="mode-card__name">Cypher Battle</span>
+                <span class="mode-card__detail">Two rounds vs Mikan</span>
+              </button>
+            </div>
+            <div class="title-actions">
+              <button type="button" class="text-button" id="settings-button">Settings</button>
+              <button type="button" class="text-button" id="controls-button">Controls</button>
+            </div>
+          </section>
+
+          <section class="screen-layer panel-layer" id="settings-layer" aria-labelledby="settings-title" hidden>
+            <div class="sewn-panel settings-panel">
+              <div class="panel-heading">
+                <p class="eyebrow">YOUR FEEL</p>
+                <h2 id="settings-title">Settings</h2>
+                <button type="button" class="close-button" data-close-layer aria-label="Close settings">×</button>
+              </div>
+              <div class="settings-grid">
+                <label>Control mode
+                  <select id="setting-control-mode">
+                    <option value="simple">Simple</option>
+                    <option value="advanced">Advanced Q / E / F / T</option>
+                  </select>
+                </label>
+                <label>Timing window
+                  <select id="setting-timing">
+                    <option value="standard">Standard</option>
+                    <option value="wide">Wide</option>
+                    <option value="extra">Extra wide</option>
+                  </select>
+                </label>
+                <label>Latency <output id="latency-output">0 ms</output>
+                  <input id="setting-latency" type="range" min="-200" max="200" value="0" step="5">
+                </label>
+                <label>Screen shake <output id="shake-output">70%</output>
+                  <input id="setting-shake" type="range" min="0" max="100" value="70" step="5">
+                </label>
+                <label>Music <output id="music-output">80%</output>
+                  <input id="setting-music" type="range" min="0" max="100" value="80" step="5">
+                </label>
+                <label>Effects <output id="effects-output">80%</output>
+                  <input id="setting-effects" type="range" min="0" max="100" value="80" step="5">
+                </label>
+                <label>Crowd <output id="crowd-output">75%</output>
+                  <input id="setting-crowd" type="range" min="0" max="100" value="75" step="5">
+                </label>
+                <label>Public beat pulse <input id="setting-beat-pulse" type="checkbox" checked></label>
+                <label>Timing labels <input id="setting-timing-labels" type="checkbox" checked></label>
+                <label>Reduced motion <input id="setting-reduced-motion" type="checkbox"></label>
+                <label>Reduce flashes <input id="setting-flash" type="checkbox"></label>
+              </div>
+              <p class="settings-note">Calibration and key remapping live in the Rhythm Lab and Controls panel.</p>
+            </div>
+          </section>
+
+          <section class="screen-layer panel-layer" id="controls-layer" aria-labelledby="controls-title" hidden>
+            <div class="sewn-panel controls-panel">
+              <div class="panel-heading">
+                <p class="eyebrow">SIMPLE BY DEFAULT</p>
+                <h2 id="controls-title">Controls</h2>
+                <button type="button" class="close-button" data-close-layer aria-label="Close controls">×</button>
+              </div>
+              <div class="control-map">
+                <div>
+                  <span class="movement-keycaps">
+                    <button type="button" class="keycap" data-remap="up">W</button>
+                    <button type="button" class="keycap" data-remap="left">A</button>
+                    <button type="button" class="keycap" data-remap="down">S</button>
+                    <button type="button" class="keycap" data-remap="right">D</button>
+                  </span>
+                  <span>Direction · groove · freeze balance</span>
+                </div>
+                <div><button type="button" class="keycap" data-remap="action">Space</button><span>Action · transition · get up</span></div>
+                <div><button type="button" class="keycap" data-remap="style">F</button><span>Style · footwork variation</span></div>
+                <div><button type="button" class="keycap" data-remap="power">Shift</button><span>Power · extend a spin</span></div>
+                <div><button type="button" class="keycap" data-remap="freeze">T</button><span>Freeze · hold · exit power</span></div>
+                <div><kbd>Esc / P</kbd><span>Pause</span></div>
+              </div>
+              <p class="settings-note" id="remap-help">Select a keycap, then press a new key. Gamepad: A / X / Y / B.</p>
+            </div>
+          </section>
+
+          <section class="screen-layer panel-layer" id="pause-layer" aria-labelledby="pause-title" hidden>
+            <div class="sewn-panel pause-panel">
+              <p class="eyebrow">NEEDLE LIFTED</p>
+              <h2 id="pause-title">Paused</h2>
+              <button type="button" class="primary-button" id="resume-button">Back to the beat</button>
+              <button type="button" class="text-button" id="restart-button">Restart round</button>
+              <button type="button" class="text-button" id="quit-button">Back to title</button>
+            </div>
+          </section>
+
+          <section class="screen-layer results-layer" id="results-layer" aria-labelledby="results-title" hidden>
+            <div class="results-card">
+              <p class="eyebrow" id="results-kicker">ROUND COMPLETE</p>
+              <h2 id="results-title">Clean round!</h2>
+              <figure class="replay-highlight" id="replay-highlight" hidden>
+                <canvas id="replay-canvas" width="384" height="216"
+                  aria-label="Deterministic replay highlight from the completed round"></canvas>
+                <figcaption>ROUND HIGHLIGHT</figcaption>
+              </figure>
+              <div class="judge-grid" id="judge-grid" aria-label="Five-category judging"></div>
+              <p class="results-reason" id="results-reason"></p>
+              <div class="results-actions">
+                <button type="button" class="primary-button" id="results-retry">Run it back</button>
+                <button type="button" class="text-button" id="results-title-button">Title</button>
+              </div>
+            </div>
+          </section>
+
+          <div class="touch-controls" id="touch-controls" aria-label="Touch controls">
+            <div class="touch-stick" data-touch-stick aria-label="Direction stick">
+              <span class="touch-stick__nub"></span>
+            </div>
+            <div class="touch-buttons">
+              <button type="button" data-control="style" aria-label="Style">S</button>
+              <button type="button" data-control="power" aria-label="Power">P</button>
+              <button type="button" data-control="freeze" aria-label="Freeze">F</button>
+              <button type="button" class="touch-action" data-control="action" aria-label="Action">A</button>
+            </div>
+            <button type="button" class="touch-pause" data-control="pause" aria-label="Pause">Ⅱ</button>
+          </div>
+        </div>
+        <footer class="cabinet__rail" aria-label="Now playing">
+          <span class="rail-light" aria-hidden="true"></span>
+          <span id="now-playing">MOON BLOCK PARTY · 100 BPM</span>
+          <span class="rail-motto">PAW WORK / POWER / FREEZE</span>
+        </footer>
+      </section>
+
+      <aside class="portrait-gate" aria-live="polite">
+        <span aria-hidden="true">↻</span>
+        Rotate your phone for the cypher.
+      </aside>
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+    </main>
+    <noscript>Kaki-Dance requires JavaScript to run.</noscript>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
