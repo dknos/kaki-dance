@@ -10,16 +10,23 @@ and the browser smoke sequence.
 | 120 presentation frames | 16.666 ms average |
 | Presentation p95 | 16.8 ms |
 | Presentation maximum | 16.8 ms |
-| Isolated Soder windmill render, 600 samples | 0.399 ms average |
-| Deterministic contact sweep | 5,050 poses |
-| Worst declared-contact error | 0.0065 logical px |
-| Native test suite | 32/32 passing |
+| Isolated rescued Soder windmill render, 600 samples | 0.470 ms average |
+| Shared-biped contact/bone sweep | 10,100 poses |
+| Worst declared-contact error | 7.95×10⁻¹⁵ logical px |
+| Worst bone-length error | 8.89×10⁻¹⁵ logical px |
+| Native test suite | 40/40 passing |
 | Runtime audio | 38.4 s, mono PCM, 44.1 kHz, 3.23 MiB |
-| Full checked-in tree | 9.4 MiB |
+| Hero review/capture package | 1.94 MB across 27 files |
+| Full tree excluding `.git` and `node_modules` | 20.08 MB |
 
 The browser report is stored in
 `docs/images/qa-browser/smoke-report.json`. Its request and console error arrays
 were empty. Pause/resume measured zero beat drift while paused.
+
+The focused Hero Lab browser report is stored at
+`docs/images/hero-rescue/after/hero-browser-report.json`. It sampled the six
+golden-chain moves in both directions for both profiles, verified native
+384×216 proof images and reported no request or console errors.
 
 ## Runtime bounds
 

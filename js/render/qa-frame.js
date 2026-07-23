@@ -1,7 +1,11 @@
 import { DEFAULT_BEATMAP } from "../audio/beatmap.js";
 import { MOVE_CLIPS } from "../animation/move-clips.js";
 import { solveCharacterRig } from "../animation/kaki-rig.js";
-import { samplePoseTimeline } from "../animation/pose-timeline.js";
+import {
+  createPoseBridge,
+  samplePoseBridge,
+  samplePoseTimeline,
+} from "../animation/pose-timeline.js";
 import { characterDefinition } from "../dance/character-catalog.js";
 import { ContactSolver } from "../dance/contact-solver.js";
 import { getMoveDefinition } from "../dance/move-catalog.js";
@@ -13,23 +17,53 @@ export function buildMoveQaSnapshot({
   mirror = false,
   balance = 0,
   wobble = 0,
+  stamina = 72,
   reducedMotion = false,
   beat = 16,
   mode = "practice",
   performer = "player",
+  transitionFrom = "",
+  transitionProgress = 1,
+  previousRig = null,
+  debugAssertions = false,
 } = {}) {
   const move = getMoveDefinition(moveId);
   if (!move) throw new Error(`Unknown QA move ${moveId}.`);
   const characterValue = characterDefinition(character);
-  const pose = samplePoseTimeline(MOVE_CLIPS[move.animationClip], phase, {
+  let pose = samplePoseTimeline(MOVE_CLIPS[move.animationClip], phase, {
     bpm: DEFAULT_BEATMAP.bpm,
     durationBeats: move.loopLength || move.durationBeats,
     reducedMotion,
     sampleCadence: move.poseCadence,
   });
+  const previousMove = getMoveDefinition(transitionFrom);
+  if (previousMove && transitionProgress < 1) {
+    const previousPose = samplePoseTimeline(
+      MOVE_CLIPS[previousMove.animationClip],
+      1,
+      {
+        bpm: DEFAULT_BEATMAP.bpm,
+        durationBeats: previousMove.loopLength || previousMove.durationBeats,
+        reducedMotion,
+        sampleCadence: previousMove.poseCadence,
+      },
+    );
+    const bridge = createPoseBridge(previousPose.pose, pose.pose, { drawings: 5 });
+    pose = {
+      ...pose,
+      pose: samplePoseBridge(bridge, transitionProgress),
+      label: `${previousMove.id}-to-${move.id}`,
+    };
+  }
   const contactSolver = new ContactSolver();
   const contacts = contactSolver.resolve(move, phase, { mirror, baseX: 0, baseY: 0, loop: 0 });
-  const rig = solveCharacterRig(characterValue, pose.pose, contacts, { mirror, balance, wobble });
+  const rig = solveCharacterRig(characterValue, pose.pose, contacts, {
+    mirror,
+    balance,
+    wobble,
+    previousRig,
+    debugAssertions,
+  });
   const measured = contactSolver.measure(rig, contacts.contacts);
   const dancer = Object.freeze({
     moveId: move.id,
@@ -41,7 +75,7 @@ export function buildMoveQaSnapshot({
     loop: 0,
     extensions: 0,
     tags: Object.freeze([...move.exitTags]),
-    stamina: 72,
+    stamina: Math.max(0, Math.min(100, Number(stamina) || 0)),
     momentum: move.family === "power" ? 0.8 : 0,
     direction: mirror ? -1 : 1,
     mirror,

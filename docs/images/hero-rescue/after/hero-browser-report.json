@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:4177",
+  "capturedAt": "2026-07-23T21:05:31.838Z",
+  "lab": {
+    "contactCards": 28,
+    "nativeSize": [
+      384,
+      216
+    ],
+    "imageRendering": "pixelated",
+    "kittyStatus": "BIPED · CLEAN",
+    "soderStatus": "BIPED · CLEAN",
+    "forcedStamina": 18,
+    "forcedBalance": 0.84,
+    "zoom2": [
+      384,
+      216
+    ],
+    "zoom4": [
+      384,
+      216
+    ]
+  },
+  "sampledStates": 24,
+  "worstBoneError": 5.329070518200751e-15,
+  "worstContactError": 3.604446298597818e-15,
+  "reviewBoard": {
+    "comparisons": 12,
+    "videos": 2,
+    "silhouettes": 6,
+    "brokenImages": [],
+    "nativeProofImages": true
+  },
+  "errors": [],
+  "failedRequests": []
+}

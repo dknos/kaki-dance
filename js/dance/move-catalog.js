@@ -259,7 +259,7 @@ export const MOVE_CATALOG = deepFreeze({
     eligiblePrecedingFamilies: ["idle", "transition", "footwork", "freeze"],
     contacts: [
       contact("leftPaw", 0, 0.52, -13), contact("rightPaw", 0.13, 0.88, 13),
-      contact("leftFoot", 0, 0.18, -7), contact("rightFoot", 0, 0.18, 14),
+      contact("leftFoot", 0, 0.08, -7), contact("rightFoot", 0, 0.18, 14),
       contact("leftFoot", 0.48, 0.7, 9), contact("rightFoot", 0.64, 0.88, 14),
       contact("leftPaw", 0.82, 1, -13, 0, "leftPaw-return"),
     ],
@@ -324,8 +324,10 @@ export const MOVE_CATALOG = deepFreeze({
     exitTags: ["floor", "powerReady", "freezeReady", "momentum"],
     eligiblePrecedingFamilies: ["footwork", "transition", "power"],
     contacts: [
-      contact("leftShoulder", 0, 0.199, -10), contact("back", 0.2, 0.5, 0),
-      contact("rightShoulder", 0.501, 0.739, 10), contact("leftPaw", 0.74, 1, -18),
+      contact("leftShoulder", 0, 0.199, -10, -3),
+      contact("back", 0.2, 0.5, 0, -4),
+      contact("rightShoulder", 0.501, 0.739, 10, -3),
+      contact("leftPaw", 0.74, 1, -18),
     ],
     centerOfMassCurve: [[0, 0, -10], [0.25, 2, -12], [0.5, 0, -13], [0.75, -2, -12], [1, 0, -10]],
     staminaCost: 12,

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./hero-lab.css">
+    <link rel="stylesheet" href="./hero-rescue.css">
+    <title>Kaki-Dance Hero Rescue Gallery</title>
+  </head>
+  <body class="hero-lab-body">
+    <header class="hero-lab-mast">
+      <a class="wordmark" href="./"><span class="wordmark__paw">●</span>KAKI—DANCE</a>
+      <p><span class="status-light"></span>NATIVE BEFORE / AFTER PROOF</p>
+      <nav>
+        <a href="./">Play</a>
+        <a href="./hero-lab.html">Hero Lab</a>
+        <a href="./qa.html">QA gallery</a>
+      </nav>
+    </header>
+
+    <main class="rescue-shell">
+      <section class="rescue-intro">
+        <div>
+          <p class="eyebrow">HERO MILESTONE · 384×216</p>
+          <h1>Rig rescue<br>review board</h1>
+        </div>
+        <p>The left frame in every pair is the deployed failure baseline. The right frame is the shared fixed-length biped, authored move clip and tapered-volume renderer. Images are shown at native logical resolution with nearest-neighbor scaling.</p>
+      </section>
+
+      <section class="motion-board" aria-labelledby="motion-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">FULL GOLDEN CHAIN</p>
+            <h2 id="motion-title">Motion proof</h2>
+          </div>
+          <p>Deterministic 7.2-second captures at 20 drawings per second. No camera effects, particles or motion blur conceal the anatomy.</p>
+        </div>
+        <div class="motion-grid">
+          <figure>
+            <video autoplay loop muted controls playsinline width="384" height="216" poster="./docs/images/hero-rescue/after/kitty-4.png">
+              <source src="./docs/images/hero-rescue/after/kitty-golden-chain.mp4" type="video/mp4">
+            </video>
+            <figcaption><strong>KITTYKAKI</strong><a href="./docs/images/hero-rescue/after/kitty-golden-chain.gif">Open GIF</a></figcaption>
+          </figure>
+          <figure>
+            <video autoplay loop muted controls playsinline width="384" height="216" poster="./docs/images/hero-rescue/after/soder-4.png">
+              <source src="./docs/images/hero-rescue/after/soder-golden-chain.mp4" type="video/mp4">
+            </video>
+            <figcaption><strong>SODER</strong><a href="./docs/images/hero-rescue/after/soder-golden-chain.gif">Open GIF</a></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="comparison-section" aria-labelledby="kitty-comparison-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PROFILE 01</p>
+            <h2 id="kitty-comparison-title">KittyKaki</h2>
+          </div>
+          <p>Separated upper/lower limbs, explicit joints and cuffs, directional paws and weighted shoes.</p>
+        </div>
+        <div class="comparison-grid" id="kitty-comparisons"></div>
+      </section>
+
+      <section class="comparison-section" aria-labelledby="soder-comparison-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PROFILE 02</p>
+            <h2 id="soder-comparison-title">Soder</h2>
+          </div>
+          <p>Normal humanoid arms and legs inside the green padded snake kigurumi; the soft tail is decorative only.</p>
+        </div>
+        <div class="comparison-grid" id="soder-comparisons"></div>
+      </section>
+
+      <section class="silhouette-section" aria-labelledby="silhouette-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">NO INTERNAL DETAIL</p>
+            <h2 id="silhouette-title">Silhouette gate</h2>
+          </div>
+          <p>Both profiles at the same move phase, stripped to one color. Move mechanics must survive without costume detail.</p>
+        </div>
+        <div class="silhouette-grid" id="silhouette-grid"></div>
+      </section>
+
+      <section class="source-section" aria-labelledby="source-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">OFFLINE ANATOMY SOURCE</p>
+            <h2 id="source-title">One armature, two costumes</h2>
+          </div>
+          <p>The Blender proxy shares every biped bone and constraint. These renders guide anatomy and contacts; they are not runtime sprites.</p>
+        </div>
+        <div class="source-grid">
+          <figure>
+            <img src="./tools/blender/reference/hero-rescue/kitty-turnaround-threeQuarter.png" width="384" height="216" alt="KittyKaki Blender biped proxy">
+            <figcaption>KITTY PROFILE</figcaption>
+          </figure>
+          <figure>
+            <img src="./tools/blender/reference/hero-rescue/soder-turnaround-threeQuarter.png" width="384" height="216" alt="Soder Blender biped proxy in snake costume">
+            <figcaption>SODER PROFILE · SAME ARMATURE</figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./js/hero-rescue.js"></script>
+  </body>
+</html>

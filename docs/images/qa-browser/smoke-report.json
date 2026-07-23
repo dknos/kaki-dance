@@ -1,16 +1,16 @@
 {
   "url": "http://127.0.0.1:4177",
-  "capturedAt": "2026-07-23T19:20:57.740Z",
+  "capturedAt": "2026-07-23T21:05:49.380Z",
   "freezeSnapshot": {
     "move": "babyFreeze",
     "family": "freeze",
-    "stamina": 70.771833333332,
+    "stamina": 70.92772222222088,
     "contacts": 2,
-    "contactError": 2.220446049250313e-15,
+    "contactError": 3.738404036654769e-15,
     "balance": {
-      "offset": 0.09250913145460958,
-      "velocity": 0.02037695581166109,
-      "wobble": 0.08061797948114124,
+      "offset": 0.09296757466641212,
+      "velocity": 0.01554025994391417,
+      "wobble": 0.08101749426266851,
       "failed": false,
       "stableBeats": 1.0061980347694623
     }
@@ -20,18 +20,18 @@
     "mode": "practice",
     "move": "",
     "family": "idle",
-    "stamina": 73.46033333333199,
+    "stamina": 73.5955555555542,
     "contacts": 0,
     "contactError": 0,
-    "beat": 11.024644746787603,
+    "beat": 10.947244897959184,
     "chainIndex": 0,
     "next": "basicRock"
   },
   "pauseResume": {
-    "pausedBeatA": 11.024644746787603,
-    "pausedBeatB": 11.024644746787603,
+    "pausedBeatA": 10.947244897959184,
+    "pausedBeatB": 10.947244897959184,
     "pausedDriftBeats": 0,
-    "resumedAdvanceBeats": 0.48346560846560926
+    "resumedAdvanceBeats": 0.5028155706727144
   },
   "settingsVisible": {
     "scrollHeight": 574,
@@ -40,26 +40,26 @@
   },
   "soderSnapshot": {
     "character": "soder",
-    "topology": "soder",
+    "topology": "biped",
     "move": "basicRock"
   },
   "restartSnapshot": {
     "state": "running",
     "character": "soder",
-    "beat": 0.8078647014361297
+    "beat": -0.14
   },
   "frameProfile": {
     "samples": 120,
-    "averageMs": 16.66583333333333,
-    "p95Ms": 16.799999999999272,
+    "averageMs": 16.666666666666668,
+    "p95Ms": 16.700000000000728,
     "maxMs": 16.80000000000109
   },
   "renderProfile": {
     "samples": 600,
-    "elapsedMs": 239.5,
-    "averageMs": 0.39916666666666667
+    "elapsedMs": 282.1000000089407,
+    "averageMs": 0.4701666666815678
   },
-  "labReadout": "clip four  ·  sample 0.500  ·  IK/contact avg 0.00 px  ·  support 26.0 px  ·  rig kaki",
+  "labReadout": "clip four-back-table  ·  sample 0.500  ·  IK/contact avg 0.00 px  ·  support 26.0 px  ·  rig biped",
   "qaCards": 114,
   "qaFreezeCards": 30,
   "touchVisible": {

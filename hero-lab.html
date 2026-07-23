@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./hero-lab.css">
+    <title>Kaki-Dance Hero Lab</title>
+  </head>
+  <body class="hero-lab-body">
+    <header class="hero-lab-mast">
+      <a class="wordmark" href="./"><span class="wordmark__paw">●</span>KAKI—DANCE</a>
+      <p><span class="status-light"></span>SHARED BIPED / GOLDEN CHAIN</p>
+      <nav>
+        <a href="./">Play</a>
+        <a href="./hero-rescue.html">Review board</a>
+        <a href="./lab.html">Rhythm Lab</a>
+        <a href="./qa.html">QA gallery</a>
+      </nav>
+    </header>
+
+    <main class="hero-lab-shell">
+      <section class="hero-lab-intro">
+        <div>
+          <p class="eyebrow">ANATOMY FIRST · PIXELS SECOND</p>
+          <h1>Hero rig<br>rescue desk</h1>
+        </div>
+        <p>KittyKaki and Soder resolve the same contacts through the same biped anchors. Scrub the move, strip it to silhouette, or expose every joint. If a still fails here, it is not ready for the cypher.</p>
+      </section>
+
+      <section class="hero-desk">
+        <div class="hero-view-column">
+          <div class="view-heading">
+            <div><span>NATIVE</span><strong>384×216</strong></div>
+            <p>KittyKaki / Soder · synchronized phase</p>
+          </div>
+          <div class="native-frame">
+            <canvas id="hero-lab-canvas" width="384" height="216" aria-label="Side-by-side KittyKaki and Soder rig preview"></canvas>
+            <span class="registration registration--tl"></span>
+            <span class="registration registration--tr"></span>
+            <span class="registration registration--bl"></span>
+            <span class="registration registration--br"></span>
+          </div>
+          <div id="hero-lab-readout" class="hero-readout" aria-live="polite"></div>
+
+          <details class="zoom-proof" open>
+            <summary><span>2× nearest-neighbor proof</span><strong>768×432</strong></summary>
+            <div class="zoom-viewport zoom-viewport--2">
+              <canvas id="hero-lab-2x" width="384" height="216"></canvas>
+            </div>
+          </details>
+          <details class="zoom-proof">
+            <summary><span>4× nearest-neighbor proof</span><strong>1536×864</strong></summary>
+            <div class="zoom-viewport zoom-viewport--4">
+              <canvas id="hero-lab-4x" width="384" height="216"></canvas>
+            </div>
+          </details>
+        </div>
+
+        <aside class="hero-controls" aria-label="Hero Lab controls">
+          <div class="control-block control-block--chain">
+            <label class="switch-line"><input id="hero-chain" type="checkbox" checked> Automatic golden chain</label>
+            <div class="chain-track" id="chain-track" aria-hidden="true"></div>
+          </div>
+
+          <div class="control-grid">
+            <label>Move
+              <select id="hero-move"></select>
+            </label>
+            <label>Playback
+              <select id="hero-speed">
+                <option value="0">Paused</option>
+                <option value="0.25">Quarter speed</option>
+                <option value="0.5">Half speed</option>
+                <option value="1" selected>Full speed</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="phase-control">Phase <output id="hero-phase-output">0.000</output>
+            <input id="hero-phase" type="range" min="0" max="1" step="0.001" value="0">
+          </label>
+
+          <div class="control-grid">
+            <label>Forced stamina <output id="hero-stamina-output">72</output>
+              <input id="hero-stamina" type="range" min="0" max="100" step="1" value="72">
+            </label>
+            <label>Forced balance <output id="hero-balance-output">0.00</output>
+              <input id="hero-balance" type="range" min="-1.25" max="1.25" step="0.01" value="0">
+            </label>
+          </div>
+
+          <div class="frame-buttons">
+            <button id="hero-prev-frame" type="button">← Previous drawing</button>
+            <button id="hero-next-frame" type="button">Next drawing →</button>
+          </div>
+
+          <fieldset class="hero-toggle-grid">
+            <legend>Playback</legend>
+            <label><input id="hero-mirror" type="checkbox"> Mirrored</label>
+            <label><input id="hero-onion" type="checkbox"> Onion skin</label>
+          </fieldset>
+
+          <fieldset class="hero-toggle-grid hero-toggle-grid--diagnostic">
+            <legend>Diagnostic layers</legend>
+            <label><input id="hero-skeleton" type="checkbox"> Skeleton</label>
+            <label><input id="hero-joint-names" type="checkbox"> Joint names</label>
+            <label><input id="hero-contacts" type="checkbox" checked> Contact targets</label>
+            <label><input id="hero-com" type="checkbox" checked> Center of mass</label>
+            <label><input id="hero-support" type="checkbox" checked> Support region</label>
+            <label><input id="hero-silhouette" type="checkbox"> Silhouette only</label>
+            <label><input id="hero-z-order" type="checkbox"> Near/far z-order</label>
+            <label><input id="hero-bone-warnings" type="checkbox" checked> Bone warnings</label>
+          </fieldset>
+
+          <div class="rig-metrics">
+            <article>
+              <span>KITTYKAKI</span>
+              <strong id="kitty-bone-status">BIPED</strong>
+              <p id="kitty-rig-metrics"></p>
+            </article>
+            <article>
+              <span>SODER</span>
+              <strong id="soder-bone-status">BIPED</strong>
+              <p id="soder-rig-metrics"></p>
+            </article>
+          </div>
+
+          <button id="hero-capture" class="capture-button" type="button">Capture native PNG</button>
+        </aside>
+      </section>
+
+      <section class="contact-sheet-section" aria-labelledby="contact-sheet-title">
+        <div class="contact-sheet-heading">
+          <div>
+            <p class="eyebrow">STILL-FRAME GATE</p>
+            <h2 id="contact-sheet-title">Golden-chain contact sheet</h2>
+          </div>
+          <p>Every card is a deterministic 384×216 capture with both profiles at the same phase. Click a card to download the native raster.</p>
+        </div>
+        <div id="hero-contact-sheet" class="hero-contact-sheet"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./js/hero-lab.js"></script>
+  </body>
+</html>
