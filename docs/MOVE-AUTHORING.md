@@ -36,6 +36,11 @@ The renderer never adds contacts or makes a transition legal.
    and recovery.
 9. Capture entry/mid/accent/exit frames and run the full test suite.
 
+For a move-to-move handoff, use the deterministic pose bridge. Angle fields
+take the shortest path, bend side is held until the receiving anticipation key,
+and active contact anchors remain exact. Do not add an unmarked elbow or knee
+side change to make a transition convenient.
+
 ## Contact definition
 
 ```js
@@ -74,14 +79,25 @@ agree.
 
 ## Character topology
 
-KittyKaki uses a plush biped rig with analytic two-bone arms and legs. Soder
-uses a hood, sleeve-paws, and weighted coil segments. Shared move semantics do
-not imply shared anatomy. If a new character cannot preserve contact truth with
-one of these topologies, add a dedicated deterministic solver.
+KittyKaki and Soder use the same `BipedRig`: root, pelvis, chest, neck, head,
+paired shoulders, elbows, wrists, hands, hips, knees, ankles and feet. The two
+profiles may change costume volume, palette, extremity shape, head treatment
+and secondary attachments, but never move semantics or anatomy.
+
+Upper-arm, forearm, thigh and shin lengths are profile constants. A planted
+target beyond reach must cause a bounded root, pelvis or chest correction; an
+authoring error must never be disguised by scaling a bone. Every golden-chain
+clip is sampled at 101 phases for both profiles and mirrors to prove length
+preservation, joint limits and declared bend-side changes.
+
+Soder's snake hood, padded sleeves and leggings, belly panel and soft tail are
+costume volumes. His tail is not a contact-capable support.
 
 ## Offline Blender reference
 
-For windmill, swipe, flare, backspin, and headspin, an orthographic three-quarter
-proxy can be used to study COM arcs and contact ordering. Export pose JSON or
-reference sheets only. Runtime remains 2D, and the final keys must be simplified
-into Kaki proportions, held drawings, readable paws, and pixel-stable anchors.
+The authoritative Blender source uses one armature for both profiles and blocks
+the six golden-chain moves before broader content work. It exports five-phase
+joint keypoints, declared contact metadata, color passes, silhouettes and
+front/three-quarter/mirrored turnarounds. Runtime remains 2D, and final keys
+must still be hand-directed into Kaki proportions, held drawings, readable
+paws and pixel-stable anchors.

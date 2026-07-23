@@ -80,18 +80,72 @@ test("user-supplied portraits and authored crowd reference retain validated dime
   assert.equal(sha256(soder), "ce8f5d387825aa3c1d5b0c1f9b55f0a7f3d63c084d7bda75f388d9b3c3d7eae6");
 });
 
-test("offline Blender proxy exports all five complex power studies", () => {
-  const proxy = readFileSync(resolve(root, "tools/blender/kaki-power-proxy.blend"));
-  const poses = JSON.parse(readFileSync(resolve(root, "tools/blender/exports/kaki-power-reference.json"), "utf8"));
+test("offline Blender source uses one shared biped for both golden-chain profiles", () => {
+  const proxy = readFileSync(resolve(root, "tools/blender/kaki-hero-biped.blend"));
+  const poseBuffer = readFileSync(resolve(root, "tools/blender/exports/kaki-hero-golden-chain.json"));
+  const poses = JSON.parse(poseBuffer.toString("utf8"));
   assert.ok(proxy.length > 100_000);
-  assert.equal(poses.schemaVersion, 1);
+  assert.ok(proxy.length < 500_000);
+  assert.ok(poseBuffer.length < 500_000);
+  assert.equal(poses.schemaVersion, 2);
   assert.equal(poses.fps, 24);
-  assert.deepEqual(Object.keys(poses.clips), ["backspin", "swipe", "windmill", "flare", "headspin"]);
+  assert.equal(poses.topology, "biped");
+  assert.deepEqual(poses.profiles, ["kitty", "soder"]);
+  assert.ok(poses.anchors.includes("elbow.L"));
+  assert.ok(poses.anchors.includes("elbow.R"));
+  assert.ok(poses.anchors.includes("knee.L"));
+  assert.ok(poses.anchors.includes("knee.R"));
+  assert.deepEqual(Object.keys(poses.clips), [
+    "basicRock",
+    "basicGoDown",
+    "sixStep",
+    "windmill",
+    "babyFreeze",
+    "cleanGetUp",
+  ]);
   for (const [id, clip] of Object.entries(poses.clips)) {
-    assert.equal(clip.frames.length, 3, id);
-    assert.deepEqual(clip.frames.map((frame) => frame.phase), [0, 0.5, 1]);
+    assert.equal(clip.frames.length, 5, id);
+    assert.deepEqual(clip.frames.map((frame) => frame.phase), [0, 0.25, 0.5, 0.75, 1]);
+    for (const profile of poses.profiles) {
+      for (const suffix of ["", "-silhouette"]) {
+        assert.deepEqual(
+          pngDimensions(readFileSync(resolve(
+            root,
+            `tools/blender/reference/hero-rescue/${profile}-${id}${suffix}.png`,
+          ))),
+          { width: 384, height: 216 },
+        );
+      }
+    }
+  }
+});
+
+test("hero rescue approval media stays native-sized and within its compression budget", () => {
+  const after = resolve(root, "docs/images/hero-rescue/after");
+  for (const character of ["kitty", "soder"]) {
+    for (let index = 1; index <= 6; index += 1) {
+      assert.deepEqual(
+        pngDimensions(readFileSync(resolve(after, `${character}-${index}.png`))),
+        { width: 384, height: 216 },
+      );
+    }
+    const gif = readFileSync(resolve(after, `${character}-golden-chain.gif`));
+    const mp4 = readFileSync(resolve(after, `${character}-golden-chain.mp4`));
+    assert.deepEqual(gifDimensions(gif), { width: 384, height: 216 });
+    assert.ok(gif.length < 350_000);
+    assert.equal(mp4.toString("ascii", 4, 8), "ftyp");
+    assert.ok(mp4.length < 200_000);
+  }
+  for (const move of [
+    "basicRock",
+    "basicGoDown",
+    "sixStep",
+    "windmill",
+    "babyFreeze",
+    "cleanGetUp",
+  ]) {
     assert.deepEqual(
-      pngDimensions(readFileSync(resolve(root, `tools/blender/reference/${id}.png`))),
+      pngDimensions(readFileSync(resolve(after, `silhouette-${move}.png`))),
       { width: 384, height: 216 },
     );
   }
@@ -110,6 +164,11 @@ function webpDimensions(buffer) {
     width: buffer.readUIntLE(24, 3) + 1,
     height: buffer.readUIntLE(27, 3) + 1,
   };
+}
+
+function gifDimensions(buffer) {
+  assert.match(buffer.toString("ascii", 0, 6), /^GIF8[79]a$/);
+  return { width: buffer.readUInt16LE(6), height: buffer.readUInt16LE(8) };
 }
 
 function sha256(buffer) {

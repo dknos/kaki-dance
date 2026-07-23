@@ -7,7 +7,7 @@ It is a freestyle dance toy rather than a note highway: choose moves, connect
 declared stances, answer musical accents, manage power momentum, and actively
 balance freezes.
 
-![Kaki-Dance title screen](docs/images/qa-browser/title-kitty.png)
+![Kaki-Dance shared hero biped review](docs/images/hero-rescue/after/hero-lab.png)
 
 ## Play locally
 
@@ -22,7 +22,9 @@ The same checked-in files deploy unchanged to GitHub Pages.
 
 ## Included vertical slice
 
-- KittyKaki articulated cat rig and Soder dedicated coil rig.
+- One fixed-length `BipedRig` with complete arm and leg anchors, plus distinct
+  KittyKaki and Soder render profiles. Soder is a humanoid plush dancer inside
+  a padded snake kigurumi.
 - Practice Lab with the complete golden chain:
   `Basic Rock → Go Down → 6-Step → Windmill → Baby Freeze → Clean Get-Up`.
 - 60-second Freestyle.
@@ -68,6 +70,12 @@ Advanced Controls select families directly:
 
 ## Development tools
 
+- [Hero Lab](hero-lab.html) — KittyKaki and Soder side by side at the same
+  phase, native/2×/4× views, frame stepping, mirrored playback, onion skinning,
+  silhouette mode, named joints, contacts, COM, support, z-order and live
+  bone-length warnings.
+- [Hero rescue review board](hero-rescue.html) — native before/after pairs,
+  silhouette proofs, individual golden-chain videos and shared Blender source.
 - [Animation and Rhythm Labs](lab.html) — scrub every move, change cadence and
   speed, mirror it, force stamina/balance, inspect skeleton/contact/COM/support
   overlays, test legal transitions, capture PNGs, and inspect the audio clock.
@@ -81,11 +89,13 @@ Advanced Controls select families directly:
 npm run verify
 ```
 
-This runs syntax checks and 32 native Node tests using a fake audio clock. The
+This runs syntax checks and 40 native Node tests using a fake audio clock. The
 suite covers beat math, pause/resume, latency, fixed-step catch-up, input edges,
 transition legality, every declared contact at 101 phases for both characters,
-IK bounds, balance, stamina, extensions, scoring decay, AI parity, deterministic
-replay, tiebreaks, storage migration, audio headers, and asset dimensions.
+fixed bone lengths, bend continuity, mirrored biped semantics, transition
+bridges, IK bounds, balance, stamina, extensions, scoring decay, AI parity,
+deterministic replay, tiebreaks, storage migration, Blender exports, audio
+headers, and asset dimensions.
 
 For browser capture:
 
@@ -149,7 +159,8 @@ See [the architecture decision](docs/ADR-001-STANDALONE-DANCE-CORE.md) and
 
 - [Move references](docs/MOVE-REFERENCES.md)
 - [Move-authoring guide](docs/MOVE-AUTHORING.md)
-- [Offline Blender proxy pipeline](tools/blender/README.md)
+- [Offline shared-biped Blender pipeline](tools/blender/README.md)
+- [Hero rescue report](docs/HERO-RESCUE-REPORT.md)
 - [Beatmap schema](docs/BEATMAP-SCHEMA.md)
 - [Asset provenance](docs/ASSET-PROVENANCE.md)
 - [Suno Kaki-Dance brief](docs/SUNO-KAKI-DANCE.md)

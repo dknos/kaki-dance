@@ -14,6 +14,14 @@ const galleries = {
   moves: document.getElementById("move-gallery"),
   edges: document.getElementById("edge-gallery"),
 };
+const GOLDEN_CAPTURE_PHASES = Object.freeze({
+  basicRock: 0.24,
+  basicGoDown: 0.62,
+  sixStep: 1 / 3,
+  windmill: 0.5,
+  babyFreeze: 0.55,
+  cleanGetUp: 0.55,
+});
 
 for (const family of MOVE_FAMILIES) {
   const option = document.createElement("option");
@@ -43,7 +51,7 @@ function rebuild() {
       label: `${index + 1}. ${getMoveDefinition(moveId).displayName}`,
       state: "golden",
       moveId,
-      phase: moveId === "babyFreeze" ? 0.5 : 0.72,
+      phase: GOLDEN_CAPTURE_PHASES[moveId] ?? 0.5,
       character,
       reducedMotion,
       beat: 16 + index * 2,

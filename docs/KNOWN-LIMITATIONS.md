@@ -1,5 +1,20 @@
 # Known limitations
 
+- The rescued heroes are code-drawn tapered volumes, not a finished modular
+  sprite atlas. This keeps contacts exact and silhouettes editable, but some
+  extreme foreshortening still has fewer bespoke drawings than a production
+  atlas would provide.
+- 6-Step is mechanically six-phase and contact-correct, yet its two most
+  front-facing crossed positions can read flatter at quarter speed than the
+  strongest side-thread keys.
+- Windmill now uses shoulder/back rotation, a large leg scissor and a dedicated
+  clip. The compact chibi head can still overlap the near shoulder during two
+  intermediate drawings, especially on KittyKaki.
+- Soder is fully bipedal, but the padded hood can briefly cover the far shoulder
+  in deep floor poses. The Hero Lab z-order and skeleton overlays make this
+  visible rather than masking it with effects.
+- The shared Blender source is an anatomy/contact blockout with low-poly
+  costume volumes, not a final character mesh or motion-capture solution.
 - The shipped song is an original instrumental synthesis loop. The sparse
   Japanese female vocal version is a documented Suno production brief, not yet
   a mastered runtime asset.
@@ -21,5 +36,5 @@
 - Accessibility includes control remapping, timing windows, latency, reduced
   motion, shake, flash, beat pulse, labels, and volume controls, but there is no
   screen-reader narration of the continuously rendered dance.
-- No second body topology beyond KittyKaki and Soder should be added until its
-  planted contacts and full move sweep pass the same deterministic threshold.
+- No new hero profile should be added until it passes the same fixed-length
+  biped, planted-contact, silhouette and full move-sweep thresholds.

@@ -11,10 +11,22 @@ test("two-bone IK respects authored bounds and reports unreachable targets", () 
   const exact = solveTwoBone({ x: 0, y: 0 }, { x: 6, y: 8 }, 6, 6);
   assert.ok(exact.error < 1e-8);
   assert.equal(exact.clamped, false);
+  assert.ok(exact.boneLengthError < 1e-8);
+  assert.ok(exact.interiorAngle >= exact.jointLimits[0]);
+  assert.ok(exact.interiorAngle <= exact.jointLimits[1]);
   const clamped = solveTwoBone({ x: 0, y: 0 }, { x: 40, y: 0 }, 5, 5);
   assert.ok(clamped.end.x < 10.001);
   assert.ok(clamped.error > 29.9);
   assert.equal(clamped.clamped, true);
+  const continuous = solveTwoBone(
+    { x: 0, y: 0 },
+    { x: 6, y: 8 },
+    6,
+    6,
+    { bend: -1, previousJoint: exact.joint },
+  );
+  assert.equal(continuous.bendSign, exact.bendSign);
+  assert.equal(continuous.flipped, false);
 });
 
 test("every declared KittyKaki and Soder contact stays planted across the full timeline", () => {
@@ -81,5 +93,6 @@ test("deterministic phase capture returns byte-for-byte equivalent rig data", ()
   const first = buildMoveQaSnapshot({ character: "soder", moveId: "windmill", phase: 0.48, mirror: true });
   const second = buildMoveQaSnapshot({ character: "soder", moveId: "windmill", phase: 0.48, mirror: true });
   assert.deepEqual(second.dancer.rig, first.dancer.rig);
-  assert.equal(first.dancer.rig.topology, "soder");
+  assert.equal(first.dancer.rig.topology, "biped");
+  assert.equal(first.dancer.rig.profileId, "soder");
 });

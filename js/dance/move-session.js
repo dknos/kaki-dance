@@ -1,5 +1,10 @@
 import { MOVE_CLIPS } from "../animation/move-clips.js";
-import { blendPoses, mirrorPose, samplePoseTimeline } from "../animation/pose-timeline.js";
+import {
+  createPoseBridge,
+  mirrorPose,
+  samplePoseBridge,
+  samplePoseTimeline,
+} from "../animation/pose-timeline.js";
 import { solveCharacterRig } from "../animation/kaki-rig.js";
 import { ContactSolver } from "./contact-solver.js";
 import { createBalanceState, resetBalance, updateFreezeBalance } from "./balance.js";
@@ -167,6 +172,12 @@ export class MoveSession {
     let transitionPose = this.poseSnapshot?.pose ?? null;
     if (transitionPose && this.mirror) transitionPose = mirrorPose(transitionPose);
     if (transitionPose && mirror) transitionPose = mirrorPose(transitionPose);
+    const entryPose = samplePoseTimeline(MOVE_CLIPS[move.animationClip], 0, {
+      bpm: this.beatmap?.bpm ?? 100,
+      durationBeats: move.loopLength || move.durationBeats,
+      reducedMotion: this.reducedMotion,
+      sampleCadence: move.poseCadence,
+    }).pose;
     if (this.current) this.finishMove(beat, { transitioning: true });
     this.direction = Math.sign(direction) || 1;
     this.mirror = Boolean(mirror);
@@ -187,7 +198,9 @@ export class MoveSession {
       responseBonus,
       maxContactError: 0,
       startedScored: false,
-      transitionPose,
+      transitionBridge: transitionPose
+        ? createPoseBridge(transitionPose, entryPose, { drawings: 5 })
+        : null,
       transitionBlendBeats: Math.min(TRANSITION_BLEND_BEATS, move.minimumDuration * 0.5),
     };
     this.queued = null;
@@ -284,14 +297,24 @@ export class MoveSession {
       const blendAmount = blendBeats > 0
         ? Math.min(1, Math.max(0, (beatSnapshot.beat - this.current.startBeat) / blendBeats))
         : 1;
-      this.poseSnapshot = this.current.transitionPose && blendAmount < 1
+      const activeBridge = this.current.transitionBridge && blendAmount < 1
+        ? createPoseBridge(
+            this.current.transitionBridge.from,
+            sampledPose.pose,
+            {
+              drawings: this.current.transitionBridge.drawings,
+              preserveBendUntil: this.current.transitionBridge.preserveBendUntil,
+            },
+          )
+        : null;
+      this.poseSnapshot = activeBridge
         ? {
             ...sampledPose,
-            pose: blendPoses(this.current.transitionPose, sampledPose.pose, blendAmount),
-            label: `${sampledPose.label}-blend`,
+            pose: samplePoseBridge(activeBridge, blendAmount),
+            label: `${sampledPose.label}-bridge`,
           }
         : sampledPose;
-      if (blendAmount >= 1) this.current.transitionPose = null;
+      if (blendAmount >= 1) this.current.transitionBridge = null;
       this.contactSnapshot = this.contactSolver.resolve(move, phase, {
         mirror: this.mirror,
         baseX: 0,
@@ -299,10 +322,12 @@ export class MoveSession {
         loop,
       });
     }
+    const previousRig = this.rigSnapshot;
     this.rigSnapshot = solveCharacterRig(this.character, this.poseSnapshot.pose, this.contactSnapshot, {
       mirror: this.mirror,
       balance: this.current?.move.family === "freeze" ? this.balance.offset : 0,
       wobble: this.current?.move.family === "freeze" ? this.balance.wobble * Math.sign(this.balance.offset || 1) : 0,
+      previousRig,
     });
     const measured = this.contactSolver.measure(this.rigSnapshot, this.contactSnapshot.contacts);
     if (this.current) this.current.maxContactError = Math.max(this.current.maxContactError, measured.average);

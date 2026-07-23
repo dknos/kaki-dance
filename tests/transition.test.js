@@ -81,10 +81,10 @@ test("move entries blend from the previous drawing while new contacts stay exact
   session.update(syntheticBeat(1.5), 1 / 120);
   assert.deepEqual(session.poseSnapshot.pose, previousPose);
   session.update(syntheticBeat(1.61), 1 / 120);
-  assert.match(session.poseSnapshot.label, /blend$/);
+  assert.match(session.poseSnapshot.label, /bridge$/);
   assert.ok(session.contactSolver.contactError <= 0.01);
   session.update(syntheticBeat(1.73), 1 / 120);
-  assert.doesNotMatch(session.poseSnapshot.label, /blend$/);
+  assert.doesNotMatch(session.poseSnapshot.label, /bridge$/);
 });
 
 function makeSession() {
