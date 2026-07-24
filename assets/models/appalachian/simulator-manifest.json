@@ -1,0 +1,877 @@
+{
+  "schemaVersion": 1,
+  "candidateStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+  "sourceBlend": "tools/blender/kaki-appalachian-frolic.blend",
+  "sourceBlendSha256": "47c4dc62745b39f333fddbc84bfdd1139c80c43d040352ede5922d612c47b269",
+  "glb": "assets/models/appalachian/kaki-appalachian-simulator.glb",
+  "glbSha256": "a82bc9318e57499ec25706becfc670c9e44c83baa2844f84087c3b1cfa919743",
+  "glbBytes": 1140336,
+  "threeRuntime": {
+    "loader": "GLTFLoader",
+    "characterType": "SkinnedMesh",
+    "animation": "AnimationMixer plus contact-aware performance controller",
+    "candidateBackend": "WebGL2",
+    "webgpu": "capability-gated future path; not allowed to delay Gate 1"
+  },
+  "sharedSkeleton": "KakiFrolicProductionBiped",
+  "characters": [
+    "kitty",
+    "soder"
+  ],
+  "supportCapableBones": [
+    "foot.L",
+    "foot.R"
+  ],
+  "excludedSupportBones": [
+    "costume.tail",
+    "costume.hood"
+  ],
+  "sourceFps": 30,
+  "actions": {
+    "backstep": {
+      "name": "FrolicCandidate.backstep",
+      "displayName": "Backstep",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 9,
+          "support": "right",
+          "contact": "backstep",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "buckSpringHop": {
+      "name": "FrolicCandidate.buckSpringHop",
+      "displayName": "Buck ball-of-foot spring hop",
+      "frameRange": [
+        1,
+        20
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "compression",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 5,
+          "support": "none",
+          "contact": "ball-launch",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "toe-landing",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 20,
+          "support": "both",
+          "contact": "settle",
+          "freeFoot": "left"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "chug": {
+      "name": "FrolicCandidate.chug",
+      "displayName": "Chug",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 5,
+          "support": "none",
+          "contact": "depart",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 10,
+          "support": "both",
+          "contact": "chug",
+          "freeFoot": "both"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "clogJumpPullback": {
+      "name": "FrolicCandidate.clogJumpPullback",
+      "displayName": "Clog jump and pullback prototype",
+      "frameRange": [
+        1,
+        24
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "compression",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 5,
+          "support": "none",
+          "contact": "launch",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 12,
+          "support": "none",
+          "contact": "air-pullback",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 21,
+          "support": "both",
+          "contact": "tap-landing",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 24,
+          "support": "both",
+          "contact": "settle",
+          "freeFoot": "both"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "flatfootHop": {
+      "name": "FrolicCandidate.flatfootHop",
+      "displayName": "Flatfoot compact weight-release hop",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "compression",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 4,
+          "support": "none",
+          "contact": "launch",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 13,
+          "support": "both",
+          "contact": "landing",
+          "freeFoot": "both"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "groove": {
+      "name": "FrolicCandidate.groove",
+      "displayName": "Neutral musical groove",
+      "frameRange": [
+        1,
+        31
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "left",
+          "contact": "soft",
+          "freeFoot": "right"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "heelToeChange": {
+      "name": "FrolicCandidate.heelToeChange",
+      "displayName": "Heel-toe change",
+      "frameRange": [
+        1,
+        31
+      ],
+      "contacts": [
+        {
+          "frame": 6,
+          "support": "right",
+          "contact": "heel-left",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "toe-left",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 21,
+          "support": "left",
+          "contact": "heel-right",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 26,
+          "support": "left",
+          "contact": "toe-right",
+          "freeFoot": "right"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "recovery": {
+      "name": "FrolicCandidate.recovery",
+      "displayName": "Short recovery and weight transfer",
+      "frameRange": [
+        1,
+        9
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "recovery",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 9,
+          "support": "left",
+          "contact": "soft",
+          "freeFoot": "right"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "rockStep": {
+      "name": "FrolicCandidate.rockStep",
+      "displayName": "Rock step and ball change",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "left",
+          "contact": "toe",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 12,
+          "support": "left",
+          "contact": "ball-change",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "shuffle": {
+      "name": "FrolicCandidate.shuffle",
+      "displayName": "Shuffle and brush",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "brush-prep",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "right",
+          "contact": "brush",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "slidingWalk": {
+      "name": "FrolicCandidate.slidingWalk",
+      "displayName": "Forward-and-back sliding walk",
+      "frameRange": [
+        1,
+        31
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 11,
+          "support": "left",
+          "contact": "slide",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 26,
+          "support": "right",
+          "contact": "drag",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 31,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "turnaround": {
+      "name": "FrolicCandidate.turnaround",
+      "displayName": "Turnaround and ending",
+      "frameRange": [
+        1,
+        31
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "cross",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 14,
+          "support": "left",
+          "contact": "turn",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 26,
+          "support": "both",
+          "contact": "ending",
+          "freeFoot": "both"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    },
+    "walkingStep": {
+      "name": "FrolicCandidate.walkingStep",
+      "displayName": "Alternating foundation step",
+      "frameRange": [
+        1,
+        31
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 31,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        }
+      ],
+      "candidateStatus": "human-review-required"
+    }
+  },
+  "gateCounts": {
+    "groundedMovements": 8,
+    "jumpPrototypes": 3,
+    "recoveryActions": 1,
+    "armPoseSamples": 9
+  },
+  "armPoseField": [
+    {
+      "id": "relaxed-low",
+      "point": [
+        0.0,
+        -0.18
+      ],
+      "chest": [
+        0,
+        0,
+        0
+      ],
+      "left": {
+        "upperArm": [
+          3,
+          -6,
+          -8
+        ],
+        "forearm": [
+          -9,
+          2,
+          3
+        ],
+        "hand": [
+          0,
+          0,
+          0
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -3,
+          6,
+          8
+        ],
+        "forearm": [
+          9,
+          -2,
+          -3
+        ],
+        "hand": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "hands-near-hips",
+      "point": [
+        0.0,
+        -1.0
+      ],
+      "chest": [
+        2,
+        0,
+        0
+      ],
+      "left": {
+        "upperArm": [
+          12,
+          -16,
+          -14
+        ],
+        "forearm": [
+          -28,
+          5,
+          10
+        ],
+        "hand": [
+          8,
+          0,
+          -5
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -12,
+          16,
+          14
+        ],
+        "forearm": [
+          28,
+          -5,
+          -10
+        ],
+        "hand": [
+          -8,
+          0,
+          5
+        ]
+      }
+    },
+    {
+      "id": "open-low-left",
+      "point": [
+        -1.0,
+        -0.58
+      ],
+      "chest": [
+        0,
+        -5,
+        -8
+      ],
+      "left": {
+        "upperArm": [
+          18,
+          -20,
+          -36
+        ],
+        "forearm": [
+          -18,
+          6,
+          12
+        ],
+        "hand": [
+          6,
+          0,
+          -8
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -5,
+          10,
+          18
+        ],
+        "forearm": [
+          12,
+          -3,
+          -6
+        ],
+        "hand": [
+          -3,
+          0,
+          4
+        ]
+      }
+    },
+    {
+      "id": "open-low-right",
+      "point": [
+        1.0,
+        -0.58
+      ],
+      "chest": [
+        0,
+        5,
+        8
+      ],
+      "left": {
+        "upperArm": [
+          5,
+          -10,
+          -18
+        ],
+        "forearm": [
+          -12,
+          3,
+          6
+        ],
+        "hand": [
+          3,
+          0,
+          -4
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -18,
+          20,
+          36
+        ],
+        "forearm": [
+          18,
+          -6,
+          -12
+        ],
+        "hand": [
+          -6,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "id": "cross-body-left",
+      "point": [
+        -1.0,
+        0.05
+      ],
+      "chest": [
+        0,
+        -8,
+        -12
+      ],
+      "left": {
+        "upperArm": [
+          28,
+          -26,
+          -58
+        ],
+        "forearm": [
+          -34,
+          8,
+          18
+        ],
+        "hand": [
+          10,
+          0,
+          -10
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -14,
+          14,
+          30
+        ],
+        "forearm": [
+          20,
+          -5,
+          -10
+        ],
+        "hand": [
+          -5,
+          0,
+          6
+        ]
+      }
+    },
+    {
+      "id": "cross-body-right",
+      "point": [
+        1.0,
+        0.05
+      ],
+      "chest": [
+        0,
+        8,
+        12
+      ],
+      "left": {
+        "upperArm": [
+          14,
+          -14,
+          -30
+        ],
+        "forearm": [
+          -20,
+          5,
+          10
+        ],
+        "hand": [
+          5,
+          0,
+          -6
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -28,
+          26,
+          58
+        ],
+        "forearm": [
+          34,
+          -8,
+          -18
+        ],
+        "hand": [
+          -10,
+          0,
+          10
+        ]
+      }
+    },
+    {
+      "id": "diagonal-reach-left",
+      "point": [
+        -0.72,
+        0.72
+      ],
+      "chest": [
+        -2,
+        -7,
+        -9
+      ],
+      "left": {
+        "upperArm": [
+          50,
+          -28,
+          -72
+        ],
+        "forearm": [
+          -20,
+          7,
+          14
+        ],
+        "hand": [
+          8,
+          0,
+          -8
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -26,
+          18,
+          42
+        ],
+        "forearm": [
+          24,
+          -5,
+          -12
+        ],
+        "hand": [
+          -6,
+          0,
+          6
+        ]
+      }
+    },
+    {
+      "id": "diagonal-reach-right",
+      "point": [
+        0.72,
+        0.72
+      ],
+      "chest": [
+        -2,
+        7,
+        9
+      ],
+      "left": {
+        "upperArm": [
+          26,
+          -18,
+          -42
+        ],
+        "forearm": [
+          -24,
+          5,
+          12
+        ],
+        "hand": [
+          6,
+          0,
+          -6
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -50,
+          28,
+          72
+        ],
+        "forearm": [
+          20,
+          -7,
+          -14
+        ],
+        "hand": [
+          -8,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "id": "both-arms-high",
+      "point": [
+        0.0,
+        1.0
+      ],
+      "chest": [
+        -4,
+        0,
+        0
+      ],
+      "left": {
+        "upperArm": [
+          62,
+          -24,
+          -62
+        ],
+        "forearm": [
+          -18,
+          5,
+          14
+        ],
+        "hand": [
+          8,
+          0,
+          -6
+        ]
+      },
+      "right": {
+        "upperArm": [
+          -62,
+          24,
+          62
+        ],
+        "forearm": [
+          18,
+          -5,
+          -14
+        ],
+        "hand": [
+          -8,
+          0,
+          6
+        ]
+      }
+    }
+  ],
+  "approval": {
+    "automated": false,
+    "required": [
+      "dance weight and appeal",
+      "Appalachian practitioner and terminology review",
+      "both-hero anatomy and costume deformation",
+      "footwear Foley taste",
+      "control feel and fun"
+    ]
+  }
+}

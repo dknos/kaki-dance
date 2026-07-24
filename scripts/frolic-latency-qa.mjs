@@ -52,7 +52,7 @@ try {
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  await page.goto(`${baseUrl}/?latency-candidate=1`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/?latency-candidate=1&dancer=atlas`, { waitUntil: "networkidle" });
   await page.click("[data-start-mode='frolic']");
   await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().simulation?.frolic?.tick >= 0);
   await page.evaluate(() => globalThis.kakiDance.setFrolicQaMode(true));
@@ -65,13 +65,13 @@ try {
         const heroRect = { x: 110, y: 32, width: 165, height: 150 };
         const before = ctx.getImageData(heroRect.x, heroRect.y, heroRect.width, heroRect.height).data;
         const existingRecords = globalThis.kakiDance.getFrolicLatencyRecords().length;
-        const action = index % 4;
+        const action = index % 3;
         if (device === "keyboard") {
-          const code = ["KeyZ", "KeyX", "KeyC", "KeyV"][action];
+          const code = ["KeyZ", "KeyX", "KeyC"][action];
           window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, code }));
           window.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, code }));
         } else if (device === "pointer") {
-          const control = ["action", "style", "power", "freeze"][action];
+          const control = ["action", "style", "power"][action];
           const button = document.querySelector(`[data-control="${control}"]`);
           const init = {
             bubbles: true,
@@ -83,7 +83,7 @@ try {
           button.dispatchEvent(new PointerEvent("pointerdown", init));
           button.dispatchEvent(new PointerEvent("pointerup", init));
         } else {
-          const buttonIndex = [0, 2, 3, 1][action];
+          const buttonIndex = [0, 2, 3][action];
           globalThis.__frolicQaPad.edge(buttonIndex, true);
           await new Promise(requestAnimationFrame);
           globalThis.__frolicQaPad.edge(buttonIndex, false);

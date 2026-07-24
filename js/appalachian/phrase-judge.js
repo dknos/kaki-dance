@@ -19,6 +19,7 @@ export class AppalachianPhraseJudge {
     this.events = [];
     this.transitions = [];
     this.turnarounds = [];
+    this.performanceMetrics = {};
   }
 
   recordInput(value) {
@@ -50,6 +51,10 @@ export class AppalachianPhraseJudge {
     return entry;
   }
 
+  setPerformanceMetrics(value = {}) {
+    this.performanceMetrics = Object.freeze({ ...value });
+  }
+
   getResult() {
     return scoreAppalachianRoutine(this.events, {
       tuneMap: this.tuneMap,
@@ -57,6 +62,7 @@ export class AppalachianPhraseJudge {
       difficulty: this.difficulty,
       transitions: this.transitions,
       turnarounds: this.turnarounds,
+      performance: this.performanceMetrics,
     });
   }
 }
@@ -147,6 +153,7 @@ export function scoreAppalachianRoutine(events, {
   difficulty = "standard",
   transitions = [],
   turnarounds = [],
+  performance = {},
 } = {}) {
   const normalized = events.map(normalizeEvent).sort((a, b) => a.tick - b.tick);
   const restraint = restraintFactor(normalized);
@@ -182,12 +189,41 @@ export function scoreAppalachianRoutine(events, {
     const intentionalOffbeat = Math.abs(localBeatTick % (FROLIC_PPQ / 2)) <= 10;
     return clamp(1 - downbeatDistance / FROLIC_PPQ, 0, 1) * 0.6 + (intentionalOffbeat ? 0.4 : 0);
   }));
+  const travelQuality = clamp((Number(performance.travelDistance) || 0) / 10, 0, 1);
+  const directionQuality = clamp((Number(performance.directionChanges) || 0) / 6, 0, 1);
+  const armDistance = Number(performance.armInputDistance) || 0;
+  const armIntent = armDistance <= 0.2
+    ? 0
+    : armDistance <= 18
+      ? clamp(armDistance / 7, 0, 1)
+      : clamp(1 - (armDistance - 18) / 38, 0.18, 1);
+  const boardLineQuality = clamp((Number(performance.boardLines) || 0) / 3, 0, 1);
+  const landingQuality = Number(performance.jumps) > 0
+    ? clamp((Number(performance.cleanLandings) || 0) / Number(performance.jumps), 0, 1)
+    : 0.7;
+  const bankQuality = clamp((Number(performance.bankedLines) || 0) / 2, 0, 1);
 
   const time = score100(timingQuality * 0.9 + restraint * 0.1);
   const tune = score100((callQuality * 0.5 + accentMusicality * 0.32 + turnaroundQuality * 0.18) * restraint);
-  const flow = score100((legalFlow * 0.72 + timingQuality * 0.18 + Math.min(1, normalized.length / 16) * 0.1) * (0.75 + restraint * 0.25));
+  const flow = score100((
+    legalFlow * 0.46
+    + timingQuality * 0.16
+    + Math.min(1, normalized.length / 16) * 0.08
+    + travelQuality * 0.14
+    + directionQuality * 0.08
+    + landingQuality * 0.04
+    + bankQuality * 0.04
+  ) * (0.75 + restraint * 0.25));
   const footwork = score100((articulationVariety * 0.4 + styleFit * 0.35 + timingQuality * 0.25) * (0.72 + restraint * 0.28));
-  const spirit = score100((moveVariety * 0.42 + motif * 0.23 + turnaroundQuality * 0.2 + callQuality * 0.15) * restraint);
+  const spirit = score100((
+    moveVariety * 0.27
+    + motif * 0.16
+    + turnaroundQuality * 0.14
+    + callQuality * 0.12
+    + armIntent * 0.13
+    + travelQuality * 0.09
+    + boardLineQuality * 0.09
+  ) * restraint);
   const total = Math.round((time + tune + flow + footwork + spirit) / 5);
   const reasons = [];
   if (restraint < 0.62) reasons.push("Too many dense or repeated accents crowded the tune.");
@@ -195,6 +231,8 @@ export function scoreAppalachianRoutine(events, {
   if (callResults.some((value) => value.type === "variation")) reasons.push("Your variation kept the call's anchor accents.");
   else if (callResults.some((value) => value.type === "exact")) reasons.push("You answered a trade cleanly.");
   if (validTurnarounds) reasons.push("The phrase resolved inside a turnaround window.");
+  if (boardLineQuality >= 0.34) reasons.push("Your travel found a clean Board Line.");
+  if (armIntent >= 0.62) reasons.push("The upper-body phrase shaped the silhouette without replacing the feet.");
   if (!reasons.length) reasons.push("Leave space, vary the feet, and answer the phrase ending.");
   return deepFreeze({
     time,
@@ -209,6 +247,14 @@ export function scoreAppalachianRoutine(events, {
     eventCount: normalized.length,
     uniqueMoves: new Set(normalized.map((value) => value.moveId)).size,
     validTurnarounds,
+    performance: Object.freeze({
+      travelQuality: round(travelQuality),
+      directionQuality: round(directionQuality),
+      armIntent: round(armIntent),
+      boardLineQuality: round(boardLineQuality),
+      landingQuality: round(landingQuality),
+      bankQuality: round(bankQuality),
+    }),
   });
 }
 

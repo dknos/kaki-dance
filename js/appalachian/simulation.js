@@ -7,6 +7,7 @@ import {
   resolvedContacts,
 } from "./footwork-catalog.js";
 import { AppalachianAnimationController } from "./animation-controller.js";
+import { boardRegion, BoardLineTracker } from "./board-lines.js";
 import { AppalachianPhraseJudge } from "./phrase-judge.js";
 import {
   APPALACHIAN_TUNE_MAP,
@@ -22,7 +23,14 @@ import {
 } from "./tune-map.js";
 
 const TURNAROUND_BARS = new Set([8, 16, 24, 32]);
-const PRACTICE_LESSONS = Object.freeze([
+export const PRACTICE_LESSONS = Object.freeze([
+  Object.freeze({
+    id: "travel",
+    title: "Work the board",
+    instruction: "Travel away from neutral and cross the board.",
+    inputKind: "travel",
+    required: 1,
+  }),
   Object.freeze({
     id: "pulse",
     title: "Step joins the band",
@@ -45,17 +53,45 @@ const PRACTICE_LESSONS = Object.freeze([
     required: 2,
   }),
   Object.freeze({
-    id: "answer",
-    title: "Answer one bar",
-    instruction: "Keep the three bright anchor beats in your answer.",
-    inputKind: "answer",
-    required: 3,
+    id: "arms",
+    title: "Shape the silhouette",
+    instruction: "Raise, lower, and sweep both arms while the feet continue.",
+    inputKind: "arms",
+    required: 1,
   }),
   Object.freeze({
-    id: "finish",
-    title: "Finish the turnaround",
-    instruction: "Press LICK in the final beat of a bar.",
-    inputKind: "lick",
+    id: "one-arm",
+    title: "Lead with one arm",
+    instruction: "Hold the left- or right-arm modifier and shape that arm.",
+    inputKind: "one-arm",
+    required: 1,
+  }),
+  Object.freeze({
+    id: "small-hop",
+    title: "Release the weight",
+    instruction: "Hold and release JUMP for a compact style-appropriate hop.",
+    inputKind: "small-hop",
+    required: 1,
+  }),
+  Object.freeze({
+    id: "aerial-detail",
+    title: "Shape the air",
+    instruction: "During a hop, add a valid BRUSH, STEP, or DRIVE variation.",
+    inputKind: "aerial-detail",
+    required: 1,
+  }),
+  Object.freeze({
+    id: "turnaround",
+    title: "Travel into a turnaround",
+    instruction: "Keep travelling and use DRIVE at the end of the bar.",
+    inputKind: "turnaround",
+    required: 1,
+  }),
+  Object.freeze({
+    id: "bank",
+    title: "Bank a Dance Line",
+    instruction: "Resolve the phrase with a controlled ending or clean landing.",
+    inputKind: "bank",
     required: 1,
   }),
 ]);
@@ -104,6 +140,9 @@ export class AppalachianJamSimulation {
     this.practiceProgress = 0;
     this.practiceAnchorHits = new Set();
     this.lastBar = 0;
+    this.boardLines = new BoardLineTracker();
+    this.lastBoardLineCount = 0;
+    this.bankHistory = [];
   }
 
   begin(beatSnapshot) {
@@ -127,6 +166,9 @@ export class AppalachianJamSimulation {
     this.practiceLesson = 0;
     this.practiceProgress = 0;
     this.practiceAnchorHits.clear();
+    this.boardLines.reset();
+    this.lastBoardLineCount = 0;
+    this.bankHistory = [];
     this.lastBar = Math.floor(Math.max(0, tick) / FROLIC_TICKS_PER_BAR) + 1;
     this.animation = new AppalachianAnimationController({ style: this.style });
     this.animation.reset(Math.max(0, tick));
@@ -151,8 +193,10 @@ export class AppalachianJamSimulation {
     if (this.calloutAge > 1.25) this.callout = "";
     this.handleStateChange(tick);
     this.emitTradeCalls(this.lastTick, tick);
-    this.animation.update(Math.max(0, tick));
+    this.animation.update(Math.max(0, tick), { dt, input });
     this.animation.consumeContacts((contact) => this.emitScheduledContact(contact, beatSnapshot));
+    this.updateBoardPerformance(input, tick);
+    this.advancePracticeContinuous(input, tick);
     this.handleInput(input, tick, beatSnapshot);
     this.recordReplay(input, tick);
     this.handleBarBoundary(tick);
@@ -166,6 +210,7 @@ export class AppalachianJamSimulation {
     const tick = beatToTick(beatSnapshot?.beat);
     if (tick < 0) return false;
     if (input.device) this.inputDevice = input.device;
+    this.animation.applyPerformanceInput(0, input, tick);
     this.handleInput(input, tick, beatSnapshot);
     this.recordReplay(input, tick);
     return true;
@@ -187,10 +232,28 @@ export class AppalachianJamSimulation {
 
   handleInput(input, tick, beatSnapshot) {
     if (!input || tick < 0) return;
+    if (this.animation.jump.state === "airborne") {
+      const aerialKind = input.actionPressed
+        ? "step"
+        : input.stylePressed
+          ? "brush"
+          : input.powerPressed
+            ? "drive"
+            : "";
+      if (aerialKind) {
+        this.emit("aerialVariation", {
+          tick,
+          variation: this.animation.jump.variation,
+          style: this.style,
+        });
+        this.advancePractice(aerialKind, tick);
+      }
+      return;
+    }
     const requests = [
-      ["step", input.actionPressed, input.actionEvent],
-      ["brush", input.stylePressed, input.styleEvent],
-      ["drive", input.powerPressed, input.powerEvent],
+      ["step", input.stepPressed ?? input.actionPressed, input.stepEvent ?? input.actionEvent],
+      ["brush", input.brushPressed ?? input.stylePressed, input.brushEvent ?? input.styleEvent],
+      ["drive", input.drivePressed ?? input.powerPressed, input.driveEvent ?? input.powerEvent],
       ["lick", input.freezePressed, input.freezeEvent],
     ];
     for (const [kind, pressed, edge] of requests) {
@@ -203,7 +266,14 @@ export class AppalachianJamSimulation {
     const simulationReceiptTimestamp = now();
     const state = frolicStateAtTick(tick);
     const direction = inputDirection(input, kind);
-    const moveId = moveForInput(kind, direction);
+    const moveId = moveForInput(kind, direction, {
+      style: this.style,
+      grounded: Boolean(input.groundModifier),
+      committed: Boolean(input.commitModifier),
+      turnaround: kind === "lick"
+        || Math.abs(Number(input.turnDirection) || 0) > 0
+        || isAnyBarTurnaround(tick),
+    });
     const move = getFootwork(moveId);
     const currentId = this.animation.current?.move.id ?? null;
     const entryFoot = kind === "step"
@@ -224,6 +294,47 @@ export class AppalachianJamSimulation {
       });
       return;
     }
+    if (request.status === "buffered-for-landing") {
+      this.emit("frolicInputBuffered", {
+        inputKind: kind,
+        moveId: move.id,
+        tick,
+        bufferSeconds: 0.12,
+      });
+      return;
+    }
+    if (request.status === "recovered") {
+      const recoveryRegion = boardRegion(this.animation.getSnapshot(Math.max(0, tick)).worldPosition);
+      this.judge.recordTransition({
+        tick,
+        fromId: currentId ?? "",
+        toId: "recovery",
+        legal: false,
+        reset: false,
+      });
+      this.emit("footContact", {
+        foot: this.animation.supportingFoot(),
+        articulation: "recovery",
+        intensity: 0.42,
+        sampleGroup: "softSole",
+        tick,
+        moveId: "recovery",
+        style: this.style,
+        inputKind: kind,
+        device: input.device ?? "unknown",
+        immediate: true,
+        contactId: `recovery:${request.request.id}`,
+        actionId: request.request.id,
+        boardRegion: recoveryRegion.id,
+        boardResonance: recoveryRegion.resonance,
+        rawInputTimestamp: finiteOrNull(edge?.rawTimeStamp),
+        simulationReceiptTimestamp,
+        inputAudioTime: beatSnapshot.audioTime,
+        timingOffsetTicks: 0,
+      });
+      this.setCallout("SHIFT WEIGHT · RECOVER");
+      return;
+    }
     const contacts = resolvedContacts(move, entryFoot);
     const firstContact = contacts[0] ?? {
       foot: entryFoot,
@@ -239,6 +350,7 @@ export class AppalachianJamSimulation {
       ? Number(edge.audioTime)
       : beatSnapshot.audioTime;
     const contactId = `${request.request.id}:0:${firstContact.tick}`;
+    const contactRegion = boardRegion(this.animation.getSnapshot(Math.max(0, tick)).worldPosition);
     this.lastInput = Object.freeze({
       kind,
       tick: round(tick),
@@ -269,7 +381,7 @@ export class AppalachianJamSimulation {
       tick,
       fromId: currentId ?? "",
       toId: move.id,
-      legal: true,
+      legal: request.transition?.resolved === true,
       reset: false,
     });
     const validTurnaround = isTurnaroundWindow(tick);
@@ -294,6 +406,8 @@ export class AppalachianJamSimulation {
       immediate: true,
       contactId,
       actionId: request.request.id,
+      boardRegion: contactRegion.id,
+      boardResonance: contactRegion.resonance,
       rawInputTimestamp,
       simulationReceiptTimestamp,
       inputAudioTime,
@@ -313,6 +427,50 @@ export class AppalachianJamSimulation {
     if (Math.abs(timingOffsetTicks) <= 10) this.setCallout(kind === "lick" && validTurnaround ? "CLEAN TURN!" : "IN THE TUNE");
     if (kind === "lick" && !validTurnaround) this.setCallout("TURN AND RECOVER");
     this.advancePractice(kind, tick);
+  }
+
+  updateBoardPerformance(input, tick) {
+    const dancer = this.animation.getSnapshot(Math.max(0, tick));
+    const board = this.boardLines.update(dancer.worldPosition, {
+      moveId: dancer.moveId,
+      clean: dancer.jump?.landingQuality >= 0.48,
+    });
+    for (const lineId of board.newlyCompleted) {
+      this.emit("boardLine", {
+        lineId,
+        tick,
+        distance: board.distance,
+        region: board.region.id,
+      });
+      this.setCallout(boardLineLabel(lineId).toUpperCase());
+    }
+    if (board.completed.length !== this.lastBoardLineCount) {
+      this.lastBoardLineCount = board.completed.length;
+      this.judge.setPerformanceMetrics?.({
+        ...dancer.performance,
+        boardLines: board.completed.length,
+        figureEight: this.boardLines.getSnapshot().figureEightCandidate,
+      });
+    }
+    if (
+      dancer.moveId === "controlledEnding"
+      || (dancer.moveId === "turnaround" && isAnyBarTurnaround(tick))
+      || (dancer.jump?.state === "landing" && dancer.jump.landingQuality >= 0.72)
+    ) {
+      const lastBank = this.bankHistory.at(-1);
+      if (!lastBank || tick - lastBank.tick > FROLIC_PPQ) {
+        const bank = Object.freeze({
+          tick,
+          moveId: dancer.moveId,
+          moveCount: this.judge.events.length,
+          travelDistance: board.distance,
+          clean: true,
+        });
+        this.bankHistory.push(bank);
+        this.emit("danceLineBanked", bank);
+      }
+    }
+    void input;
   }
 
   emitTradeCalls(previousTick, currentTick) {
@@ -338,8 +496,11 @@ export class AppalachianJamSimulation {
   }
 
   emitScheduledContact(contact, beatSnapshot) {
+    const region = boardRegion(contact.worldPosition);
     this.emit("footContact", {
       ...contact,
+      boardRegion: region.id,
+      boardResonance: region.resonance,
       immediate: false,
       inputAudioTime: beatSnapshot.audioTime,
       inputKind: "continuation",
@@ -372,18 +533,31 @@ export class AppalachianJamSimulation {
       const offset = Math.abs(tick - nearestPulseTick(tick, FROLIC_PPQ));
       accepted = offset <= 24;
     }
-    if (lesson.id === "answer") {
-      const local = localTickInBar(tick);
-      const anchors = [0, 96, 240];
-      const match = anchors.findIndex((anchor) => Math.abs(local - anchor) <= 24);
-      if (match >= 0) {
-        this.practiceAnchorHits.add(match);
-        this.practiceProgress = this.practiceAnchorHits.size;
-      }
-      accepted = false;
-    }
-    if (lesson.id === "finish") accepted = kind === "lick" && isAnyBarTurnaround(tick);
+    if (lesson.id === "turnaround") accepted = kind === "drive" && isAnyBarTurnaround(tick);
+    if (lesson.id === "aerial-detail") accepted = this.animation.jump.state === "airborne"
+      && ["step", "brush", "drive"].includes(kind);
     if (accepted) this.practiceProgress += 1;
+    this.completePracticeLesson(lesson);
+  }
+
+  advancePracticeContinuous(input, tick) {
+    if (this.mode !== "stepShed" || this.complete) return;
+    const lesson = PRACTICE_LESSONS[this.practiceLesson];
+    if (!lesson) return;
+    const dancer = this.animation.getSnapshot(Math.max(0, tick));
+    let complete = false;
+    if (lesson.id === "travel") complete = dancer.performance.travelDistance >= 1;
+    if (lesson.id === "arms") complete = dancer.performance.armInputDistance >= 1.2;
+    if (lesson.id === "one-arm") complete = dancer.upperBody.leftOverride || dancer.upperBody.rightOverride;
+    if (lesson.id === "small-hop") complete = dancer.performance.jumps >= 1;
+    if (lesson.id === "bank") complete = this.bankHistory.length >= 1;
+    if (!complete) return;
+    this.practiceProgress = lesson.required;
+    this.completePracticeLesson(lesson);
+    void input;
+  }
+
+  completePracticeLesson(lesson) {
     if (this.practiceProgress < lesson.required) return;
     this.emit("practiceLessonComplete", {
       lessonId: lesson.id,
@@ -410,10 +584,13 @@ export class AppalachianJamSimulation {
       input: Object.freeze({
         x: round(input?.x ?? 0),
         y: round(input?.y ?? 0),
+        armX: round(input?.armX ?? 0),
+        armY: round(input?.armY ?? 0),
         step: Boolean(input?.actionPressed),
         brush: Boolean(input?.stylePressed),
         drive: Boolean(input?.powerPressed),
         lick: Boolean(input?.freezePressed),
+        jump: Boolean(input?.jumpPressed),
       }),
     }));
   }
@@ -464,6 +641,13 @@ export class AppalachianJamSimulation {
     const strain = strainAtTick(displayTick, this.tuneMap);
     const activeCall = callAtTick(displayTick, this.tuneMap);
     const dancer = this.animation.getSnapshot(displayTick);
+    const board = this.boardLines.getSnapshot();
+    this.judge.setPerformanceMetrics?.({
+      ...dancer.performance,
+      boardLines: board.completed.length,
+      figureEight: board.figureEightCandidate,
+      bankedLines: this.bankHistory.length,
+    });
     const liveScore = this.liveScore ?? this.judge.getResult();
     const lesson = PRACTICE_LESSONS[this.practiceLesson] ?? null;
     const countInBeat = tick < 0 ? Math.floor((tick + this.tuneMap.countInBars * 4 * FROLIC_PPQ) / FROLIC_PPQ) + 1 : 0;
@@ -512,6 +696,10 @@ export class AppalachianJamSimulation {
         lastInput: this.lastInput,
         restraint: liveScore.restraint,
         score: liveScore,
+        board,
+        boardRegion: board.region,
+        boardLines: board.completed,
+        bankedDanceLines: this.bankHistory.length,
         practice: this.mode === "stepShed" && lesson ? Object.freeze({
           lesson: this.practiceLesson + 1,
           totalLessons: PRACTICE_LESSONS.length,
@@ -565,6 +753,8 @@ export function simulateFrolicInputs(inputs, {
 }
 
 function inputDirection(input, kind) {
+  if (["drive", "lick"].includes(kind) && Number(input.turnDirection) < 0) return "turn-left";
+  if (["drive", "lick"].includes(kind) && Number(input.turnDirection) > 0) return "turn-right";
   if (kind === "lick" && input.x < -0.45) return "turn-left";
   if (kind === "lick" && input.x > 0.45) return "turn-right";
   if (Math.abs(input.x) > 0.45 && kind !== "step") return "cross";
@@ -575,15 +765,39 @@ function inputDirection(input, kind) {
   return "neutral";
 }
 
-function moveForInput(kind, direction) {
-  if (kind === "step") return "walkingStep";
-  if (kind === "brush") {
-    return ["left", "right", "cross"].includes(direction)
-      ? "heelToeChange"
-      : "shuffle";
+function moveForInput(kind, direction, {
+  style = "flatfoot",
+  grounded = false,
+  committed = false,
+  turnaround = false,
+} = {}) {
+  if (kind === "step") {
+    return style !== "clog" && ["forward", "back"].includes(direction) ? "slidingWalk" : "walkingStep";
   }
-  if (kind === "drive") return direction === "back" ? "backstep" : "chug";
+  if (kind === "brush") {
+    if (committed && style !== "flatfoot") return "doubleShuffle";
+    return ["left", "right", "cross"].includes(direction) ? "heelToeChange" : "shuffle";
+  }
+  if (turnaround) return "turnaround";
+  if (kind === "drive") {
+    if (grounded) return "rockStep";
+    if (direction === "back") return "backstep";
+    if (committed && style !== "flatfoot") return "doubleStep";
+    return "chug";
+  }
   return "turnaround";
+}
+
+function boardLineLabel(id) {
+  return {
+    cornerToCorner: "Corner-to-Corner",
+    aroundTheBoard: "Around the Board",
+    bandstandTurn: "Bandstand Turn",
+    centerSweetSpot: "Center Sweet Spot",
+    fourCornerFrolic: "Four-Corner Frolic",
+    backstepReturn: "Backstep Return",
+    fullHallCircuit: "Full Hall Circuit",
+  }[id] ?? id;
 }
 
 function oppositeFoot(foot) {

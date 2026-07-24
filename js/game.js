@@ -43,7 +43,9 @@ export class KakiDanceGame {
     if (profile?.character) this.save.selectedCharacter = normalizeCharacterId(profile.character);
     this.settings = this.save.settings;
     this.selectedCharacter = normalizeCharacterId(this.save.selectedCharacter);
-    this.selectedFrolicStyle = "flatfoot";
+    this.selectedFrolicStyle = ["flatfoot", "buck", "clog"].includes(this.save.selectedFrolicStyle)
+      ? this.save.selectedFrolicStyle
+      : "flatfoot";
     this.onExit = onExit;
     this.onRoundComplete = onRoundComplete;
     this.onBattleComplete = onBattleComplete;
@@ -127,6 +129,7 @@ export class KakiDanceGame {
     this.state = "loading";
     this.updateModePresentation();
     announce(this.elements.liveStatus, isFrolic ? "Setting the board and tuning the band." : "Loading the Moon Block Party beat.");
+    this.input.setProfile?.(isFrolic ? "appalachian" : "legacy");
     this.input.clear?.();
     try {
       await Promise.all([
@@ -182,6 +185,7 @@ export class KakiDanceGame {
     const beat = (Math.max(1, callBar) - 1) * this.beatmap.beatsPerBar;
     const offsetSeconds = this.beatmap.offsetSeconds + beat * 60 / this.beatmap.bpm;
     this.input.clear?.();
+    this.input.setProfile?.("legacy");
     this.transport.start?.({ offsetSeconds });
     const beatSnapshot = this.transport.clock.getSnapshot();
     this.simulation = this.createSimulation();
@@ -207,6 +211,7 @@ export class KakiDanceGame {
     if (this.state !== "paused") return;
     this.transport.resume?.();
     this.input.clear?.();
+    this.input.setProfile?.(FROLIC_MODES.has(this.mode) ? "appalachian" : "legacy");
     this.state = "running";
     this.showLayer(null);
     this.loop.resetClock();
@@ -224,6 +229,7 @@ export class KakiDanceGame {
     this.sfx.stopAll();
     this.footPercussion.stopAll();
     this.input.clear?.();
+    this.input.setProfile?.("legacy");
     this.state = "title";
     delete this.host.dataset.mode;
     this.updateModePresentation();
@@ -244,6 +250,8 @@ export class KakiDanceGame {
     if (this.ownsAudio) this.transport.destroy?.();
     else this.transport.stop?.();
     this.footPercussion.stopAll();
+    this.renderer.destroy?.();
+    this.replayRenderer.destroy?.();
     this.host.replaceChildren();
   }
 
@@ -304,12 +312,25 @@ export class KakiDanceGame {
   }
 
   async setFrolicReviewArt(value) {
+    this.renderer.setAppalachianRenderMode?.("atlas");
+    this.replayRenderer.setAppalachianRenderMode?.("atlas");
     await Promise.all([
       this.renderer.setFrolicReviewVariant(value, this.selectedCharacter, "flatfoot"),
       this.replayRenderer.setFrolicReviewVariant(value, this.selectedCharacter, "flatfoot"),
     ]);
     this.render(0);
     return value === "rejected" ? "rejected" : "candidate";
+  }
+
+  setAppalachianRenderMode(value) {
+    const selected = this.renderer.setAppalachianRenderMode?.(value) ?? "atlas";
+    this.replayRenderer.setAppalachianRenderMode?.(selected);
+    this.render(0);
+    return selected;
+  }
+
+  getAppalachianDiagnostics() {
+    return this.renderer.getAppalachianDiagnostics?.() ?? null;
   }
 
   async setFrolicReviewFoley(value) {
@@ -331,7 +352,8 @@ export class KakiDanceGame {
       "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
       "KeyA", "KeyD", "KeyW", "KeyS",
       "KeyZ", "KeyX", "KeyC", "KeyV",
-      "Space", "KeyF", "ShiftLeft", "ShiftRight", "KeyT",
+      "Space", "KeyF", "ShiftLeft", "ShiftRight", "KeyT", "KeyR",
+      "KeyQ", "KeyE", "ControlLeft", "ControlRight",
     ]);
     if (!allowed.has(value)) return false;
     const isPressed = Boolean(pressed);
@@ -545,8 +567,7 @@ export class KakiDanceGame {
   }
 
   selectFrolicStyle(style, { persist = true } = {}) {
-    void style;
-    this.selectedFrolicStyle = "flatfoot";
+    this.selectedFrolicStyle = ["flatfoot", "buck", "clog"].includes(style) ? style : "flatfoot";
     this.save.selectedFrolicStyle = this.selectedFrolicStyle;
     for (const button of this.elements.frolicStyleButtons) {
       const selected = button.dataset.frolicStyle === this.selectedFrolicStyle;

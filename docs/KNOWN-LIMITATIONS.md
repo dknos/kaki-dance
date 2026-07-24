@@ -2,21 +2,38 @@
 
 ## Appalachian Frolic
 
-- Rescue candidate 1 is deliberately limited to KittyKaki and Soter's Flatfoot
-  groove, foundation step, shuffle/brush, heel-toe change, backstep, chug,
-  recovery, and turnaround. Buck and Clog are labelled “being rebuilt” and do
-  not fall back to the rejected Pillow atlases.
+- Simulator Gate 1 now runs a live Three.js `SkinnedMesh`/`AnimationMixer`
+  character from the shared Blender-authored GLB. Flatfoot, Buck, and Clog are
+  selectable and have distinct jump height/timing/contact profiles. The full
+  Flatfoot, Buck, and Clog content packs are not produced or approved; Gate 1
+  deliberately stops at eight grounded movement candidates, three jump
+  prototypes, and twenty-four transition/recovery recipes.
+- The live export includes 88 skinned mesh objects across KittyKaki and Soter,
+  39 bones, and 13 actions on `KakiFrolicProductionBiped`. The shapes retain
+  deliberately rounded, low-resolution proportions. Review captures still
+  show close foot silhouettes, large glove/costume masses, simple shoulder and
+  knee deformation, and motion that can read blocked rather than fully
+  weighted. Corrective shapes/twist deformation remain incomplete.
+- The contact root lock holds the reported planted foot under the 1 cm
+  automated threshold in the forced-WebGL2 figure-eight smoke. This does not
+  prove natural weight transfer: the transition release threshold and
+  animation contact timing need half-speed dancer review.
+- WebGL2 is the Gate 1 baseline. A requested WebGPU path is capability-gated
+  back to WebGL2 until animation, capture, and performance parity are proven.
+  This is a future-ready boundary, not a claim that WebGPU rendering ships.
+- The atlas rescue remains available for old/new comparison and fallback.
+  It is not the primary simulator dancer and is still Flatfoot-only.
 - The public Flatfoot pixels now come from the modeled, weighted, and animated
-  characters in `tools/blender/kaki-appalachian-frolic.blend`. The previous
+  characters archived in
+  `tools/blender/kaki-appalachian-frolic-atlas-candidate-1.blend`. The previous
   Pillow capsule renderer remains only as rejected-baseline/debug evidence.
   Aseprite and LibreSprite are not installed, so candidate 1 retains the
   palette-reduced toon render; manual hand, foot-contact, outline-crawl, and
   silhouette cleanup is still blocked.
-- The new actions are hand-keyed at 30 source fps and the runtime action layer
-  can retarget on every input. Motion QA catches plants, pivots, attachment,
-  limb continuity, and loop regressions, but it does not approve the dancing.
-  The current candidate still has simple rounded anatomy, restrained arm
-  counterbalance, large glove forms, and a groove that may read too stiff.
+- The 13 live actions are hand-keyed at 30 source fps and the persistent
+  controller can retarget through the live transition solver. Motion QA checks
+  plants, bounded travel, entry-frame search, jump states, anatomy limits, and
+  layer independence, but it does not approve the dancing.
 - The replacement foot kit contains 66 cuts derived from three retained CC0
   recordings of real shoes on wood/parquet. Each of eleven families has six
   distinct files split across soft, medium, and strong layers. Signal QA passes;
@@ -41,7 +58,7 @@
   instrument, crowd, board, and phrase cues. Per-stem band foregrounding is a
   documented next production step, not silently claimed as complete.
 - Browser QA covers native rendering, keyboard, simulated gamepad mappings,
-  real touch events, one-pack lazy loading, local-only assets, and desktop frame
+  real touch events, live/fallback paths, local-only assets, and desktop frame
   pacing. Candidate latency numbers come from headless Chromium; its virtual
   audio output latency is not a physical speaker result. A physical lower-end
   Android/iOS latency, haptics, thermal, and speaker-mix pass remains required.

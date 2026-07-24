@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "mode": "smoke",
+  "generatedAt": "2026-07-24T22:06:54.831Z",
+  "errors": [],
+  "failedRequests": [],
+  "forcedWebGL2": {
+    "requested": "webgl2",
+    "actual": "webgl2",
+    "forced": true,
+    "reason": "WebGL2 was explicitly forced for deterministic candidate QA."
+  },
+  "webgpuCapabilityGate": {
+    "requested": "webgpu",
+    "actual": "webgl2",
+    "forced": false,
+    "reason": "WebGPU remains capability-gated until animation and capture parity pass."
+  },
+  "maximumPlantedFootDriftMeters": 4.972820174300706e-16,
+  "liveCanvasFrameClearing": {
+    "samples": 24,
+    "maximumOpaquePixels": 794,
+    "maximumAllowedPixels": 1658.88
+  },
+  "liveRig": {
+    "skinnedMeshes": 88,
+    "bones": 39,
+    "actions": 13
+  },
+  "atlasFallback": true,
+  "bothHeroes": true,
+  "allStyles": true,
+  "integratedGame": {
+    "style": "buck",
+    "action": 1,
+    "arm": {
+      "x": 0,
+      "y": 0.8855730779200022
+    },
+    "renderer": {
+      "ready": true,
+      "error": "",
+      "backend": {
+        "requested": "auto",
+        "actual": "webgl2",
+        "forced": false,
+        "reason": "WebGPU remains capability-gated until animation and capture parity pass."
+      },
+      "internalSize": [
+        192,
+        108
+      ],
+      "skinnedMeshCount": 88,
+      "actionCount": 13,
+      "boneCount": 39,
+      "boneNames": [
+        "root",
+        "pelvis",
+        "spine",
+        "chest",
+        "neck",
+        "head",
+        "costumehood",
+        "clavicleL",
+        "upperArmL",
+        "forearmL",
+        "handL",
+        "clavicleR",
+        "upperArmR",
+        "forearmR",
+        "handR",
+        "thighL",
+        "shinL",
+        "footL",
+        "toeL",
+        "thighR",
+        "shinR",
+        "footR",
+        "toeR",
+        "costumetail",
+        "CTRLroot",
+        "CTRLpelvis",
+        "CTRLchest",
+        "handIKL",
+        "handIKR",
+        "footIKL",
+        "heelPivotL",
+        "ballPivotL",
+        "toePivotL",
+        "footIKR",
+        "heelPivotR",
+        "ballPivotR",
+        "toePivotR",
+        "kneePoleL",
+        "kneePoleR"
+      ],
+      "character": "kitty",
+      "style": "buck",
+      "clip": "walkingStep",
+      "supportFoot": "left",
+      "plantedFootDriftMeters": 2.2887833992611187e-16,
+      "renderP95Milliseconds": 2.0999999940395355,
+      "tailSupportEligible": false,
+      "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"
+    }
+  }
+}

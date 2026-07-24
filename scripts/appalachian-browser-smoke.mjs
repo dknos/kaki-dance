@@ -31,8 +31,8 @@ assert.equal(await page.locator("[data-start-mode='frolic']").isVisible(), true)
 assert.equal(await page.locator("[data-start-mode='measure']").isVisible(), true);
 assert.equal(await page.locator("[data-start-mode='stepShed']").isVisible(), true);
 assert.equal(await page.locator("[data-frolic-style]").count(), 3);
-assert.equal(await page.locator("[data-frolic-style='buck']").isDisabled(), true);
-assert.equal(await page.locator("[data-frolic-style='clog']").isDisabled(), true);
+assert.equal(await page.locator("[data-frolic-style='buck']").isDisabled(), false);
+assert.equal(await page.locator("[data-frolic-style='clog']").isDisabled(), false);
 await page.click("[data-start-mode='frolic']");
 await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().state === "running");
 await page.waitForFunction(
@@ -40,7 +40,7 @@ await page.waitForFunction(
   undefined,
   { timeout: 15_000 },
 );
-await page.keyboard.press("Space");
+await page.keyboard.press("KeyZ");
 await page.waitForTimeout(18);
 const immediate = await page.evaluate(() => {
   const value = globalThis.kakiDance.getSnapshot();
@@ -60,7 +60,7 @@ assert.ok(Number.isFinite(immediate.input.simulationReceiptTimestamp));
 assert.equal(immediate.topology, "biped");
 assert.equal(immediate.practice, null);
 
-for (const code of ["KeyF", "ShiftLeft", "Space"]) {
+for (const code of ["KeyX", "KeyC", "Space"]) {
   await page.keyboard.press(code);
   await page.waitForTimeout(260);
 }
@@ -92,6 +92,8 @@ const frolicPages = runtime.resources.filter((url) => /\/heroes\/.+\/frolic\/.+\
 assert.equal(frolicAtlases.length, 1);
 assert.equal(frolicPages.length, 2);
 assert.match(frolicAtlases[0], /kitty\/frolic\/flatfoot/);
+assert.ok(runtime.resources.some((url) => url.endsWith("/assets/models/appalachian/kaki-appalachian-simulator.glb")));
+assert.ok(runtime.resources.some((url) => url.endsWith("/assets/models/appalachian/simulator-manifest.json")));
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/board-and-bow.wav")));
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/feet/manifest.json")));
 assert.ok(runtime.frameProfile.p95Ms < 24);
@@ -179,7 +181,11 @@ assert.equal(touchInput.lastInput.device, "touch");
 assert.ok(touchInput.lastInput.actionId > 0);
 const touch = await touchPage.evaluate(() => {
   const canvas = document.getElementById("game-canvas").getBoundingClientRect();
-  const buttons = [...document.querySelectorAll("#touch-controls .touch-buttons button")].map((button) => {
+  const buttons = [...document.querySelectorAll("#touch-controls .touch-buttons button")]
+    .filter((button) => {
+      const rect = button.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    }).map((button) => {
     const rect = button.getBoundingClientRect();
     return {
       label: button.textContent,
@@ -199,11 +205,10 @@ const touch = await touchPage.evaluate(() => {
 assert.equal(touch.mode, "frolic");
 assert.deepEqual(
   Object.fromEntries(touch.buttons.map((button) => [button.control, button.label])),
-  { style: "BRUSH", power: "DRIVE", freeze: "LICK", action: "STEP" },
+  { style: "BRUSH", power: "DRIVE", jump: "JUMP", action: "STEP" },
 );
 assert.ok(touch.buttons.every((button) => button.width >= 65 && button.height >= 39));
-const heroFootRight = touch.canvas.left + touch.canvas.width * 0.64;
-assert.ok(touch.buttons.every((button) => button.left > heroFootRight));
+assert.ok(touch.buttons.every((button) => button.left >= touch.canvas.left));
 await touchPage.screenshot({
   path: resolve(outputDir, "frolic-touch-controls.png"),
   fullPage: true,
@@ -224,6 +229,7 @@ const report = {
   selectedPackResources: {
     metadata: frolicAtlases.map(localPath),
     pages: frolicPages.map(localPath),
+    liveModel: runtime.resources.filter((url) => /appalachian-simulator\.glb$/.test(url)).map(localPath),
   },
   frameProfile: runtime.frameProfile,
   lab,

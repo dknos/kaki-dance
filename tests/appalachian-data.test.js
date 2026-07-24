@@ -19,6 +19,7 @@ import {
 } from "../js/appalachian/transition-graph.js";
 import {
   AppalachianJamSimulation,
+  PRACTICE_LESSONS,
   simulateFrolicInputs,
 } from "../js/appalachian/simulation.js";
 import {
@@ -231,21 +232,49 @@ test("turnaround credit is recorded only inside the final beat window", () => {
   assert.equal(result.validTurnarounds, 1);
 });
 
-test("Step Shed completes five learn-by-doing lessons without a glossary gate", () => {
+test("Step Shed exposes and completes ten learn-by-doing simulator lessons", () => {
   const simulation = new AppalachianJamSimulation({ mode: "stepShed", style: "flatfoot" });
   simulation.begin(snapshotAtTick(-768));
-  const lessonInputs = [
-    [0, "step"], [96, "step"], [192, "step"], [288, "step"],
-    [432, "brush"], [528, "brush"],
-    [624, "drive"], [720, "drive"],
-    [768, "step"], [864, "brush"], [1008, "step"],
-    [1488, "lick"],
-  ];
-  for (const [tick, kind] of lessonInputs) {
-    simulation.update(0.05, snapshotAtTick(tick), frolicInput(kind));
+  let tick = 0;
+  const update = (input, dt = 1 / 120, advance = 1.6) => {
+    simulation.update(dt, snapshotAtTick(tick), input);
+    tick += advance;
+  };
+  for (let index = 0; index < 120; index += 1) {
+    update({ ...frolicInput(), x: 1, travelX: 1 });
   }
+  tick = Math.ceil(tick / 96) * 96;
+  for (let index = 0; index < 4; index += 1) {
+    update(frolicInput("step"));
+    tick += 100;
+  }
+  for (let index = 0; index < 2; index += 1) {
+    update(frolicInput("brush"));
+    tick += 100;
+  }
+  update({ ...frolicInput("drive"), y: 1 });
+  tick += 110;
+  update({ ...frolicInput("drive"), groundModifier: true });
+  tick += 110;
+  for (let index = 0; index < 20; index += 1) {
+    update({
+      ...frolicInput(),
+      armX: index % 2 ? 1 : -1,
+      armY: index % 3 ? 1 : -1,
+    });
+  }
+  update({ ...frolicInput(), armX: 1, armY: 0.5, leftArmModifier: true });
+  update({ ...frolicInput(), jump: true, jumpPressed: true });
+  for (let index = 0; index < 20; index += 1) update({ ...frolicInput(), jump: true });
+  update({ ...frolicInput(), jumpReleased: true });
+  update(frolicInput("brush"));
+  for (let index = 0; index < 100; index += 1) update(frolicInput());
+  tick = Math.ceil(tick / 384) * 384 + 288;
+  update({ ...frolicInput("drive"), turnDirection: 1 });
+  for (let index = 0; index < 5; index += 1) update(frolicInput());
+  assert.equal(PRACTICE_LESSONS.length, 10);
   assert.equal(simulation.complete, true);
-  assert.ok(simulation.result.player.eventCount >= lessonInputs.length);
+  assert.ok(simulation.result.player.eventCount >= 8);
 });
 
 test("seeded Frolic simulation is deterministic and STEP alone is not elite", () => {

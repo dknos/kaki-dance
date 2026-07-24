@@ -1,6 +1,7 @@
 import { LOGICAL_HEIGHT, LOGICAL_WIDTH } from "../config.js";
 import { drawBackCrowd, drawForegroundCrowd, drawSideCrowd } from "./crowd.js";
 import { EffectsRenderer } from "./effects.js";
+import { AppalachianThreeRenderer } from "./appalachian-three-renderer.js";
 import { FrolicAtlasRenderer } from "./frolic-atlas.js";
 import { AtlasHeroRenderer } from "./hero-atlas.js";
 import { drawHud } from "./hud.js";
@@ -19,6 +20,8 @@ export class KakiDanceRenderer {
     this.effects = new EffectsRenderer(seed);
     this.heroes = new AtlasHeroRenderer();
     this.frolicHeroes = new FrolicAtlasRenderer();
+    this.appalachian3d = null;
+    this.appalachianRenderMode = queryRenderMode();
     this.lastSnapshot = null;
     this.lastFrolicVisual = null;
     this.frolicQaMode = false;
@@ -31,6 +34,7 @@ export class KakiDanceRenderer {
 
   setDebug(debug) {
     this.debug = debug;
+    this.appalachian3d?.setDebug(debug?.frolic ?? {});
   }
 
   setFrolicQaMode(enabled) {
@@ -55,6 +59,25 @@ export class KakiDanceRenderer {
           },
         }
       : null;
+    this.appalachian3d?.setDebug(this.debug?.frolic ?? {
+      skeleton: false,
+      contacts: false,
+      centerOfMass: false,
+      rootTrail: false,
+    });
+  }
+
+  setAppalachianRenderMode(value) {
+    this.appalachianRenderMode = ["live", "atlas"].includes(value) ? value : "live";
+    return this.appalachianRenderMode;
+  }
+
+  getAppalachianDiagnostics() {
+    return this.appalachian3d?.getDiagnostics?.() ?? Object.freeze({
+      ready: false,
+      error: "",
+      backend: Object.freeze({ actual: "atlas" }),
+    });
   }
 
   preloadCharacter(character) {
@@ -63,11 +86,21 @@ export class KakiDanceRenderer {
 
   async enterMode(mode, character, style = "flatfoot") {
     if (mode === "frolic" || mode === "stepShed") {
+      const fallbackStyle = "flatfoot";
       this.heroes.library.releaseAll?.();
-      this.frolicHeroes.library.releaseExcept(character, style);
-      return this.frolicHeroes.preload(character, style);
+      this.frolicHeroes.library.releaseExcept(character, fallbackStyle);
+      if (!this.appalachian3d || this.appalachian3d.disposed) {
+        this.appalachian3d = new AppalachianThreeRenderer();
+        this.appalachian3d.setDebug(this.debug?.frolic ?? {});
+      }
+      return Promise.all([
+        this.frolicHeroes.preload(character, fallbackStyle),
+        this.appalachian3d.load(character, style),
+      ]);
     }
     this.frolicHeroes.releaseAll();
+    this.appalachian3d?.dispose();
+    this.appalachian3d = null;
     return this.heroes.preload(character);
   }
 
@@ -132,16 +165,43 @@ export class KakiDanceRenderer {
 
   renderFrolic(ctx, snapshot) {
     if (!this.frolicQaMode) this.effects.drawBehind(ctx);
+    const useLive = this.appalachianRenderMode === "live"
+      && this.appalachian3d?.ready
+      && this.appalachian3d.render(snapshot);
+    if (useLive) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(this.appalachian3d.canvas, 0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      ctx.restore();
+      this.lastFrolicVisual = Object.freeze({
+        renderer: "live-3d",
+        backend: this.appalachian3d.backend.actual,
+        bounds: Object.freeze({ x: 0, y: 0, width: LOGICAL_WIDTH, height: LOGICAL_HEIGHT }),
+      });
+    } else {
+      this.renderFrolicAtlas(ctx, snapshot);
+    }
+    if (!this.frolicQaMode) this.effects.drawFront(ctx);
+    drawHud(ctx, snapshot, this.settings);
+  }
+
+  renderFrolicAtlas(ctx, snapshot) {
     const visualLatency = Number(this.settings.visualLatencyMs) || 0;
-    this.lastFrolicVisual = this.frolicHeroes.draw(ctx, snapshot.dancer, snapshot.character, snapshot.frolic.style, {
+    this.lastFrolicVisual = this.frolicHeroes.draw(ctx, snapshot.dancer, snapshot.character, "flatfoot", {
       x: 192 + (snapshot.dancer.rootX ?? 0),
       floorY: 178,
       scale: 1.05,
       phase: heroPhase(snapshot, snapshot.dancer, visualLatency),
       debug: this.debug?.frolic ?? null,
     });
-    if (!this.frolicQaMode) this.effects.drawFront(ctx);
-    drawHud(ctx, snapshot, this.settings);
+    if (this.lastFrolicVisual) {
+      this.lastFrolicVisual = Object.freeze({
+        ...this.lastFrolicVisual,
+        renderer: "atlas-fallback",
+        requestedStyle: snapshot.frolic.style,
+        fallbackStyle: "flatfoot",
+      });
+    }
   }
 
   drawReplayTrails(ctx, snapshot) {
@@ -169,6 +229,12 @@ export class KakiDanceRenderer {
       phase: heroPhase(snapshot, waiting),
     });
   }
+
+  destroy() {
+    this.appalachian3d?.dispose();
+    this.appalachian3d = null;
+    this.frolicHeroes.releaseAll();
+  }
 }
 
 function heroPhase(snapshot, dancer, visualLatencyMs = 0) {
@@ -181,4 +247,14 @@ function heroPhase(snapshot, dancer, visualLatencyMs = 0) {
   if (dancer?.moveId) return dancer.phase;
   const beat = snapshot.beat?.beat ?? 0;
   return ((beat % 2) + 2) % 2 / 2;
+}
+
+function queryRenderMode() {
+  try {
+    return new URLSearchParams(globalThis.location?.search ?? "").get("dancer") === "atlas"
+      ? "atlas"
+      : "live";
+  } catch {
+    return "live";
+  }
 }

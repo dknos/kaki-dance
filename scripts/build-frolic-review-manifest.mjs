@@ -55,7 +55,7 @@ const manifest = {
   },
   productionArt: {
     publicSpriteSource: production.publicSpriteSource,
-    blenderScene: fileRecord("tools/blender/kaki-appalachian-frolic.blend"),
+    blenderScene: fileRecord("tools/blender/kaki-appalachian-frolic-atlas-candidate-1.blend"),
     exportContract: fileRecord("tools/blender/exports/kaki-appalachian-frolic-production.json"),
     armature: production.sharedArmature,
     topology: production.topology,

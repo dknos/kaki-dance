@@ -1,12 +1,27 @@
 # Appalachian Frolic animation bible
 
-## Candidate 1 product gate
+## Simulator Gate 1
+
+Status: **CANDIDATE — HUMAN REVIEW REQUIRED**
+
+The primary dancer is now the live shared
+`KakiFrolicProductionBiped` exported to
+`assets/models/appalachian/kaki-appalachian-simulator.glb`. Three.js loads 88
+skinned mesh objects, 39 bones, and 13 authored actions. KittyKaki and Soter
+switch mesh visibility without changing skeleton or animation compatibility.
+The atlas rescue remains a comparison/fallback path.
+
+Gate 1 contains eight grounded movement candidates, three style-specific jump
+prototypes, nine authored arm-field poses, and twenty-four handoff/recovery
+recipes. It stops before full pack production and cannot be approved by tests.
+
+## Atlas rescue candidate 1 product gate
 
 The dancers are the product. Environment polish and automated checks cannot
 excuse an unreadable hand, reversed arm, merged foot, centered unsupported
 pelvis, planted-foot skate, or Soter losing the biped inside the costume.
-Candidate 1 is Flatfoot-only and requires human approval before Buck or Clog
-work resumes.
+The archived atlas rescue is Flatfoot-only. Buck or Clog atlas mass-production
+does not resume from it.
 
 ## Canonical anatomy
 
@@ -35,37 +50,46 @@ The tail is never a support contact.
 - contact compression is localized instead of bouncing the whole body;
 - head and costume settle after the stronger movement.
 
-The candidate action catalog contains:
+The shared live action catalog contains:
 
 | Action | Frames at 30 fps | Purpose |
 | --- | ---: | --- |
 | `groove` | 31 | interruptible neutral musical base |
 | `walkingStep` | 31 | alternating foundation step |
+| `slidingWalk` | 31 | low forward/back travelling prototype |
 | `shuffle` | 16 | free-foot brush/shuffle |
 | `heelToeChange` | 31 | readable heel and toe pivots |
 | `backstep` | 16 | backward placement and support change |
 | `chug` | 16 | compact strong weight transfer |
+| `rockStep` | 16 | grounded weight exchange |
+| `flatfootHop` | 16 | compact weight-release hop |
+| `buckSpringHop` | 20 | ball-of-foot spring prototype |
+| `clogJumpPullback` | 24 | projected pullback/landing prototype |
 | `recovery` | 9 | short support correction |
 | `turnaround` | 31 | cross, turn, and ending |
 
 Actions are pose-to-pose keys in Blender. The source does not use the rejected
 Pillow anchor library or sine-coordinate motion.
 
-## Production source and atlas path
+## Production source and runtime paths
 
 1. Canonical character sheets live in
    `docs/review/frolic-rescue-candidate-1/model-sheets/`. They are identity and
    proportion references, not unattended animation frames.
 2. `tools/blender/build_appalachian_frolic_rig.py` builds the modeled,
    weighted characters, shared armature, controls, toon materials, stable
-   three-quarter orthographic camera, and eight named 30 fps actions in
+   three-quarter orthographic camera, and thirteen named 30 fps actions in
    `tools/blender/kaki-appalachian-frolic.blend`.
-3. `tools/blender/render_appalachian_frolic_candidate.py` opens that scene and
+3. `tools/blender/export_appalachian_simulator_glb.py` exports both hero mesh
+   sets, the shared skeleton, actions, contacts, support exclusions, and nine
+   arm-field poses into the live GLB/manifest.
+4. `tools/blender/render_appalachian_frolic_candidate.py` opens the archived
+   atlas scene and
    renders every actual action frame to transparent 512×512 RGBA.
-4. `tools/art/build_frolic_blender_atlases.py` reduces each render to 128×128,
+5. `tools/art/build_frolic_blender_atlases.py` reduces each render to 128×128,
    applies one page-level 96-color palette without dithering, and packs 181
    frames per hero across two 1024² pages.
-5. Runtime metadata records the Blender scene hash, camera, action, render
+6. Runtime metadata records the Blender scene hash, camera, action, render
    settings, cleanup revision, atlas revision, exact contacts, support state,
    and center of mass.
 
@@ -87,11 +111,12 @@ the review package and must not be waived by green motion tests.
 
 ## Responsive runtime contract
 
-The animation controller now has an interruptible groove base, an atomic action
-layer, and a phrase-intention layer. STEP, BRUSH, DRIVE, or LICK starts or
-retargets the atomic action at the raw input time; no one- or two-beat clip
-queue, transition bridge, hidden input counter, or generic squash may delay the
-first action pose.
+The animation controller persists board position, root velocity, facing,
+support, contacts, center of mass, lower-body action, upper-body fields,
+body-line input, jump state, one short request buffer, recent performance
+metrics, and recovery state. STEP, BRUSH, or DRIVE begins a contact-aware
+handoff immediately; right-stick and body-line changes never replace or
+restart the lower-body action.
 
 Contacts created at input are deduplicated from later action metadata. The
 phrase layer may influence follow-through and recovery, but never buffer the

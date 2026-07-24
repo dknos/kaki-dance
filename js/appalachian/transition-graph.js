@@ -6,6 +6,7 @@ import {
   resolveExitFoot,
 } from "./footwork-catalog.js";
 import { FROLIC_PPQ } from "./tune-map.js";
+import { transitionRecipeFor } from "./transition-recipes.js";
 
 export const FROLIC_TRANSITION_CLIPS = Object.freeze({
   "weight-shift": Object.freeze({
@@ -49,7 +50,7 @@ export const FROLIC_TRANSITION_CLIPS = Object.freeze({
 const authoredSuccessors = Object.freeze({
   walkingStep: ["walkingStep", "slidingWalk", "shuffle", "backstep", "chug", "heelToeChange", "rockStep", "doubleStep", "crisscross", "turnaround"],
   slidingWalk: ["walkingStep", "shuffle", "backstep", "heelToeChange", "dragSlide", "rockStep", "crisscross", "turnaround"],
-  shuffle: ["walkingStep", "shuffle", "doubleShuffle", "backstep", "heelToeChange", "rockStep", "doubleStep", "crisscross", "turnaround"],
+  shuffle: ["walkingStep", "shuffle", "doubleShuffle", "backstep", "chug", "heelToeChange", "rockStep", "doubleStep", "crisscross", "turnaround"],
   doubleShuffle: ["walkingStep", "shuffle", "backstep", "chug", "rockStep", "doubleStep", "tripleStep", "crisscross", "turnaround"],
   backstep: ["walkingStep", "slidingWalk", "shuffle", "chug", "rockStep", "doubleStep", "crisscross", "turnaround"],
   chug: ["walkingStep", "shuffle", "backstep", "heelToeChange", "rockStep", "doubleStep", "tripleStep", "turnaround"],
@@ -59,7 +60,7 @@ const authoredSuccessors = Object.freeze({
   doubleStep: ["walkingStep", "shuffle", "doubleShuffle", "backstep", "chug", "rockStep", "tripleStep", "crisscross", "turnaround"],
   tripleStep: ["walkingStep", "shuffle", "backstep", "chug", "rockStep", "doubleStep", "crisscross", "turnaround"],
   crisscross: ["walkingStep", "backstep", "chug", "heelToeChange", "rockStep", "doubleStep", "turnaround", "controlledEnding"],
-  turnaround: ["walkingStep", "shuffle", "chug", "rockStep", "doubleStep", "controlledEnding"],
+  turnaround: ["walkingStep", "shuffle", "chug", "rockStep", "doubleStep", "turnaround", "controlledEnding"],
   controlledEnding: ["walkingStep", "rockStep"],
 });
 
@@ -139,6 +140,59 @@ export class FootworkTransitionGraph {
     }
     return null;
   }
+
+  rankCandidates({
+    fromId,
+    candidates = [],
+    entryFoot = "left",
+    direction = "neutral",
+    currentState = {},
+    phrasePhase = 0,
+  } = {}) {
+    const from = this.catalog[fromId] ?? null;
+    const ids = candidates.length ? candidates : this.successors(fromId || "walkingStep");
+    const results = [];
+    for (const toId of ids) {
+      const to = this.catalog[toId];
+      if (!to?.styles.includes(this.style)) continue;
+      if (from && !(this.edges.get(fromId) ?? []).includes(toId)) continue;
+      if (!directionCompatible(to, direction)) continue;
+      const fromExitFoot = from ? resolveExitFoot(from, entryFoot) : entryFoot;
+      const targetFoot = to.entryFoot === "either" ? fromExitFoot : to.entryFoot;
+      if (targetFoot !== fromExitFoot) continue;
+      const entryFrames = to.entryFrames?.length ? to.entryFrames : [0, 0.08, 0.16, 0.24];
+      for (const entryPhase of entryFrames) {
+        const scoreParts = candidateScore({
+          from,
+          to,
+          entryPhase,
+          currentState,
+          phrasePhase,
+          entryFoot: targetFoot,
+        });
+        const recipe = transitionRecipeFor({
+          fromFamily: from?.family ?? "foundation",
+          toFamily: to.family,
+          support: currentState.supportingFoot ?? oppositeFoot(targetFoot),
+        });
+        results.push(Object.freeze({
+          move: to,
+          entryFoot: targetFoot,
+          exitFoot: resolveExitFoot(to, targetFoot),
+          entryPhase,
+          score: scoreParts.total,
+          scoreParts,
+          transitionClip: recipe.clip,
+          transitionRecipe: recipe.id,
+          transitionTicks: Math.round(recipe.durationMs * FROLIC_PPQ * 2 / 1000),
+          rootWarpLimitMeters: recipe.rootWarpLimitMeters,
+          plantedFootLock: recipe.plantedFootLock,
+          resolved: true,
+        }));
+      }
+    }
+    return Object.freeze(results.sort((left, right) => left.score - right.score));
+  }
 }
 
 export function validateTransitionGraph(style, catalog = FOOTWORK_CATALOG) {
@@ -203,6 +257,76 @@ function directionCompatible(move, direction) {
 
 function landsMusically(tick) {
   return Math.abs((Number(tick) || 0) / 24 - Math.round((Number(tick) || 0) / 24)) < 1e-7;
+}
+
+function candidateScore({
+  from,
+  to,
+  entryPhase,
+  currentState,
+  phrasePhase,
+  entryFoot,
+}) {
+  const desiredVelocity = to.rootVelocity ?? {
+    x: Number(to.rootMotion?.lateral) || 0,
+    z: Number(to.rootMotion?.forward) || 0,
+  };
+  const currentVelocity = currentState.rootVelocity ?? { x: 0, z: 0 };
+  const velocity = Math.hypot(
+    (Number(currentVelocity.x) || 0) - (Number(desiredVelocity.x) || 0) * 0.18,
+    (Number(currentVelocity.z) || 0) - (Number(desiredVelocity.z) || 0) * 0.18,
+  );
+  const support = currentState.supportingFoot && currentState.supportingFoot !== oppositeFoot(entryFoot) ? 1 : 0;
+  const pose = Math.abs((Number(currentState.phase) || 0) - entryPhase);
+  const facing = angularDistance(
+    Number(currentState.facing) || 0,
+    Number(to.preferredFacing) || Number(currentState.facing) || 0,
+  ) / Math.PI;
+  const angularVelocity = Math.abs((Number(currentState.angularVelocity) || 0) - (Number(to.angularMomentum) || 0)) / 8;
+  const level = Math.abs(
+    levelNumber(currentState.bodyLevel ?? "mid") - levelNumber(to.entryLevel ?? "mid"),
+  );
+  const centerOfMass = Math.abs(Number(currentState.centerOfMassOffset) || 0) * 0.55;
+  const musical = Math.min(
+    Math.abs((Number(phrasePhase) || 0) - entryPhase),
+    1 - Math.abs((Number(phrasePhase) || 0) - entryPhase),
+  );
+  const total = round(
+    pose * 0.2
+    + velocity * 0.22
+    + facing * 0.12
+    + angularVelocity * 0.1
+    + support * 0.18
+    + centerOfMass * 0.08
+    + level * 0.06
+    + musical * 0.04,
+  );
+  return Object.freeze({
+    total,
+    pose: round(pose),
+    velocity: round(velocity),
+    facing: round(facing),
+    angularVelocity: round(angularVelocity),
+    support: round(support),
+    centerOfMass: round(centerOfMass),
+    level: round(level),
+    musical: round(musical),
+    from: from?.id ?? "groove",
+    to: to.id,
+  });
+}
+
+function angularDistance(left, right) {
+  const raw = Math.abs(left - right) % (Math.PI * 2);
+  return Math.min(raw, Math.PI * 2 - raw);
+}
+
+function levelNumber(value) {
+  return { low: 0, mid: 0.5, high: 1 }[value] ?? 0.5;
+}
+
+function round(value) {
+  return Math.round((Number(value) || 0) * 1000) / 1000;
 }
 
 function accepted(detail) {

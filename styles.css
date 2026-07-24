@@ -852,6 +852,12 @@ kbd,
     touch-action: none;
   }
 
+  .touch-stick--arms,
+  .touch-modifiers,
+  .touch-jump {
+    display: none;
+  }
+
   .touch-stick__nub {
     position: absolute;
     left: 50%;
@@ -889,7 +895,7 @@ kbd,
   .touch-buttons button:nth-child(1) { left: 0; top: 28px; }
   .touch-buttons button:nth-child(2) { left: 44px; top: 0; }
   .touch-buttons button:nth-child(3) { left: 44px; top: 54px; }
-  .touch-buttons button:nth-child(4) { right: 0; top: 28px; background: rgba(244,107,69,0.78); }
+  .touch-buttons .touch-action { right: 0; top: 28px; background: rgba(244,107,69,0.78); }
   .touch-buttons button.is-active { background: var(--mint); color: var(--ink); }
 
   #app[data-mode="frolic"] .touch-buttons,
@@ -901,6 +907,30 @@ kbd,
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
+  }
+
+  #app[data-mode="frolic"] .touch-stick--arms,
+  #app[data-mode="stepShed"] .touch-stick--arms {
+    display: block;
+    left: auto;
+    right: max(164px, calc(env(safe-area-inset-right) + 154px));
+    border-radius: 18px;
+    border-color: rgba(111, 216, 207, 0.56);
+  }
+
+  #app[data-mode="frolic"] .touch-stick--arms .touch-stick__nub,
+  #app[data-mode="stepShed"] .touch-stick--arms .touch-stick__nub {
+    background: rgba(79, 193, 180, 0.72);
+  }
+
+  #app[data-mode="frolic"] .touch-legacy-lick,
+  #app[data-mode="stepShed"] .touch-legacy-lick {
+    display: none;
+  }
+
+  #app[data-mode="frolic"] .touch-jump,
+  #app[data-mode="stepShed"] .touch-jump {
+    display: block;
   }
 
   #app[data-mode="frolic"] .touch-buttons button,
@@ -936,10 +966,43 @@ kbd,
     grid-row: 2;
   }
 
-  #app[data-mode="frolic"] .touch-buttons button[data-control="freeze"],
-  #app[data-mode="stepShed"] .touch-buttons button[data-control="freeze"] {
+  #app[data-mode="frolic"] .touch-buttons button[data-control="jump"],
+  #app[data-mode="stepShed"] .touch-buttons button[data-control="jump"] {
     grid-column: 2;
     grid-row: 2;
+    color: #081618;
+    background: rgba(111, 216, 207, 0.92);
+  }
+
+  #app[data-mode="frolic"] .touch-modifiers,
+  #app[data-mode="stepShed"] .touch-modifiers {
+    position: absolute;
+    left: 112px;
+    right: 254px;
+    bottom: max(7px, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    pointer-events: auto;
+  }
+
+  #app[data-mode="frolic"] .touch-modifiers button,
+  #app[data-mode="stepShed"] .touch-modifiers button {
+    min-width: 42px;
+    height: 25px;
+    padding: 0 6px;
+    border: 1px solid rgba(232, 217, 185, 0.72);
+    border-radius: 5px;
+    color: #e8d9b9;
+    background: rgba(16, 28, 26, 0.76);
+    font: 800 0.42rem/1 ui-monospace, monospace;
+    touch-action: none;
+  }
+
+  #app[data-mode="frolic"] .touch-modifiers button.is-active,
+  #app[data-mode="stepShed"] .touch-modifiers button.is-active {
+    color: #0a1514;
+    background: var(--mint);
   }
 
   #app[data-mode="measure"] .touch-stick,

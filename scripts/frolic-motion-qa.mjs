@@ -23,7 +23,10 @@ const requiredClips = [
 
 assert.equal(renderManifest.sourceFPS, 30);
 assert.equal(production.publicSpriteSource, "actual Blender rendered character");
-assert.deepEqual(Object.keys(production.actions).sort(), [...requiredClips].sort());
+assert.ok(
+  requiredClips.every((clipId) => production.actions[clipId]),
+  "The live production pack must retain every atlas-candidate action",
+);
 
 const checks = {};
 const heroReports = {};

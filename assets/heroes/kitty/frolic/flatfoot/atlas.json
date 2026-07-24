@@ -19,7 +19,7 @@
   ],
   "coordinateSystem": "fixed orthographic camera XY; anatomical left/right",
   "productionSource": {
-    "blenderScene": "tools/blender/kaki-appalachian-frolic.blend",
+    "blenderScene": "tools/blender/kaki-appalachian-frolic-atlas-candidate-1.blend",
     "blenderSceneSha256": "4662b8251d05a246c948868c9ab4183538598919b7e53a8d0280538bddc55178",
     "camera": "FrolicGameplayCamera",
     "renderer": "BLENDER_WORKBENCH",

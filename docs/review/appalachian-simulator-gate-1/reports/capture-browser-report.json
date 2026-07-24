@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "mode": "capture",
+  "generatedAt": "2026-07-24T21:39:19.832Z",
+  "errors": [],
+  "failedRequests": [],
+  "captures": [
+    "docs/review/appalachian-simulator-gate-1/captures/figure-eight-travel.png",
+    "docs/review/appalachian-simulator-gate-1/captures/right-stick-arm-circle.png",
+    "docs/review/appalachian-simulator-gate-1/captures/independent-left-right-arms.png",
+    "docs/review/appalachian-simulator-gate-1/captures/flatfoot-style-hop.png",
+    "docs/review/appalachian-simulator-gate-1/captures/buck-style-hop.png",
+    "docs/review/appalachian-simulator-gate-1/captures/clog-style-hop.png",
+    "docs/review/appalachian-simulator-gate-1/captures/kitty-eight-move-dance-line.png",
+    "docs/review/appalachian-simulator-gate-1/captures/soder-eight-move-dance-line.png",
+    "docs/review/appalachian-simulator-gate-1/captures/half-speed-move-review.png",
+    "docs/review/appalachian-simulator-gate-1/captures/contact-skeleton-diagnostics.png",
+    "docs/review/appalachian-simulator-gate-1/captures/keyboard-play.png",
+    "docs/review/appalachian-simulator-gate-1/captures/gamepad-play.png",
+    "docs/review/appalachian-simulator-gate-1/captures/touch-play.png"
+  ],
+  "count": 13
+}
