@@ -1,8 +1,12 @@
-import { COLORS, STAGE } from "../config.js";
+import { COLORS, FROLIC_STAGE, STAGE } from "../config.js";
 import { hashNoise, pixelEllipse, pixelLine, pixelRect, polygon, withAlpha } from "./primitives.js";
 import { drawPixelText } from "./pixel-font.js";
 
 export function drawStage(ctx, snapshot, presentation = {}) {
+  if (snapshot?.frolic) {
+    drawAppalachianStage(ctx, snapshot, presentation);
+    return;
+  }
   const beat = snapshot?.beat?.beat ?? 0;
   const phase = snapshot?.beat?.beatPhase ?? 0;
   const heat = snapshot?.crowdHeat ?? 0;
@@ -13,6 +17,146 @@ export function drawStage(ctx, snapshot, presentation = {}) {
   drawDJBooth(ctx, beat, phase, heat);
   drawSpeakers(ctx, beat, heat);
   drawDanceFloor(ctx, beat, phase, heat, presentation);
+}
+
+export function drawAppalachianStage(ctx, snapshot, presentation = {}) {
+  const beat = snapshot?.beat?.beat ?? 0;
+  const phase = snapshot?.beat?.beatPhase ?? 0;
+  const heat = snapshot?.crowdHeat ?? 0;
+  const strainEnding = (snapshot?.frolic?.bar ?? 1) % 8 === 0;
+  const response = strainEnding ? Math.max(0, 1 - phase * 2.8) : 0;
+  const palette = {
+    pine: "#101c1a",
+    pine2: "#182923",
+    cedar: "#6a3527",
+    cedarLight: "#9c5736",
+    amber: "#f2bd65",
+    chalk: "#e8d9b9",
+    indigo: "#26314d",
+    fiddle: "#b64d32",
+    board: "#b36b3e",
+    boardLight: "#d69254",
+  };
+
+  pixelRect(ctx, 0, 0, 384, 216, palette.pine);
+  pixelRect(ctx, 0, 18, 384, 104, palette.pine2);
+  // Hall rafters and clapboards frame the gathering without crowding the feet.
+  for (let y = 24; y < 122; y += 12) pixelRect(ctx, 0, y, 384, 1, "#294034");
+  polygon(ctx, [{ x: 0, y: 0 }, { x: 76, y: 0 }, { x: 144, y: 87 }, { x: 131, y: 87 }], "#0a1514");
+  polygon(ctx, [{ x: 384, y: 0 }, { x: 308, y: 0 }, { x: 240, y: 87 }, { x: 253, y: 87 }], "#0a1514");
+  pixelRect(ctx, 187, 0, 10, 72, "#0a1514");
+  drawHallLights(ctx, beat, palette);
+  drawFrolicSign(ctx, palette);
+  drawStringBand(ctx, beat, response, heat, palette);
+  drawHallAudience(ctx, beat, response, heat, palette);
+
+  // Floorboards recede toward the purpose-built resonant board.
+  pixelRect(ctx, 0, 122, 384, 94, "#4a2b24");
+  for (let y = 126; y < 216; y += 11) pixelRect(ctx, 0, y, 384, 1, "#241b1a");
+  for (let x = -120; x < 500; x += 32) {
+    pixelLine(ctx, { x: 192 + (x - 192) * 0.43, y: 122 }, { x, y: 216 }, 1, "#33201d");
+  }
+  pixelEllipse(ctx, 192, 181, 92, 19, "#221916");
+  const boardFlex = snapshot?.dancer?.microResponse > 0.35
+    ? Math.round((snapshot.dancer.microResponse ?? 0) * (presentation.reducedMotion ? 0 : 1))
+    : 0;
+  polygon(ctx, [
+    { x: FROLIC_STAGE.boardLeft, y: FROLIC_STAGE.boardTop + boardFlex },
+    { x: FROLIC_STAGE.boardRight, y: FROLIC_STAGE.boardTop + boardFlex },
+    { x: 277, y: FROLIC_STAGE.boardBottom },
+    { x: 107, y: FROLIC_STAGE.boardBottom },
+  ], palette.board);
+  pixelLine(ctx, { x: 118, y: 151 + boardFlex }, { x: 266, y: 151 + boardFlex }, 2, palette.boardLight);
+  for (let x = 126; x < 270; x += 17) {
+    pixelLine(ctx, { x, y: 153 + boardFlex }, { x: x + (x < 192 ? -5 : 5), y: 185 }, 1, "#6e3f2d");
+  }
+  const activeFoot = snapshot?.dancer?.microFoot;
+  if (snapshot?.dancer?.microResponse > 0.05) {
+    const footX = activeFoot === "left" ? 173 : activeFoot === "right" ? 211 : 192;
+    const glow = palette.amber;
+    withAlpha(ctx, 0.18 + snapshot.dancer.microResponse * 0.25, () => {
+      pixelEllipse(ctx, footX, 178, 15, 3, glow);
+    });
+  }
+  pixelRect(ctx, 158, 190, 68, 10, "#2b1c1a");
+  drawPixelText(ctx, "THE FEET JOIN THE BAND", 192, 193, {
+    align: "center",
+    color: palette.chalk,
+    scale: 1,
+  });
+}
+
+function drawHallLights(ctx, beat, palette) {
+  for (const [index, x] of [64, 124, 260, 320].entries()) {
+    pixelLine(ctx, { x, y: 0 }, { x, y: 26 }, 1, "#171713");
+    const pulse = 0.82 + Math.max(0, Math.sin(beat * Math.PI + index)) * 0.18;
+    withAlpha(ctx, pulse, () => {
+      pixelEllipse(ctx, x, 30, 5, 5, palette.amber);
+      pixelRect(ctx, x - 2, 25, 4, 3, palette.chalk);
+    });
+  }
+}
+
+function drawFrolicSign(ctx, palette) {
+  polygon(ctx, [{ x: 136, y: 18 }, { x: 248, y: 18 }, { x: 243, y: 47 }, { x: 141, y: 47 }], "#5b2f27");
+  pixelRect(ctx, 142, 22, 100, 21, palette.cedarLight);
+  drawPixelText(ctx, "CEDAR RIDGE", 192, 25, { align: "center", color: palette.chalk, scale: 1 });
+  drawPixelText(ctx, "FROLIC", 192, 34, { align: "center", color: palette.amber, scale: 1 });
+}
+
+function drawStringBand(ctx, beat, response, heat, palette) {
+  drawBandPlayer(ctx, 126, 88, "fiddle", beat, response, palette);
+  drawBandPlayer(ctx, 164, 90, "banjo", beat, response, palette);
+  drawBandPlayer(ctx, 235, 89, "guitar", beat, response, palette);
+  drawBandPlayer(ctx, 273, 91, "bass", beat, response, palette);
+  const railLift = response > 0.2 || heat > 70 ? -1 : 0;
+  pixelRect(ctx, 105, 112 + railLift, 188, 5, "#301f1b");
+  pixelRect(ctx, 110, 110 + railLift, 178, 2, palette.cedarLight);
+}
+
+function drawBandPlayer(ctx, x, y, instrument, beat, response, palette) {
+  const bow = Math.round(Math.sin(beat * Math.PI * (instrument === "fiddle" ? 2 : 1)) * (instrument === "fiddle" ? 3 : 1));
+  const nod = (Math.floor(beat * 2) % 2 ? 1 : 0) - Math.round(response);
+  pixelEllipse(ctx, x, y - 17 + nod, 5, 6, "#c7946d");
+  pixelRect(ctx, x - 6, y - 11 + nod, 12, 17, instrument === "bass" ? "#314a40" : palette.indigo);
+  pixelLine(ctx, { x: x - 4, y: y - 6 }, { x: x - 10, y: y + 5 + bow }, 3, "#c7946d");
+  pixelLine(ctx, { x: x + 4, y: y - 6 }, { x: x + 10, y: y + 3 - bow }, 3, "#c7946d");
+  if (instrument === "fiddle") {
+    pixelEllipse(ctx, x + 3, y - 5, 8, 3, palette.fiddle);
+    pixelLine(ctx, { x: x - 10, y: y - 7 + bow }, { x: x + 13, y: y - 1 - bow }, 1, palette.chalk);
+  } else if (instrument === "banjo") {
+    pixelEllipse(ctx, x + 2, y - 2, 7, 7, palette.chalk);
+    pixelLine(ctx, { x: x + 7, y: y - 4 }, { x: x + 15, y: y - 10 }, 2, "#9c5736");
+  } else if (instrument === "guitar") {
+    pixelEllipse(ctx, x + 1, y - 1, 9, 7, palette.fiddle);
+    pixelLine(ctx, { x: x + 7, y: y - 5 }, { x: x + 15, y: y - 12 }, 3, "#8c4b32");
+  } else {
+    pixelEllipse(ctx, x + 6, y - 1, 8, 14, palette.fiddle);
+    pixelLine(ctx, { x: x + 6, y: y - 12 }, { x: x + 7, y: y - 31 }, 2, "#8c4b32");
+  }
+  pixelLine(ctx, { x: x - 3, y: y + 6 }, { x: x - 4, y: y + 18 }, 3, "#1b1817");
+  pixelLine(ctx, { x: x + 3, y: y + 6 }, { x: x + 4, y: y + 18 }, 3, "#1b1817");
+}
+
+function drawHallAudience(ctx, beat, response, heat, palette) {
+  const people = [
+    [18, 104, "#34483d"], [39, 112, "#4f3441"], [61, 105, "#2d3c50"], [82, 113, "#4b4430"],
+    [304, 111, "#34483d"], [326, 104, "#54362e"], [348, 111, "#2d3c50"], [370, 103, "#493248"],
+  ];
+  const energy = response + heat / 180;
+  for (const [index, [x, y, shirt]] of people.entries()) {
+    const nod = Math.sin(beat * Math.PI + index * 0.7) > 0.25 ? -Math.round(energy) : 0;
+    pixelEllipse(ctx, x, y - 15 + nod, 5, 6, index % 3 === 0 ? "#9a6f57" : "#c18c68");
+    pixelRect(ctx, x - 6, y - 9 + nod, 12, 18, shirt);
+    if (response > 0.45 && (index === 1 || index === 6)) {
+      pixelLine(ctx, { x: x - 4, y: y - 5 }, { x: x - 8, y: y - 18 }, 2, "#c18c68");
+    }
+  }
+  // A quilt strip gives the room a handmade focal band.
+  for (let x = 8; x < 376; x += 12) {
+    const color = (x / 12) % 3 === 0 ? palette.fiddle : (x / 12) % 2 ? palette.amber : palette.indigo;
+    polygon(ctx, [{ x, y: 55 }, { x: x + 6, y: 50 }, { x: x + 12, y: 55 }, { x: x + 6, y: 60 }], color);
+  }
 }
 
 function drawSky(ctx, beat) {

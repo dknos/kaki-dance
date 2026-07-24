@@ -104,6 +104,42 @@ review of paused stills and quarter-speed playback.
 limb renderer. `js/hero-lab.js` may show that procedural layer only when its
 explicit debug checkbox is enabled.
 
+## Appalachian Frolic shared biped
+
+Frolic uses a separate deterministic authoring source while preserving the
+same non-negotiable anatomy for both heroes:
+
+```bash
+npm run rig:frolic:build
+```
+
+That command runs `build_appalachian_frolic_rig.py` and writes:
+
+- `kaki-appalachian-frolic.blend` — one `KakiFrolicSharedBiped` armature,
+  paired arm/hand and leg/heel/toe/foot-IK controls, knee poles, Soder costume
+  controls, three 24 fps profile actions, twenty authored clip blocks per
+  profile, and a 384×216 orthographic camera;
+- `exports/kaki-appalachian-frolic-rig.json` — deterministic bone hierarchy,
+  profile/clip timing, contact/control facts, hero costume bindings, and camera
+  review data.
+
+Both `KittyKaki_Profile` and `Soder_Profile` bind to that armature. Soder’s hood,
+belly, and padded tail are costume controls; the tail is never a support limb.
+Heel, toe, ankle, foot IK, knee, pelvis, and center-of-mass behavior remain
+available to the pixel pose library and diagnostic overlays.
+
+The public 164-drawing profile packs are rebuilt separately:
+
+```bash
+npm run art:frolic:build
+```
+
+The exporter creates exactly one indexed 1024² page for each hero/profile,
+then runs plant displacement, adjacent-joint motion, missing-limb, left/right
+foot, contact, transition, atlas-bounds, and silhouette-separation lint. The
+game retains one selected pack at a time. The Blender proxy volumes remain
+mechanics/occlusion evidence and are never rendered in public gameplay.
+
 ## Legacy source
 
 `build_kaki_proxy.py`, `kaki-hero-biped.blend`,

@@ -31,6 +31,9 @@ export class MusicTransport {
     this.offsetOnPause = 0;
     this.started = false;
     this.fallbackStartMs = 0;
+    this.contextResumePromise = null;
+    this.clockProgress = null;
+    this.clock.now = () => this.audioClockNow();
   }
 
   async unlock() {
@@ -42,12 +45,91 @@ export class MusicTransport {
       }
       this.context = new AudioContextConstructor({ latencyHint: "interactive" });
       this.clock.audioContext = this.context;
-      this.clock.now = () => this.context.currentTime;
+      this.clock.now = () => this.audioClockNow();
     }
     if (this.context.state === "suspended") await this.context.resume();
     this.ensureGainGraph();
     await this.loadTrack();
     return Boolean(this.buffer);
+  }
+
+  ensureRunning() {
+    const context = this.context;
+    if (context?.state !== "suspended" || this.contextResumePromise) return false;
+    this.contextResumePromise = Promise.resolve(context.resume?.())
+      .catch(() => false)
+      .finally(() => {
+        this.contextResumePromise = null;
+      });
+    return true;
+  }
+
+  audioClockNow() {
+    const context = this.context;
+    if (!context) return performance.now() / 1000;
+    const rawAudioTime = Number(context.currentTime) || 0;
+    const wallMs = performance.now();
+    if (!this.clockProgress) {
+      this.clockProgress = {
+        rawAudioTime,
+        logicalAudioTime: rawAudioTime,
+        wallMs,
+        lastRawAdvanceWallMs: wallMs,
+        fallbackActive: false,
+      };
+      return rawAudioTime;
+    }
+    const progress = this.clockProgress;
+    const wallDelta = Math.max(0, (wallMs - progress.wallMs) / 1000);
+    const rawAdvanced = rawAudioTime > progress.rawAudioTime + 0.0001;
+    if (
+      progress.fallbackActive
+      && this.source
+      && context.state === "running"
+    ) {
+      progress.logicalAudioTime = Math.max(
+        rawAudioTime,
+        progress.logicalAudioTime + wallDelta,
+      );
+      if (rawAdvanced) progress.lastRawAdvanceWallMs = wallMs;
+    } else if (rawAdvanced) {
+      progress.lastRawAdvanceWallMs = wallMs;
+      progress.logicalAudioTime = rawAudioTime;
+    } else if (
+      this.source
+      && context.state === "running"
+      && wallMs - progress.lastRawAdvanceWallMs >= 750
+    ) {
+      progress.fallbackActive = true;
+      progress.logicalAudioTime += wallDelta;
+    } else {
+      progress.logicalAudioTime = Math.max(progress.logicalAudioTime, rawAudioTime);
+    }
+    progress.rawAudioTime = rawAudioTime;
+    progress.wallMs = wallMs;
+    return progress.logicalAudioTime;
+  }
+
+  getAudioTime() {
+    return Number(this.context?.currentTime) || this.audioClockNow();
+  }
+
+  configure({
+    beatmap = this.beatmap,
+    trackUrl = this.trackUrl,
+  } = {}) {
+    const sourceChanged = String(trackUrl) !== String(this.trackUrl);
+    const mapChanged = beatmap !== this.beatmap;
+    if (!sourceChanged && !mapChanged) return false;
+    this.stop();
+    this.beatmap = beatmap;
+    this.trackUrl = trackUrl;
+    this.clock.beatmap = beatmap;
+    if (sourceChanged) {
+      this.buffer = null;
+      this.loadPromise = null;
+    }
+    return true;
   }
 
   ensureGainGraph() {
@@ -88,11 +170,14 @@ export class MusicTransport {
     if (this.buffer && this.context?.createBufferSource) {
       const source = this.context.createBufferSource();
       source.buffer = this.buffer;
-      source.loop = true;
-      source.loopStart = 0;
-      source.loopEnd = this.buffer.duration;
+      source.loop = this.beatmap.loop !== false;
+      if (source.loop) {
+        source.loopStart = 0;
+        source.loopEnd = this.buffer.duration;
+      }
       source.connect(this.musicGain);
       const startAt = this.context.currentTime + 0.035;
+      this.clockProgress = null;
       source.start(startAt, offset % this.buffer.duration);
       this.source = source;
       this.clock.start({ audioTime: startAt, playbackOffset: offset });

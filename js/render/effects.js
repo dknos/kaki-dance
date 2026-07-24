@@ -66,6 +66,12 @@ export class EffectsRenderer {
     if (event.type === "measureCompleted" && event.result?.grade === "PURRFECT") {
       this.spawnBurst(192, 148, 12, "#f4c95d", 0.62);
     }
+    if (event.type === "footContact") {
+      const x = event.foot === "left" ? 174 : event.foot === "right" ? 210 : 192;
+      const strong = Number(event.intensity) >= 0.8;
+      this.spawnBurst(x, 178, strong ? 4 : 2, strong ? "#f2bd65" : "#d69254", strong ? 0.3 : 0.18);
+      this.camera.punch = Math.max(this.camera.punch, strong ? 0.45 : 0.12);
+    }
   }
 
   update(dt, snapshot, settings) {

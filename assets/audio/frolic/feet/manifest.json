@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "sampleRate": 22050,
+  "roundRobin": 3,
+  "provenance": "Deterministic original synthesis with wooden-board resonance.",
+  "groups": {
+    "softSole": {
+      "files": [
+        "softSole-1.wav",
+        "softSole-2.wav",
+        "softSole-3.wav"
+      ],
+      "baseGain": 0.62
+    },
+    "flatContact": {
+      "files": [
+        "flatContact-1.wav",
+        "flatContact-2.wav",
+        "flatContact-3.wav"
+      ],
+      "baseGain": 0.76
+    },
+    "heel": {
+      "files": [
+        "heel-1.wav",
+        "heel-2.wav",
+        "heel-3.wav"
+      ],
+      "baseGain": 0.82
+    },
+    "toeBall": {
+      "files": [
+        "toeBall-1.wav",
+        "toeBall-2.wav",
+        "toeBall-3.wav"
+      ],
+      "baseGain": 0.7
+    },
+    "brush": {
+      "files": [
+        "brush-1.wav",
+        "brush-2.wav",
+        "brush-3.wav"
+      ],
+      "baseGain": 0.46
+    },
+    "scuff": {
+      "files": [
+        "scuff-1.wav",
+        "scuff-2.wav",
+        "scuff-3.wav"
+      ],
+      "baseGain": 0.58
+    },
+    "chug": {
+      "files": [
+        "chug-1.wav",
+        "chug-2.wav",
+        "chug-3.wav"
+      ],
+      "baseGain": 0.82
+    },
+    "drag": {
+      "files": [
+        "drag-1.wav",
+        "drag-2.wav",
+        "drag-3.wav"
+      ],
+      "baseGain": 0.52
+    },
+    "slide": {
+      "files": [
+        "slide-1.wav",
+        "slide-2.wav",
+        "slide-3.wav"
+      ],
+      "baseGain": 0.44
+    },
+    "tapHeel": {
+      "files": [
+        "tapHeel-1.wav",
+        "tapHeel-2.wav",
+        "tapHeel-3.wav"
+      ],
+      "baseGain": 0.76
+    },
+    "tapToe": {
+      "files": [
+        "tapToe-1.wav",
+        "tapToe-2.wav",
+        "tapToe-3.wav"
+      ],
+      "baseGain": 0.72
+    },
+    "heavyAccent": {
+      "files": [
+        "heavyAccent-1.wav",
+        "heavyAccent-2.wav",
+        "heavyAccent-3.wav"
+      ],
+      "baseGain": 0.94
+    },
+    "rivalBoard": {
+      "files": [
+        "rivalBoard-1.wav",
+        "rivalBoard-2.wav",
+        "rivalBoard-3.wav"
+      ],
+      "baseGain": 0.68
+    }
+  }
+}

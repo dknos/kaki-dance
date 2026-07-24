@@ -192,6 +192,7 @@ def draw_shoe(
     foot: tuple[float, float],
     palette: dict,
     near: bool,
+    style: str | None = None,
 ):
     direction = vector(ankle, foot)
     tangent = perpendicular(direction)
@@ -215,6 +216,23 @@ def draw_shoe(
     sole_a = offset(heel, tangent, -2.1)
     sole_b = offset(toe, tangent, -2.1)
     draw.line([point(sole_a), point(sole_b)], fill=palette["sole"], width=2)
+    if style == "clog":
+        # Two compact metal highlights distinguish the optional tap profile
+        # without hiding heel/toe direction or changing the shared anatomy.
+        tap_color = palette["faceLight"]
+        draw.line(
+            [point(offset(heel, tangent, -2.35)), point(offset(heel, direction, 1.0))],
+            fill=tap_color,
+            width=1,
+        )
+        draw.line(
+            [point(offset(toe, direction, -1.4)), point(offset(toe, direction, 0.4))],
+            fill=tap_color,
+            width=1,
+        )
+    elif style == "buck":
+        ball = offset(toe, direction, -1.2)
+        draw.point(point(offset(ball, tangent, -1.6)), fill=palette["shoeLight"])
     lace_a = offset(ankle, direction, 1.2)
     draw.line(
         [point(offset(lace_a, tangent, -1.7)), point(offset(lace_a, tangent, 1.7))],
@@ -445,7 +463,7 @@ def draw_segment(
         draw_paw(draw, start, end, palette, near)
         return
     if segment.endswith("Foot"):
-        draw_shoe(draw, start, end, palette, near)
+        draw_shoe(draw, start, end, palette, near, pose.get("style"))
         return
     kind = next(value for value in SEGMENT_WIDTHS if value in segment)
     width_start, width_end = SEGMENT_WIDTHS[kind]

@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#11142d">
-    <meta name="description" content="Kaki-Dance: listen to one measure, copy it with one button, land the freeze.">
+    <meta name="description" content="Kaki-Dance: freeform Appalachian footwork and Measure Match rhythm play.">
     <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="stylesheet" href="./styles.css">
-    <title>Kaki-Dance — Plush Pocket Breaks</title>
+    <title>Kaki-Dance — Appalachian Frolic</title>
   </head>
   <body>
     <main class="arcade" id="app">
@@ -19,6 +19,7 @@
         </a>
         <nav class="utility-nav" aria-label="Development tools">
           <a href="./hero-lab.html">Hero Lab</a>
+          <a href="./frolic-lab.html">Footwork Lab</a>
           <a href="./hero-rescue.html">Review board</a>
           <a href="./lab.html">Labs</a>
           <a href="./qa.html">QA gallery</a>
@@ -29,16 +30,16 @@
       <section class="cabinet" id="game-host" aria-label="Kaki-Dance game">
         <div class="cabinet__screen">
           <canvas id="game-canvas" width="384" height="216" tabindex="0"
-            aria-label="Kitty Kaki performs in the Moonlit Oekaki Block Party cypher.">
+            aria-label="KittyKaki or Soder performs on the Kaki-Dance stage.">
             Kaki-Dance needs a browser with Canvas support.
           </canvas>
           <div class="crt-glass" aria-hidden="true"></div>
 
           <section class="screen-layer title-layer is-visible" id="title-layer" aria-labelledby="game-title">
             <div class="title-lockup">
-              <p class="eyebrow">ONE BAR IN · ONE BAR BACK</p>
+              <p class="eyebrow">TWO FLOORS · ONE PAIR OF FEET</p>
               <h1 id="game-title">KAKI<br><span>DANCE</span></h1>
-              <p class="tagline">Listen to one bar. Copy it. Make it yours.</p>
+              <p class="tagline">The band plays the tune. Your feet answer.</p>
             </div>
             <div class="mode-stitches" role="group" aria-label="Choose a mode">
               <div class="character-picks" role="radiogroup" aria-label="Choose a dancer">
@@ -51,14 +52,36 @@
                   <span>Soder</span>
                 </button>
               </div>
-              <button class="mode-card mode-card--primary" type="button" data-start-mode="measure">
-                <span class="mode-card__name">Measure Match</span>
-                <span class="mode-card__detail">Listen → copy → freeze · Space / A / paw</span>
+              <button class="mode-card mode-card--primary mode-card--frolic" type="button" data-start-mode="frolic">
+                <span class="mode-card__kicker">NEW MODE · 32-BAR AABB</span>
+                <span class="mode-card__name">Appalachian Frolic</span>
+                <span class="mode-card__detail">Continuous footwork · trade licks · STEP / BRUSH / DRIVE / LICK</span>
               </button>
-              <button class="mode-card" type="button" data-start-mode="practice">
-                <span class="mode-card__name">Practice</span>
-                <span class="mode-card__detail">Replay the opening echoes</span>
-              </button>
+              <div class="frolic-style-picks" role="radiogroup" aria-label="Choose an Appalachian Frolic gameplay profile">
+                <button class="frolic-style-pick is-selected" type="button" role="radio" aria-checked="true" data-frolic-style="flatfoot">
+                  <strong>Flatfoot</strong><span>low · close · intricate</span>
+                </button>
+                <button class="frolic-style-pick" type="button" role="radio" aria-checked="false" data-frolic-style="buck">
+                  <strong>Buck</strong><span>spring · syncopate</span>
+                </button>
+                <button class="frolic-style-pick" type="button" role="radio" aria-checked="false" data-frolic-style="clog">
+                  <strong>Clog</strong><span>project · double</span>
+                </button>
+              </div>
+              <div class="supporting-modes">
+                <button class="mode-card" type="button" data-start-mode="stepShed">
+                  <span class="mode-card__name">Step Shed</span>
+                  <span class="mode-card__detail">Five learn-by-doing lessons</span>
+                </button>
+                <button class="mode-card" type="button" data-start-mode="measure">
+                  <span class="mode-card__name">Measure Match</span>
+                  <span class="mode-card__detail">Listen · echo · finish</span>
+                </button>
+                <button class="mode-card" type="button" data-start-mode="practice">
+                  <span class="mode-card__name">Echo Practice</span>
+                  <span class="mode-card__detail">Replay opening echoes</span>
+                </button>
+              </div>
               <details class="more-modes">
                 <summary>More modes · experimental</summary>
                 <button class="mode-card" type="button" data-start-mode="freestyle">
@@ -98,8 +121,14 @@
                     <option value="extra">Extra wide</option>
                   </select>
                 </label>
-                <label>Latency <output id="latency-output">0 ms</output>
+                <label>Judgment offset <output id="latency-output">0 ms</output>
                   <input id="setting-latency" type="range" min="-200" max="200" value="0" step="5">
+                </label>
+                <label>Foot audio offset <output id="audio-latency-output">0 ms</output>
+                  <input id="setting-audio-latency" type="range" min="-200" max="200" value="0" step="5">
+                </label>
+                <label>Full-body visual offset <output id="visual-latency-output">0 ms</output>
+                  <input id="setting-visual-latency" type="range" min="-200" max="200" value="0" step="5">
                 </label>
                 <label>Screen shake <output id="shake-output">70%</output>
                   <input id="setting-shake" type="range" min="0" max="100" value="70" step="5">
@@ -130,7 +159,7 @@
                 <button type="button" class="close-button" data-close-layer aria-label="Close controls">×</button>
               </div>
               <div class="control-map">
-                <div><button type="button" class="keycap" data-remap="action">Space</button><span>Measure Match · copy every lit cell</span></div>
+                <div><button type="button" class="keycap" data-remap="action">Space</button><span>STEP · alternating foundation / Measure Match echo</span></div>
                 <div>
                   <span class="movement-keycaps">
                     <button type="button" class="keycap" data-remap="up">W</button>
@@ -138,14 +167,14 @@
                     <button type="button" class="keycap" data-remap="down">S</button>
                     <button type="button" class="keycap" data-remap="right">D</button>
                   </span>
-                  <span>Direction · groove · freeze balance</span>
+                  <span>Travel · cross-step modifier · safe facing</span>
                 </div>
-                <div><button type="button" class="keycap" data-remap="style">F</button><span>Style · footwork variation</span></div>
-                <div><button type="button" class="keycap" data-remap="power">Shift</button><span>Power · extend a spin</span></div>
-                <div><button type="button" class="keycap" data-remap="freeze">T</button><span>Freeze · hold · exit power</span></div>
+                <div><button type="button" class="keycap" data-remap="style">F</button><span>BRUSH · shuffle / scuff / slide</span></div>
+                <div><button type="button" class="keycap" data-remap="power">Shift</button><span>DRIVE · backstep / chug / double step</span></div>
+                <div><button type="button" class="keycap" data-remap="freeze">T</button><span>LICK · phrase / turnaround / controlled ending</span></div>
                 <div><kbd>Esc / P</kbd><span>Pause</span></div>
               </div>
-              <p class="settings-note" id="remap-help">Measure Match needs only Space, gamepad A, or the touch paw. Advanced modes also use directions / X / Y / B.</p>
+              <p class="settings-note" id="remap-help">STEP alone makes a valid groove. Add directions / X / Y / B for brush, drive, licks, and variation.</p>
             </div>
           </section>
 

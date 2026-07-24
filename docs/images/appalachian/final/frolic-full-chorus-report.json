@@ -1,0 +1,177 @@
+{
+  "capturedAt": "2026-07-24T16:50:04.726Z",
+  "sourceUrl": "http://127.0.0.1:4177",
+  "realTimeSeconds": 68.588411322,
+  "plannedInputs": 180,
+  "deliveredInputs": 180,
+  "progress": [
+    {
+      "elapsedSeconds": 0.0038677510000006804,
+      "tick": 1.012,
+      "bar": 1,
+      "state": "OPEN_JAM",
+      "audioClockFallback": false
+    },
+    {
+      "elapsedSeconds": 12.493721439,
+      "tick": 1538.65,
+      "bar": 5,
+      "state": "OPEN_JAM",
+      "audioClockFallback": true
+    },
+    {
+      "elapsedSeconds": 20.483611316,
+      "tick": 3074.151,
+      "bar": 9,
+      "state": "TRADE_CALL",
+      "audioClockFallback": true
+    },
+    {
+      "elapsedSeconds": 28.489074894000005,
+      "tick": 4611.092,
+      "bar": 13,
+      "state": "TRADE_CALL",
+      "audioClockFallback": true
+    },
+    {
+      "elapsedSeconds": 36.50020404000001,
+      "tick": 6147.073,
+      "bar": 17,
+      "state": "OPEN_JAM",
+      "audioClockFallback": true
+    },
+    {
+      "elapsedSeconds": 44.478160552,
+      "tick": 7680.481,
+      "bar": 21,
+      "state": "OPEN_JAM",
+      "audioClockFallback": true
+    },
+    {
+      "elapsedSeconds": 52.493236611,
+      "tick": 9217.921,
+      "bar": 25,
+      "state": "TRADE_CALL",
+      "audioClockFallback": true
+    },
+    {
+      "elapsedSeconds": 60.487482087,
+      "tick": 10752.557,
+      "bar": 29,
+      "state": "TRADE_CALL",
+      "audioClockFallback": true
+    }
+  ],
+  "result": {
+    "state": "results",
+    "mode": "frolic",
+    "transport": {
+      "contextState": "running",
+      "audioClockFallback": true
+    },
+    "score": {
+      "time": 87,
+      "tune": 63,
+      "flow": 91,
+      "footwork": 77,
+      "spirit": 67,
+      "restraint": 0.733,
+      "total": 77,
+      "callResponses": [
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.6,
+          "anchorAccuracy": 0.667,
+          "complementAccuracy": 0.6
+        },
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.667,
+          "anchorAccuracy": 1,
+          "complementAccuracy": 0.667
+        },
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.5,
+          "anchorAccuracy": 0.667,
+          "complementAccuracy": 0.667
+        },
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.833,
+          "anchorAccuracy": 0.667,
+          "complementAccuracy": 0.667
+        },
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.667,
+          "anchorAccuracy": 0.667,
+          "complementAccuracy": 0.667
+        },
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.833,
+          "anchorAccuracy": 1,
+          "complementAccuracy": 0.5
+        },
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 92,
+          "rhythmAccuracy": 0.5,
+          "anchorAccuracy": 0.667,
+          "complementAccuracy": 0.833
+        }
+      ],
+      "reasons": [
+        "A returning motif made the repeated strain feel intentional.",
+        "Your variation kept the call's anchor accents.",
+        "The phrase resolved inside a turnaround window."
+      ],
+      "eventCount": 180,
+      "uniqueMoves": 7,
+      "validTurnarounds": 3
+    },
+    "resultsKicker": "THE TUNE RESOLVES",
+    "resultsTitle": "The board found the tune!",
+    "resultsReason": "A returning motif made the repeated strain feel intentional. Your variation kept the call's anchor accents. The phrase resolved inside a turnaround window.",
+    "cells": [
+      {
+        "label": "time",
+        "score": 87
+      },
+      {
+        "label": "tune",
+        "score": 63
+      },
+      {
+        "label": "flow",
+        "score": 91
+      },
+      {
+        "label": "footwork",
+        "score": 77
+      },
+      {
+        "label": "spirit",
+        "score": 67
+      }
+    ],
+    "layerVisible": true
+  },
+  "screenshot": "docs/images/appalachian/final/frolic-full-chorus-results.png",
+  "errors": [],
+  "failedRequests": []
+}

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#101c1a">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./frolic-lab.css">
+    <title>Kaki-Dance — Appalachian Footwork Lab</title>
+  </head>
+  <body>
+    <header class="lab-mast">
+      <a href="./">← KAKI—DANCE</a>
+      <div>
+        <p>AUTHORING / APPROVAL</p>
+        <h1>Appalachian Footwork Lab</h1>
+      </div>
+      <span id="lab-status">LOADING ACTIVE PACK…</span>
+    </header>
+
+    <main class="lab-shell">
+      <aside class="lab-controls" aria-label="Footwork authoring controls">
+        <fieldset>
+          <legend>Performer</legend>
+          <label>Hero <select id="frolic-hero">
+            <option value="kitty">KittyKaki</option>
+            <option value="soder">Soder</option>
+          </select></label>
+          <label>Profile <select id="frolic-style">
+            <option value="flatfoot">Flatfoot</option>
+            <option value="buck">Buck</option>
+            <option value="clog">Clog</option>
+          </select></label>
+          <label>Movement <select id="frolic-move"></select></label>
+          <label>Entry foot <select id="frolic-entry-foot">
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </select></label>
+          <label>Playback <select id="frolic-speed">
+            <option value="0">Hold</option>
+            <option value="0.25">¼ speed</option>
+            <option value="0.5">½ speed</option>
+            <option value="1" selected>Full speed</option>
+          </select></label>
+          <label>Phase <output id="frolic-phase-output">0.000</output>
+            <input id="frolic-phase" type="range" min="0" max="1" step="0.001" value="0">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Transition</legend>
+          <label>From <select id="frolic-from-move"></select></label>
+          <label class="check"><input id="frolic-transition" type="checkbox"> Preview authored bridge</label>
+          <p id="transition-readout">WEIGHT SHIFT · 24 TICKS</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Diagnostics</legend>
+          <label class="check"><input id="frolic-skeleton" type="checkbox"> Skeleton overlay</label>
+          <label class="check"><input id="frolic-contacts" type="checkbox"> Contact markers</label>
+          <label class="check"><input id="frolic-com" type="checkbox"> Center of mass</label>
+          <label class="check"><input id="frolic-root-trail" type="checkbox"> Root-motion trail</label>
+          <label class="check"><input id="frolic-bounds" type="checkbox"> Atlas bounds</label>
+          <label class="check"><input id="frolic-metronome" type="checkbox"> 120 BPM metronome</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Board sound</legend>
+          <label>Sample family <select id="frolic-sample"></select></label>
+          <button type="button" id="frolic-play-sample">Play isolated contact</button>
+        </fieldset>
+      </aside>
+
+      <section class="lab-workbench">
+        <article class="preview-card preview-card--stage">
+          <header><strong>Actual stage · native 384×216</strong><span id="stage-readout"></span></header>
+          <canvas id="frolic-stage-canvas" width="384" height="216"></canvas>
+        </article>
+
+        <article class="preview-card preview-card--neutral">
+          <header><strong>Neutral contrast · 4× nearest</strong><span>LEFT MINT · RIGHT ORANGE</span></header>
+          <div class="neutral-viewport">
+            <canvas id="frolic-neutral-canvas" width="384" height="216"></canvas>
+          </div>
+        </article>
+
+        <article class="data-card">
+          <header><strong>Contact + balance truth</strong><span id="pack-readout"></span></header>
+          <pre id="frolic-data"></pre>
+        </article>
+
+        <article class="atlas-card">
+          <header><strong>Active atlas page</strong><span>ONLY ONE HERO / STYLE PACK RESIDENT</span></header>
+          <img id="frolic-atlas-page" alt="Active indexed Appalachian Frolic sprite atlas">
+        </article>
+      </section>
+    </main>
+    <script type="module" src="./js/frolic-lab.js"></script>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+{
+  "capturedAt": "2026-07-24T16:51:45.860Z",
+  "url": "http://127.0.0.1:4177",
+  "immediate": {
+    "mode": "frolic",
+    "style": "flatfoot",
+    "input": {
+      "kind": "step",
+      "tick": 5.47,
+      "audioTime": 4.167981859410431,
+      "timingOffsetTicks": 5.47,
+      "moveId": "walkingStep",
+      "foot": "left",
+      "articulation": "flat",
+      "device": "keyboard",
+      "queued": false,
+      "rhythmOnly": false
+    },
+    "microResponse": 0.9375,
+    "topology": "biped",
+    "practice": null
+  },
+  "selectedPackResources": {
+    "metadata": [
+      "/assets/heroes/kitty/frolic/flatfoot/atlas.json"
+    ],
+    "pages": [
+      "/assets/heroes/kitty/frolic/flatfoot/atlas-0.png"
+    ]
+  },
+  "frameProfile": {
+    "samples": 116,
+    "averageMs": 16.66637931034483,
+    "p95Ms": 16.800000000000182,
+    "maxMs": 16.800000000000182
+  },
+  "lab": {
+    "state": {
+      "hero": "soder",
+      "style": "clog",
+      "moveId": "crisscross",
+      "entryFoot": "left",
+      "fromMoveId": "walkingStep",
+      "phase": 0.3154000000238418,
+      "speed": 1,
+      "lastTime": 679.2,
+      "lastBeat": -1,
+      "activePacks": [
+        "soder:clog"
+      ],
+      "transition": {
+        "ok": true,
+        "entryFoot": "right",
+        "exitFoot": "left",
+        "transitionClip": "weightShift",
+        "transitionTicks": 24
+      }
+    },
+    "nativeSize": [
+      384,
+      216
+    ],
+    "neutralSize": [
+      384,
+      216
+    ],
+    "imageRendering": "pixelated",
+    "readout": "PACK       soder:clog\nCLIP       crisscross\nFRAME      4 / 12\nTOPOLOGY   biped\nSUPPORT    right\nLEFT FOOT  local 27.1, 72.5 · world 165.8, 173.6\nRIGHT FOOT local 28.9, 77 · world 168.2, 179.3\nCENTER     25.9, 42.6\nCONTACTS   0:right:flat | 48:left:toe | 96:right:toe | 144:left:flat\nENTRY/EXIT left → right\nSUCCESSORS walkingStep, backstep, chug, heelToeChange, rockStep, doubleStep, turnaround, controlledEnding\nACTIVE     soder:clog",
+    "atlas": 1024,
+    "renderProfile": {
+      "samples": 600,
+      "elapsedMs": 84.09999999403954,
+      "averageMs": 0.14016666665673255
+    }
+  },
+  "soder": {
+    "topology": "biped",
+    "style": "clog"
+  },
+  "touch": {
+    "mode": "frolic",
+    "buttons": [
+      {
+        "label": "BRUSH",
+        "control": "style",
+        "width": 66,
+        "height": 40,
+        "left": 768,
+        "right": 834
+      },
+      {
+        "label": "DRIVE",
+        "control": "power",
+        "width": 66,
+        "height": 40,
+        "left": 696,
+        "right": 762
+      },
+      {
+        "label": "LICK",
+        "control": "freeze",
+        "width": 66,
+        "height": 40,
+        "left": 768,
+        "right": 834
+      },
+      {
+        "label": "STEP",
+        "control": "action",
+        "width": 66,
+        "height": 40,
+        "left": 696,
+        "right": 762
+      }
+    ],
+    "canvas": {
+      "left": 0,
+      "width": 844
+    }
+  },
+  "touchInput": {
+    "lastInput": {
+      "kind": "step",
+      "tick": 14.387,
+      "audioTime": 4.260861678004535,
+      "timingOffsetTicks": 14.387,
+      "moveId": "walkingStep",
+      "foot": "left",
+      "articulation": "flat",
+      "device": "touch",
+      "queued": false,
+      "rhythmOnly": false
+    },
+    "microResponse": 0.9375
+  },
+  "errors": [],
+  "failedRequests": []
+}

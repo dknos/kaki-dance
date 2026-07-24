@@ -83,6 +83,74 @@ test("MusicTransport resumes at the exact paused audio offset", () => {
   approximate(starts[1].offset, 1);
 });
 
+test("a one-chorus beatmap does not loop its audio source", () => {
+  let source = null;
+  const context = {
+    currentTime: 0,
+    createBufferSource() {
+      source = {
+        buffer: null,
+        loop: true,
+        connect() {},
+        disconnect() {},
+        stop() {},
+        start() {},
+      };
+      return source;
+    },
+  };
+  const transport = new MusicTransport({
+    beatmap: { ...BEATMAP, loop: false },
+    audioContext: context,
+  });
+  transport.buffer = { duration: 68 };
+  transport.musicGain = {};
+  transport.start();
+  assert.equal(source.loop, false);
+});
+
+test("a visible running transport resumes a browser-suspended audio context", async () => {
+  let resumes = 0;
+  const context = {
+    state: "suspended",
+    resume() {
+      resumes += 1;
+      this.state = "running";
+      return Promise.resolve();
+    },
+  };
+  const transport = new MusicTransport({ beatmap: BEATMAP, audioContext: context });
+  assert.equal(transport.ensureRunning(), true);
+  assert.equal(transport.ensureRunning(), false);
+  await transport.contextResumePromise;
+  assert.equal(resumes, 1);
+  assert.equal(context.state, "running");
+});
+
+test("a running but stalled Web Audio clock advances from a monotonic failover", () => {
+  const context = {
+    state: "running",
+    currentTime: 12,
+  };
+  const transport = new MusicTransport({ beatmap: BEATMAP, audioContext: context });
+  transport.started = true;
+  transport.source = {};
+  const wallMs = performance.now();
+  transport.clockProgress = {
+    rawAudioTime: 12,
+    logicalAudioTime: 12,
+    wallMs: wallMs - 1_000,
+    lastRawAdvanceWallMs: wallMs - 1_000,
+    fallbackActive: false,
+  };
+  const first = transport.audioClockNow();
+  assert.ok(first >= 12.99);
+  assert.equal(transport.clockProgress.fallbackActive, true);
+  transport.clockProgress.wallMs = performance.now() - 500;
+  context.currentTime = 12.1;
+  assert.ok(transport.audioClockNow() >= first + 0.49);
+});
+
 test("beatmap helpers validate boundaries and wrap accents", () => {
   assert.deepEqual(validateBeatmap(BEATMAP), []);
   assert.equal(sectionAtBeat(17, BEATMAP).id, "b");

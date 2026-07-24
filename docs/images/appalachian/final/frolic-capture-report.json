@@ -1,0 +1,317 @@
+{
+  "capturedAt": "2026-07-24T16:29:00.175Z",
+  "sourceUrl": "http://127.0.0.1:4177",
+  "logicalSize": [
+    384,
+    216
+  ],
+  "gameplay": {
+    "path": "docs/images/appalachian/final/frolic-gameplay-native.png",
+    "bar": 10,
+    "strain": "A2",
+    "state": "TRADE_RESPONSE",
+    "score": {
+      "time": 97,
+      "tune": 58,
+      "flow": 93,
+      "footwork": 80,
+      "spirit": 60,
+      "restraint": 0.714,
+      "total": 78,
+      "callResponses": [
+        {
+          "accepted": true,
+          "type": "variation",
+          "score": 98,
+          "rhythmAccuracy": 0.8,
+          "anchorAccuracy": 1,
+          "complementAccuracy": 0.4
+        }
+      ],
+      "reasons": [
+        "A returning motif made the repeated strain feel intentional.",
+        "Your variation kept the call's anchor accents.",
+        "The phrase resolved inside a turnaround window."
+      ],
+      "eventCount": 61,
+      "uniqueMoves": 7,
+      "validTurnarounds": 1
+    },
+    "currentMove": "walkingStep",
+    "queuedMove": "walkingStep",
+    "responseInputs": [
+      {
+        "tick": 3456,
+        "moveId": "walkingStep",
+        "articulation": "flat",
+        "intensity": 0.58,
+        "timingOffsetTicks": 0,
+        "style": "flatfoot",
+        "foot": "right",
+        "inputKind": "step"
+      },
+      {
+        "tick": 3552,
+        "moveId": "walkingStep",
+        "articulation": "flat",
+        "intensity": 0.58,
+        "timingOffsetTicks": 0,
+        "style": "flatfoot",
+        "foot": "right",
+        "inputKind": "step"
+      },
+      {
+        "tick": 3600,
+        "moveId": "shuffle",
+        "articulation": "brush",
+        "intensity": 0.46,
+        "timingOffsetTicks": 0,
+        "style": "flatfoot",
+        "foot": "right",
+        "inputKind": "brush"
+      },
+      {
+        "tick": 3648,
+        "moveId": "walkingStep",
+        "articulation": "flat",
+        "intensity": 0.58,
+        "timingOffsetTicks": 0,
+        "style": "flatfoot",
+        "foot": "right",
+        "inputKind": "step"
+      },
+      {
+        "tick": 3696,
+        "moveId": "walkingStep",
+        "articulation": "flat",
+        "intensity": 0.58,
+        "timingOffsetTicks": 0,
+        "style": "flatfoot",
+        "foot": "left",
+        "inputKind": "step"
+      },
+      {
+        "tick": 3744,
+        "moveId": "walkingStep",
+        "articulation": "flat",
+        "intensity": 0.58,
+        "timingOffsetTicks": 0,
+        "style": "flatfoot",
+        "foot": "right",
+        "inputKind": "step"
+      }
+    ]
+  },
+  "approvalPoseOrder": [
+    "neutral",
+    "foundation",
+    "shuffle",
+    "backstep",
+    "chug",
+    "heel-toe",
+    "drag-slide",
+    "crisscross",
+    "turnaround",
+    "ending"
+  ],
+  "approvals": [
+    {
+      "hero": "kitty",
+      "style": "flatfoot",
+      "native": "docs/images/appalachian/final/approval-kitty-flatfoot-stage-native.png",
+      "enlarged": "docs/images/appalachian/final/approval-kitty-flatfoot-stage-4x.png",
+      "diagnostic": "docs/images/appalachian/final/approval-kitty-flatfoot-stage-diagnostic.png",
+      "neutral": "docs/images/appalachian/final/approval-kitty-flatfoot-neutral-native.png",
+      "neutralEnlarged": "docs/images/appalachian/final/approval-kitty-flatfoot-neutral-4x.png",
+      "nativeBytes": 133239,
+      "enlargedBytes": 384688,
+      "diagnosticBytes": 146398,
+      "neutralBytes": 38961,
+      "neutralEnlargedBytes": 140364,
+      "activePacks": [
+        "kitty:flatfoot"
+      ]
+    },
+    {
+      "hero": "kitty",
+      "style": "buck",
+      "native": "docs/images/appalachian/final/approval-kitty-buck-stage-native.png",
+      "enlarged": "docs/images/appalachian/final/approval-kitty-buck-stage-4x.png",
+      "diagnostic": "docs/images/appalachian/final/approval-kitty-buck-stage-diagnostic.png",
+      "neutral": "docs/images/appalachian/final/approval-kitty-buck-neutral-native.png",
+      "neutralEnlarged": "docs/images/appalachian/final/approval-kitty-buck-neutral-4x.png",
+      "nativeBytes": 133815,
+      "enlargedBytes": 388055,
+      "diagnosticBytes": 147537,
+      "neutralBytes": 39419,
+      "neutralEnlargedBytes": 143889,
+      "activePacks": [
+        "kitty:buck"
+      ]
+    },
+    {
+      "hero": "kitty",
+      "style": "clog",
+      "native": "docs/images/appalachian/final/approval-kitty-clog-stage-native.png",
+      "enlarged": "docs/images/appalachian/final/approval-kitty-clog-stage-4x.png",
+      "diagnostic": "docs/images/appalachian/final/approval-kitty-clog-stage-diagnostic.png",
+      "neutral": "docs/images/appalachian/final/approval-kitty-clog-neutral-native.png",
+      "neutralEnlarged": "docs/images/appalachian/final/approval-kitty-clog-neutral-4x.png",
+      "nativeBytes": 133617,
+      "enlargedBytes": 389872,
+      "diagnosticBytes": 147056,
+      "neutralBytes": 39630,
+      "neutralEnlargedBytes": 146766,
+      "activePacks": [
+        "kitty:clog"
+      ]
+    },
+    {
+      "hero": "soder",
+      "style": "flatfoot",
+      "native": "docs/images/appalachian/final/approval-soder-flatfoot-stage-native.png",
+      "enlarged": "docs/images/appalachian/final/approval-soder-flatfoot-stage-4x.png",
+      "diagnostic": "docs/images/appalachian/final/approval-soder-flatfoot-stage-diagnostic.png",
+      "neutral": "docs/images/appalachian/final/approval-soder-flatfoot-neutral-native.png",
+      "neutralEnlarged": "docs/images/appalachian/final/approval-soder-flatfoot-neutral-4x.png",
+      "nativeBytes": 133735,
+      "enlargedBytes": 388828,
+      "diagnosticBytes": 147604,
+      "neutralBytes": 40334,
+      "neutralEnlargedBytes": 144131,
+      "activePacks": [
+        "soder:flatfoot"
+      ]
+    },
+    {
+      "hero": "soder",
+      "style": "buck",
+      "native": "docs/images/appalachian/final/approval-soder-buck-stage-native.png",
+      "enlarged": "docs/images/appalachian/final/approval-soder-buck-stage-4x.png",
+      "diagnostic": "docs/images/appalachian/final/approval-soder-buck-stage-diagnostic.png",
+      "neutral": "docs/images/appalachian/final/approval-soder-buck-neutral-native.png",
+      "neutralEnlarged": "docs/images/appalachian/final/approval-soder-buck-neutral-4x.png",
+      "nativeBytes": 134202,
+      "enlargedBytes": 390321,
+      "diagnosticBytes": 147965,
+      "neutralBytes": 40686,
+      "neutralEnlargedBytes": 146172,
+      "activePacks": [
+        "soder:buck"
+      ]
+    },
+    {
+      "hero": "soder",
+      "style": "clog",
+      "native": "docs/images/appalachian/final/approval-soder-clog-stage-native.png",
+      "enlarged": "docs/images/appalachian/final/approval-soder-clog-stage-4x.png",
+      "diagnostic": "docs/images/appalachian/final/approval-soder-clog-stage-diagnostic.png",
+      "neutral": "docs/images/appalachian/final/approval-soder-clog-neutral-native.png",
+      "neutralEnlarged": "docs/images/appalachian/final/approval-soder-clog-neutral-4x.png",
+      "nativeBytes": 135019,
+      "enlargedBytes": 393643,
+      "diagnosticBytes": 147761,
+      "neutralBytes": 41256,
+      "neutralEnlargedBytes": 150109,
+      "activePacks": [
+        "soder:clog"
+      ]
+    }
+  ],
+  "loops": [
+    {
+      "hero": "kitty",
+      "style": "flatfoot",
+      "fps": 12,
+      "frames": 96,
+      "durationSeconds": 8,
+      "mp4": "docs/images/appalachian/loops/kitty-flatfoot.mp4",
+      "gif": "docs/images/appalachian/loops/kitty-flatfoot.gif",
+      "mp4Bytes": 77112,
+      "gifBytes": 112054,
+      "activePacks": [
+        "kitty:flatfoot"
+      ]
+    },
+    {
+      "hero": "kitty",
+      "style": "buck",
+      "fps": 12,
+      "frames": 96,
+      "durationSeconds": 8,
+      "mp4": "docs/images/appalachian/loops/kitty-buck.mp4",
+      "gif": "docs/images/appalachian/loops/kitty-buck.gif",
+      "mp4Bytes": 80500,
+      "gifBytes": 115193,
+      "activePacks": [
+        "kitty:buck"
+      ]
+    },
+    {
+      "hero": "kitty",
+      "style": "clog",
+      "fps": 12,
+      "frames": 96,
+      "durationSeconds": 8,
+      "mp4": "docs/images/appalachian/loops/kitty-clog.mp4",
+      "gif": "docs/images/appalachian/loops/kitty-clog.gif",
+      "mp4Bytes": 83135,
+      "gifBytes": 120547,
+      "activePacks": [
+        "kitty:clog"
+      ]
+    },
+    {
+      "hero": "soder",
+      "style": "flatfoot",
+      "fps": 12,
+      "frames": 96,
+      "durationSeconds": 8,
+      "mp4": "docs/images/appalachian/loops/soder-flatfoot.mp4",
+      "gif": "docs/images/appalachian/loops/soder-flatfoot.gif",
+      "mp4Bytes": 105696,
+      "gifBytes": 121189,
+      "activePacks": [
+        "soder:flatfoot"
+      ]
+    },
+    {
+      "hero": "soder",
+      "style": "buck",
+      "fps": 12,
+      "frames": 96,
+      "durationSeconds": 8,
+      "mp4": "docs/images/appalachian/loops/soder-buck.mp4",
+      "gif": "docs/images/appalachian/loops/soder-buck.gif",
+      "mp4Bytes": 110216,
+      "gifBytes": 123589,
+      "activePacks": [
+        "soder:buck"
+      ]
+    },
+    {
+      "hero": "soder",
+      "style": "clog",
+      "fps": 12,
+      "frames": 96,
+      "durationSeconds": 8,
+      "mp4": "docs/images/appalachian/loops/soder-clog.mp4",
+      "gif": "docs/images/appalachian/loops/soder-clog.gif",
+      "mp4Bytes": 113372,
+      "gifBytes": 128471,
+      "activePacks": [
+        "soder:clog"
+      ]
+    }
+  ],
+  "activePackMemoryBytes": {
+    "kitty/flatfoot": 4194304,
+    "kitty/buck": 4194304,
+    "kitty/clog": 4194304,
+    "soder/flatfoot": 4194304,
+    "soder/buck": 4194304,
+    "soder/clog": 4194304
+  },
+  "errors": [],
+  "failedRequests": []
+}

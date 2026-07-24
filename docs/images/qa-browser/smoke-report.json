@@ -1,6 +1,6 @@
 {
   "url": "http://127.0.0.1:4177",
-  "capturedAt": "2026-07-24T14:35:39.095Z",
+  "capturedAt": "2026-07-24T16:52:14.915Z",
   "freezeSnapshot": {
     "move": "basicRock",
     "family": "toprock",
@@ -21,7 +21,7 @@
     "stamina": 100,
     "contacts": 0,
     "contactError": 0,
-    "beat": 11.024644746787603,
+    "beat": 10.947244897959184,
     "chainIndex": 0,
     "next": "",
     "measureState": "copy",
@@ -30,10 +30,10 @@
     "presentationClip": "basicRock"
   },
   "pauseResume": {
-    "pausedBeatA": 11.024644746787603,
-    "pausedBeatB": 11.024644746787603,
+    "pausedBeatA": 10.947244897959184,
+    "pausedBeatB": 10.947244897959184,
     "pausedDriftBeats": 0,
-    "resumedAdvanceBeats": 0.5221655328798196
+    "resumedAdvanceBeats": 0.4834656084656075
   },
   "settingsVisible": {
     "scrollHeight": 574,
@@ -48,38 +48,38 @@
   "restartSnapshot": {
     "state": "running",
     "character": "soder",
-    "beat": 0.7691647770219188
+    "beat": 0.8078647014361297
   },
   "initialHeroResources": [
     {
       "name": "/assets/heroes/kitty/atlas.json",
       "transferSize": 729645,
       "decodedBodySize": 729345,
-      "durationMs": 2.7000000178813934
+      "durationMs": 2.9000000059604645
     },
     {
       "name": "/assets/heroes/kitty/atlas-0.png",
       "transferSize": 61490,
       "decodedBodySize": 61190,
-      "durationMs": 2
+      "durationMs": 1.9000000059604645
     },
     {
       "name": "/assets/heroes/kitty/atlas-1.png",
       "transferSize": 9988,
       "decodedBodySize": 9688,
-      "durationMs": 1.9000000059604645
+      "durationMs": 2.2000000178813934
     }
   ],
   "frameProfile": {
     "samples": 120,
-    "averageMs": 16.665833333333346,
+    "averageMs": 16.666666666666668,
     "p95Ms": 16.799999999999272,
     "maxMs": 16.80000000000109
   },
   "renderProfile": {
     "samples": 600,
-    "elapsedMs": 174.7000000178814,
-    "averageMs": 0.291166666696469
+    "elapsedMs": 175.59999999403954,
+    "averageMs": 0.2926666666567326
   },
   "labReadout": "clip four-back-table  ·  sample 0.500  ·  IK/contact avg 0.00 px  ·  support 26.0 px  ·  rig biped",
   "qaCards": 114,

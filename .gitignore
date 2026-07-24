@@ -5,3 +5,5 @@ test-results/
 playwright-report/
 *.log
 *.blend[0-9]
+__pycache__/
+*.pyc

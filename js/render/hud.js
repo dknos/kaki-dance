@@ -6,6 +6,10 @@ import { pixelEllipse, pixelRect } from "./primitives.js";
 
 export function drawHud(ctx, snapshot, settings) {
   if (!snapshot?.started) return;
+  if (snapshot.frolic) {
+    drawFrolicHud(ctx, snapshot, settings);
+    return;
+  }
   if (snapshot.measureMatch) {
     drawMeasureMatchHud(ctx, snapshot, settings);
     return;
@@ -17,6 +21,141 @@ export function drawHud(ctx, snapshot, settings) {
   if (snapshot.mode === "practice") drawPracticeCoach(ctx, snapshot, settings);
   if (settings.beatPulse && snapshot.mode === "practice") drawBeatPips(ctx, snapshot);
   if (snapshot.callout) drawCallout(ctx, snapshot.callout, snapshot.calloutAge);
+}
+
+function drawFrolicHud(ctx, snapshot, settings) {
+  const frolic = snapshot.frolic;
+  const palette = {
+    ink: "#0a1514",
+    panel: "#182923",
+    chalk: "#e8d9b9",
+    amber: "#f2bd65",
+    cedar: "#b64d32",
+    mint: "#78b79b",
+    indigo: "#59658d",
+  };
+  pixelRect(ctx, 6, 6, 124, 19, palette.ink);
+  pixelRect(ctx, 7, 7, 122, 17, palette.panel);
+  drawPixelText(ctx, snapshot.mode === "stepShed" ? "STEP SHED" : "APPALACHIAN FROLIC", 12, 10, {
+    color: palette.amber,
+    scale: 1,
+  });
+  drawPixelText(ctx, frolic.profile.displayName.toUpperCase(), 12, 17, {
+    color: palette.chalk,
+    scale: 1,
+  });
+
+  pixelRect(ctx, 279, 6, 99, 19, palette.ink);
+  pixelRect(ctx, 280, 7, 97, 17, palette.panel);
+  const bar = String(frolic.bar).padStart(2, "0");
+  drawPixelText(ctx, `${frolic.strain.id} · BAR ${bar}/32`, 372, 10, {
+    align: "right",
+    color: palette.chalk,
+    scale: 1,
+  });
+  drawPixelText(ctx, frolic.stateLabel, 372, 17, {
+    align: "right",
+    color: stateColor(frolic.state, palette),
+    scale: 1,
+  });
+
+  drawFrolicPhraseRail(ctx, frolic, palette);
+  if (frolic.countInBeat > 0) {
+    drawPixelText(ctx, String(Math.min(8, frolic.countInBeat)), 192, 54, {
+      align: "center",
+      color: palette.amber,
+      scale: 4,
+      shadow: palette.ink,
+    });
+    drawPixelText(ctx, "TWO BARS · FIND THE PULSE", 192, 82, {
+      align: "center",
+      color: palette.chalk,
+      scale: 1,
+      shadow: palette.ink,
+    });
+  } else if (frolic.practice) {
+    drawStepShedCoach(ctx, frolic.practice, palette);
+  } else {
+    drawMoveBadge(ctx, snapshot, palette);
+    drawRestraintMeter(ctx, frolic.restraint, palette);
+  }
+  if (snapshot.callout && settings.timingLabels) drawCallout(ctx, snapshot.callout, snapshot.calloutAge, 59);
+  if (settings.frolicDebug) drawFrolicDebug(ctx, snapshot, palette, settings);
+}
+
+function drawFrolicPhraseRail(ctx, frolic, palette) {
+  const startX = 141;
+  const y = 10;
+  const strainIndex = ["A1", "A2", "B1", "B2"].indexOf(frolic.strain.id);
+  for (let index = 0; index < 4; index += 1) {
+    const active = index === strainIndex;
+    pixelRect(ctx, startX + index * 27, y, 23, 6, active ? palette.amber : palette.ink);
+    pixelRect(ctx, startX + index * 27 + 1, y + 1, 21, 4, active ? palette.cedar : palette.indigo);
+  }
+  const localBar = (frolic.bar - 1) % 8;
+  for (let index = 0; index < 8; index += 1) {
+    pixelEllipse(ctx, 151 + index * 12, 21, index === localBar ? 2 : 1, index === localBar ? 2 : 1, index === localBar ? palette.amber : palette.indigo);
+  }
+}
+
+function drawMoveBadge(ctx, snapshot, palette) {
+  const move = snapshot.dancer.moveName || "Walking Step";
+  const queued = snapshot.frolic.queuedMove;
+  const width = Math.min(94, Math.max(62, move.length * 4 + 12));
+  pixelRect(ctx, 7, 35, width, queued ? 24 : 17, palette.ink);
+  pixelRect(ctx, 8, 36, width - 2, queued ? 22 : 15, palette.panel);
+  drawPixelText(ctx, move.toUpperCase(), 12, 40, { color: palette.chalk, scale: 1 });
+  drawPixelText(ctx, `WEIGHT ${snapshot.frolic.supportingFoot.toUpperCase()}`, 12, 47, {
+    color: palette.mint,
+    scale: 1,
+  });
+  if (queued) drawPixelText(ctx, `NEXT ${queued.toUpperCase()}`, 12, 54, { color: palette.amber, scale: 1 });
+}
+
+function drawRestraintMeter(ctx, value, palette) {
+  const normalized = clamp(Number(value) || 0, 0, 1);
+  pixelRect(ctx, 309, 35, 68, 17, palette.ink);
+  pixelRect(ctx, 310, 36, 66, 15, palette.panel);
+  drawPixelText(ctx, "AIR IN THE TUNE", 372, 39, { align: "right", color: palette.chalk, scale: 1 });
+  pixelRect(ctx, 316, 47, 55, 2, palette.indigo);
+  pixelRect(ctx, 316, 47, Math.round(55 * normalized), 2, normalized < 0.55 ? palette.cedar : palette.mint);
+}
+
+function drawStepShedCoach(ctx, lesson, palette) {
+  pixelRect(ctx, 7, 35, 153, 38, palette.ink);
+  pixelRect(ctx, 8, 36, 151, 36, palette.panel);
+  drawPixelText(ctx, `LESSON ${lesson.lesson}/${lesson.totalLessons}`, 13, 40, { color: palette.amber, scale: 1 });
+  drawPixelText(ctx, lesson.title.toUpperCase(), 13, 48, { color: palette.chalk, scale: 1 });
+  const instruction = lesson.instruction.length > 35
+    ? `${lesson.instruction.slice(0, 34)}…`
+    : lesson.instruction;
+  drawPixelText(ctx, instruction.toUpperCase(), 13, 57, { color: palette.mint, scale: 1 });
+  const progress = lesson.required ? lesson.progress / lesson.required : 0;
+  pixelRect(ctx, 13, 67, 138, 2, palette.indigo);
+  pixelRect(ctx, 13, 67, Math.round(138 * clamp(progress, 0, 1)), 2, palette.amber);
+}
+
+function drawFrolicDebug(ctx, snapshot, palette, settings) {
+  const frolic = snapshot.frolic;
+  pixelRect(ctx, 6, 78, 145, 51, "rgba(4,10,9,0.88)");
+  const lines = [
+    `${frolic.strain.id} ${frolic.state} T${Math.round(frolic.tick)}`,
+    `NOW ${frolic.currentMove || "-"} > ${frolic.queuedMove || "-"}`,
+    `SUPPORT ${frolic.supportingFoot} CONTACT ${frolic.lastInput?.articulation ?? "-"}`,
+    `INPUT ${frolic.lastInput?.kind ?? "-"} OFF ${Math.round(frolic.lastInput?.timingOffsetTicks ?? 0)}`,
+    `A/V ${settings.audioLatencyMs ?? 0}/${settings.visualLatencyMs ?? 0}MS`,
+  ];
+  lines.forEach((line, index) => drawPixelText(ctx, line.toUpperCase(), 10, 82 + index * 9, {
+    color: index ? palette.chalk : palette.amber,
+    scale: 1,
+  }));
+}
+
+function stateColor(state, palette) {
+  if (state === "TRADE_CALL") return palette.amber;
+  if (state === "TRADE_RESPONSE") return palette.mint;
+  if (state === "TURNAROUND" || state === "FINISH") return palette.cedar;
+  return palette.chalk;
 }
 
 function drawMeasureMatchHud(ctx, snapshot, settings) {

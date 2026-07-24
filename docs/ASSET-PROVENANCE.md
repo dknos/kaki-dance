@@ -201,3 +201,48 @@ Every page is local, lossless and nearest-neighbor. The metadata carries trimmed
 bounds, stable pivots, contacts, twenty-one semantic anchors, effect anchors,
 markers and twelve segment depths per drawing. No reference, Blender or cloud
 asset is fetched at runtime.
+
+## Appalachian Frolic source, atlases, and audio
+
+Frolic adds no generated-image or third-party media dependency. Practitioner
+footage listed in `docs/appalachian-sources.md` informed movement principles
+only; no frames, motion capture, recordings, or samples were redistributed.
+
+The deterministic shared-biped source:
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `tools/blender/kaki-appalachian-frolic.blend` | 863,924 | `97b7119de226ceba5c7b294cea8bb7b637594219faf7bc2447a00d1579d42451` |
+| `tools/blender/exports/kaki-appalachian-frolic-rig.json` | 2,028,074 | `c2006298dac2d749a8bee77c87b97e357472ef41f24f857f1f836616d9b41641` |
+
+The Blender container can change a few bytes when re-saved by the same Blender
+build; the JSON export is the byte-deterministic review contract.
+`KakiFrolicSharedBiped` contains paired arms, hands, legs, heel/toe controls,
+foot IK, knee poles, and non-supporting Soder costume controls. The Blender
+profiles and camera are authoring/diagnostic sources, not public sprites.
+
+`tools/art/appalachian_pose_library.py` and
+`tools/art/build_appalachian_atlases.py` create six local runtime packs. Each
+contains 164 authored drawings across fourteen movements and six transition
+clips on one indexed 1024×1024 page:
+
+| Profile packs | Compressed bytes each | Decoded texture each |
+| --- | ---: | ---: |
+| KittyKaki Flatfoot/Buck/Clog | 595,244–598,964 | 4,194,304 |
+| Soder Flatfoot/Buck/Clog | 604,621–608,991 | 4,194,304 |
+
+Normal play retains one selected hero/profile pack. The report, per-file
+hashes, plant/joint lint, and page sizes are in
+`docs/images/appalachian/frolic-atlas-report.json`.
+
+`scripts/build-appalachian-audio.mjs` composes and synthesizes the checked-in
+original “Board & Bow” master, four synchronized stems, and 39 round-robin
+wood-board contacts. It uses no sample library:
+
+| Runtime master | Format | Duration | Bytes | SHA-256 |
+| --- | --- | ---: | ---: | --- |
+| `assets/audio/frolic/board-and-bow.wav` | stereo 16-bit PCM, 22.05 kHz | 68.000 s | 5,997,644 | `373e900960546d3fea36876aa3b2982a10992fde273d7f07697f05a6d0ab307b` |
+
+The four stems are source assets and are not requested by normal play. All
+runtime foot samples and their hashes are recorded in
+`docs/images/appalachian/frolic-audio-report.json`.

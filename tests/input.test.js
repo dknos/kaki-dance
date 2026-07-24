@@ -49,11 +49,15 @@ test("analog dead zones and touch vectors are normalized", () => {
 test("gamepad polling exposes the same actions without hidden input rules", () => {
   const buttons = Array.from({ length: 10 }, () => ({ pressed: false, value: 0 }));
   buttons[0].pressed = true;
+  buttons[1].pressed = true;
+  buttons[2].pressed = true;
   buttons[3].value = 1;
   const result = pollGamepad(() => [{ axes: [0.5, -0.5], buttons }]);
   assert.equal(result.active, true);
   assert.equal(result.action, true);
+  assert.equal(result.style, true);
   assert.equal(result.power, true);
+  assert.equal(result.freeze, true);
   assert.ok(result.x > 0);
   assert.ok(result.y < 0);
 });

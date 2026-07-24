@@ -1,7 +1,11 @@
 import { resolveMotionSettings, announce } from "./accessibility.js";
 import { loadBeatmap } from "./audio/beatmap.js";
+import { FootPercussionPlayer } from "./audio/foot-percussion-player.js";
 import { MusicTransport } from "./audio/music-transport.js";
 import { SoundEffects } from "./audio/sfx.js";
+import { AppalachianJamSimulation } from "./appalachian/simulation.js";
+import { APPALACHIAN_TUNE_MAP } from "./appalachian/tune-map.js";
+import { normalizeFrolicStyle } from "./appalachian/footwork-catalog.js";
 import { DEFAULT_SETTINGS, FIXED_STEP, TIMING_WINDOWS } from "./config.js";
 import { FixedStepLoop } from "./core/fixed-step.js";
 import { characterDefinition, normalizeCharacterId } from "./dance/character-catalog.js";
@@ -13,6 +17,9 @@ import { buildMoveQaSnapshot } from "./render/qa-frame.js";
 import { loadSave, saveGame } from "./storage.js";
 
 const EMPTY_INPUT = Object.freeze(createInputStep());
+const MEASURE_TRACK_URL = new URL("../assets/audio/moon-block-party.wav", import.meta.url);
+const FROLIC_TRACK_URL = new URL("../assets/audio/frolic/board-and-bow.wav", import.meta.url);
+const FROLIC_MODES = new Set(["frolic", "stepShed"]);
 
 export class KakiDanceGame {
   constructor({
@@ -30,12 +37,14 @@ export class KakiDanceGame {
   } = {}) {
     this.host = host;
     this.beatmap = beatmap;
+    this.activeBeatmap = beatmap;
     this.storage = storage;
     this.save = loadSave(storage);
     if (settings) this.save.settings = { ...this.save.settings, ...settings };
     if (profile?.character) this.save.selectedCharacter = normalizeCharacterId(profile.character);
     this.settings = this.save.settings;
     this.selectedCharacter = normalizeCharacterId(this.save.selectedCharacter);
+    this.selectedFrolicStyle = normalizeFrolicStyle(this.save.selectedFrolicStyle);
     this.onExit = onExit;
     this.onRoundComplete = onRoundComplete;
     this.onBattleComplete = onBattleComplete;
@@ -51,6 +60,7 @@ export class KakiDanceGame {
     this.transport = externalAudio ?? new MusicTransport({ beatmap });
     this.ownsAudio = !externalAudio;
     this.sfx = new SoundEffects(this.transport);
+    this.footPercussion = new FootPercussionPlayer({ transport: this.transport });
     this.motion = resolveMotionSettings(this.settings);
     this.renderer = new KakiDanceRenderer(this.elements.canvas, {
       settings: { ...this.settings, ...this.motion },
@@ -71,6 +81,7 @@ export class KakiDanceGame {
     this.bindUi();
     this.syncUiFromSettings();
     this.selectCharacter(this.selectedCharacter, { persist: false });
+    this.selectFrolicStyle(this.selectedFrolicStyle, { persist: false });
     this.createAttractSimulation();
     this.loop = new FixedStepLoop({
       step: FIXED_STEP,
@@ -91,8 +102,13 @@ export class KakiDanceGame {
       return this.getSnapshot();
     }
     if (options.character) this.selectCharacter(options.character);
+    if (options.style) this.selectFrolicStyle(options.style);
     if (options.mode) {
-      if (options.immediate) return this.startMode(options.mode);
+      if (options.immediate) {
+        return this.startMode(options.mode, {
+          offsetSeconds: options.offsetSeconds,
+        });
+      }
       this.mode = options.mode;
     }
     delete this.host.dataset.mode;
@@ -100,21 +116,30 @@ export class KakiDanceGame {
     return this.getSnapshot();
   }
 
-  async startMode(mode = this.mode) {
+  async startMode(mode = this.mode, { offsetSeconds = 0 } = {}) {
     if (this.destroyed) return;
-    this.mode = ["measure", "practice", "freestyle", "battle"].includes(mode) ? mode : "measure";
+    this.mode = ["measure", "practice", "frolic", "stepShed", "freestyle", "battle"].includes(mode) ? mode : "measure";
     this.host.dataset.mode = this.mode;
+    const isFrolic = FROLIC_MODES.has(this.mode);
+    this.activeBeatmap = isFrolic ? APPALACHIAN_TUNE_MAP : this.beatmap;
+    this.configureTransport(this.activeBeatmap, isFrolic ? FROLIC_TRACK_URL : MEASURE_TRACK_URL);
     this.state = "loading";
-    announce(this.elements.liveStatus, "Loading the Moon Block Party beat.");
+    this.updateModePresentation();
+    announce(this.elements.liveStatus, isFrolic ? "Setting the board and tuning the band." : "Loading the Moon Block Party beat.");
     this.input.clear?.();
     try {
-      await this.transport.unlock?.();
+      await Promise.all([
+        this.transport.unlock?.(),
+        this.renderer.enterMode(this.mode, this.selectedCharacter, this.selectedFrolicStyle),
+      ]);
+      if (isFrolic) await this.footPercussion.preload();
     } catch {
       // The fallback clock still permits play if audio hardware is unavailable.
     }
     this.applyAudioSettings();
     this.transport.setLatency?.(this.settings.latencyMs);
-    this.transport.start?.({ offsetSeconds: 0 });
+    this.footPercussion.setLatency(this.settings.audioLatencyMs);
+    this.transport.start?.({ offsetSeconds: Math.max(0, Number(offsetSeconds) || 0) });
     const beatSnapshot = this.transport.clock.getSnapshot();
     this.simulation = this.createSimulation();
     this.simulation.begin(beatSnapshot);
@@ -127,6 +152,17 @@ export class KakiDanceGame {
   }
 
   createSimulation() {
+    if (FROLIC_MODES.has(this.mode)) {
+      return new AppalachianJamSimulation({
+        mode: this.mode,
+        character: this.selectedCharacter,
+        style: this.selectedFrolicStyle,
+        tuneMap: APPALACHIAN_TUNE_MAP,
+        difficulty: this.settings.timingWindow === "extra" ? "easy" : "standard",
+        reducedMotion: this.motion.reducedMotion,
+        seed: 0x4b414b49,
+      });
+    }
     const Simulation = this.mode === "measure" || this.mode === "practice"
       ? MeasureMatchSimulation
       : DanceSimulation;
@@ -160,6 +196,7 @@ export class KakiDanceGame {
     this.pauseReason = reason;
     this.transport.pause?.();
     this.sfx.stopAll();
+    this.footPercussion.stopAll();
     this.input.clear?.();
     this.showLayer("pause");
     announce(this.elements.liveStatus, reason === "visibility" ? "Game paused because the tab was hidden." : "Game paused.");
@@ -184,9 +221,11 @@ export class KakiDanceGame {
   quitToTitle() {
     this.transport.stop?.();
     this.sfx.stopAll();
+    this.footPercussion.stopAll();
     this.input.clear?.();
     this.state = "title";
     delete this.host.dataset.mode;
+    this.updateModePresentation();
     this.createAttractSimulation();
     this.showLayer("title");
     announce(this.elements.liveStatus, "Returned to the title.");
@@ -203,10 +242,17 @@ export class KakiDanceGame {
     else this.input.clear?.();
     if (this.ownsAudio) this.transport.destroy?.();
     else this.transport.stop?.();
+    this.footPercussion.stopAll();
     this.host.replaceChildren();
   }
 
   beforeFrame(dt) {
+    if (
+      this.state === "running"
+      && globalThis.document?.visibilityState !== "hidden"
+    ) {
+      this.transport.ensureRunning?.();
+    }
     if (this.state === "running") this.input.update?.(dt);
   }
 
@@ -270,6 +316,27 @@ export class KakiDanceGame {
           strength: event.strength ?? 0.75,
         });
       }
+      if (event.type === "footContact") {
+        this.footPercussion.playContact(event.immediate
+          ? {
+              ...event,
+              inputAudioTime: this.transport.getAudioTime?.() ?? event.inputAudioTime,
+            }
+          : event);
+        if (event.immediate && globalThis.navigator?.vibrate) globalThis.navigator.vibrate(8);
+      }
+      if (event.type === "tradeCall") {
+        this.footPercussion.playContact({
+          ...event,
+          foot: "both",
+          style: this.selectedFrolicStyle,
+          inputAudioTime: beatSnapshot.audioTime,
+          immediate: false,
+        });
+      }
+      if (event.type === "phrasePulse" && event.score?.total >= 72) {
+        this.sfx.play("crowd", { strength: 0.48, crowd: true });
+      }
       if (event.type === "measureCompleted") {
         if (event.result.grade === "PURRFECT" || event.result.grade === "CLEAN") {
           this.sfx.play("crowd", { strength: event.result.grade === "PURRFECT" ? 1 : 0.65, crowd: true });
@@ -296,11 +363,13 @@ export class KakiDanceGame {
     this.state = "results";
     this.transport.pause?.();
     this.sfx.stopAll();
+    this.footPercussion.stopAll();
     this.input.clear?.();
     const result = this.simulation.result;
     const player = result.player;
     const opponent = result.opponent;
     const won = result.winner === "player";
+    const isFrolic = FROLIC_MODES.has(this.mode);
     const highlight = this.simulation.getHighlightSnapshot();
     this.elements.replayHighlight.hidden = !highlight;
     if (highlight) {
@@ -311,18 +380,25 @@ export class KakiDanceGame {
         calloutAge: 0.35,
       }));
     }
-    this.elements.resultsKicker.textContent = this.mode === "battle"
+    this.elements.resultsKicker.textContent = isFrolic
+      ? this.mode === "stepShed" ? "STEP SHED COMPLETE" : "THE TUNE RESOLVES"
+      : this.mode === "battle"
       ? won ? "CYPHER WON" : result.winner === "tie" ? "TIE BREAK ENERGY" : "MIKAN TAKES IT"
       : this.mode === "measure" || this.mode === "practice" ? "PHRASE COMPLETE"
       : "ROUND COMPLETE";
-    this.elements.resultsTitle.textContent = this.mode === "battle"
+    this.elements.resultsTitle.textContent = isFrolic
+      ? player.total >= 82 ? "Board & band, together!" : player.total >= 62 ? "The board found the tune!" : "Leave a little more air"
+      : this.mode === "battle"
       ? won
         ? `${characterDefinition(this.selectedCharacter).displayName} cooked!`
         : result.winner === "tie" ? "Dead even!" : "Run it back!"
       : this.mode === "measure" || this.mode === "practice"
         ? player.total >= 82 ? "PURRFECT echo!" : player.total >= 62 ? "In the pocket!" : "Run the echo again"
         : player.total >= 70 ? "Clean round!" : "Build the next phrase";
-    this.elements.judgeGrid.replaceChildren(...["musicality", "vocabulary", "originality", "technique", "execution"].map((category) => {
+    const resultCategories = isFrolic
+      ? ["time", "tune", "flow", "footwork", "spirit"]
+      : ["musicality", "vocabulary", "originality", "technique", "execution"];
+    this.elements.judgeGrid.replaceChildren(...resultCategories.map((category) => {
       const cell = document.createElement("div");
       cell.className = "judge-score";
       const score = document.createElement("strong");
@@ -343,6 +419,8 @@ export class KakiDanceGame {
 
   updateRecords(result) {
     const player = result.player;
+    if (this.mode === "frolic") this.save.records.frolicBest = Math.max(this.save.records.frolicBest, player.total);
+    if (this.mode === "stepShed") this.save.records.stepShedComplete = true;
     if (this.mode === "freestyle") this.save.records.freestyleBest = Math.max(this.save.records.freestyleBest, player.total);
     if (this.mode === "battle" && result.winner === "player") this.save.records.battleWins += 1;
     this.save.records.bestCrowdHeat = Math.max(this.save.records.bestCrowdHeat, player.maxCrowdHeat ?? 0);
@@ -350,6 +428,7 @@ export class KakiDanceGame {
   }
 
   createAttractSimulation() {
+    this.renderer.preloadCharacter(this.selectedCharacter);
     const beat = performance.now() / 1000 * this.beatmap.bpm / 60;
     const snapshot = syntheticBeatSnapshot(beat, performance.now() / 1000, this.beatmap);
     this.attract = new DanceSimulation({
@@ -376,6 +455,17 @@ export class KakiDanceGame {
     if (this.state === "title") this.createAttractSimulation();
   }
 
+  selectFrolicStyle(style, { persist = true } = {}) {
+    this.selectedFrolicStyle = normalizeFrolicStyle(style);
+    this.save.selectedFrolicStyle = this.selectedFrolicStyle;
+    for (const button of this.elements.frolicStyleButtons) {
+      const selected = button.dataset.frolicStyle === this.selectedFrolicStyle;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-checked", String(selected));
+    }
+    if (persist) saveGame(this.save, this.storage);
+  }
+
   bindUi() {
     const signal = this.listeners.signal;
     for (const button of this.elements.startButtons) {
@@ -383,6 +473,9 @@ export class KakiDanceGame {
     }
     for (const button of this.elements.characterButtons) {
       button.addEventListener("click", () => this.selectCharacter(button.dataset.character), { signal });
+    }
+    for (const button of this.elements.frolicStyleButtons) {
+      button.addEventListener("click", () => this.selectFrolicStyle(button.dataset.frolicStyle), { signal });
     }
     this.elements.settingsButton.addEventListener("click", () => this.showLayer("settings"), { signal });
     this.elements.controlsButton.addEventListener("click", () => this.showLayer("controls"), { signal });
@@ -413,6 +506,8 @@ export class KakiDanceGame {
       ["controlMode", this.elements.controlMode, (value) => value],
       ["timingWindow", this.elements.timing, (value) => value],
       ["latencyMs", this.elements.latency, Number],
+      ["audioLatencyMs", this.elements.audioLatency, Number],
+      ["visualLatencyMs", this.elements.visualLatency, Number],
       ["screenShake", this.elements.shake, (value) => Number(value) / 100],
       ["musicVolume", this.elements.music, (value) => Number(value) / 100],
       ["effectsVolume", this.elements.effects, (value) => Number(value) / 100],
@@ -429,6 +524,7 @@ export class KakiDanceGame {
         this.renderer.setSettings({ ...this.settings, ...this.motion });
         if (key === "controlMode") this.input.setControlMode?.(this.settings.controlMode);
         if (key === "latencyMs") this.transport.setLatency?.(this.settings.latencyMs);
+        if (key === "audioLatencyMs") this.footPercussion.setLatency(this.settings.audioLatencyMs);
         if (["musicVolume", "effectsVolume", "crowdVolume"].includes(key)) this.applyAudioSettings();
         this.syncSettingOutputs();
         saveGame(this.save, this.storage);
@@ -464,6 +560,8 @@ export class KakiDanceGame {
     this.elements.controlMode.value = this.settings.controlMode;
     this.elements.timing.value = this.settings.timingWindow;
     this.elements.latency.value = this.settings.latencyMs;
+    this.elements.audioLatency.value = this.settings.audioLatencyMs;
+    this.elements.visualLatency.value = this.settings.visualLatencyMs;
     this.elements.shake.value = Math.round(this.settings.screenShake * 100);
     this.elements.music.value = Math.round(this.settings.musicVolume * 100);
     this.elements.effects.value = Math.round(this.settings.effectsVolume * 100);
@@ -480,6 +578,8 @@ export class KakiDanceGame {
 
   syncSettingOutputs() {
     this.elements.latencyOutput.textContent = `${this.settings.latencyMs} ms`;
+    this.elements.audioLatencyOutput.textContent = `${this.settings.audioLatencyMs} ms`;
+    this.elements.visualLatencyOutput.textContent = `${this.settings.visualLatencyMs} ms`;
     this.elements.shakeOutput.textContent = `${Math.round(this.settings.screenShake * 100)}%`;
     this.elements.musicOutput.textContent = `${Math.round(this.settings.musicVolume * 100)}%`;
     this.elements.effectsOutput.textContent = `${Math.round(this.settings.effectsVolume * 100)}%`;
@@ -499,6 +599,38 @@ export class KakiDanceGame {
       crowdVolume: this.settings.crowdVolume,
       masterMute: this.settings.masterMute,
     });
+  }
+
+  configureTransport(beatmap, trackUrl) {
+    if (this.transport.configure) {
+      this.transport.configure({ beatmap, trackUrl });
+      return;
+    }
+    if (this.transport.clock) this.transport.clock.beatmap = beatmap;
+  }
+
+  updateModePresentation() {
+    const isFrolic = FROLIC_MODES.has(this.mode) && this.state !== "title";
+    if (this.elements.nowPlaying) {
+      this.elements.nowPlaying.textContent = isFrolic
+        ? "BOARD & BOW · 120 BPM · AABB"
+        : "MOON BLOCK PARTY · 100 BPM";
+    }
+    if (this.elements.railMotto) {
+      this.elements.railMotto.textContent = isFrolic
+        ? "FOUNDATION / LICK / TRADE / FROLIC"
+        : "LISTEN / COPY / FREEZE";
+    }
+    const labels = isFrolic
+      ? { action: "STEP", style: "BRUSH", power: "DRIVE", freeze: "LICK" }
+      : { action: "PAW", style: "S", power: "P", freeze: "F" };
+    for (const button of this.elements.touchButtons) {
+      const control = button.dataset.control;
+      if (labels[control]) {
+        button.textContent = labels[control];
+        button.setAttribute("aria-label", labels[control]);
+      }
+    }
   }
 
   showLayer(name) {
@@ -521,6 +653,11 @@ export class KakiDanceGame {
       state: this.state,
       mode: this.mode,
       character: this.selectedCharacter,
+      frolicStyle: this.selectedFrolicStyle,
+      transport: Object.freeze({
+        contextState: this.transport.context?.state ?? "fallback",
+        audioClockFallback: Boolean(this.transport.clockProgress?.fallbackActive),
+      }),
       settings: Object.freeze({ ...this.settings, bindings: Object.freeze({ ...this.settings.bindings }) }),
       simulation: this.snapshot,
     });
@@ -544,6 +681,8 @@ function collectElements(host) {
     resultsLayer: byId("results-layer"),
     startButtons: [...host.querySelectorAll("[data-start-mode]")],
     characterButtons: [...host.querySelectorAll("[data-character]")],
+    frolicStyleButtons: [...host.querySelectorAll("[data-frolic-style]")],
+    touchButtons: [...host.querySelectorAll("#touch-controls [data-control]")],
     settingsButton: byId("settings-button"),
     controlsButton: byId("controls-button"),
     resumeButton: byId("resume-button"),
@@ -563,6 +702,10 @@ function collectElements(host) {
     timing: byId("setting-timing"),
     latency: byId("setting-latency"),
     latencyOutput: byId("latency-output"),
+    audioLatency: byId("setting-audio-latency"),
+    audioLatencyOutput: byId("audio-latency-output"),
+    visualLatency: byId("setting-visual-latency"),
+    visualLatencyOutput: byId("visual-latency-output"),
     shake: byId("setting-shake"),
     shakeOutput: byId("shake-output"),
     music: byId("setting-music"),
@@ -577,6 +720,8 @@ function collectElements(host) {
     reduceFlashes: byId("setting-flash"),
     remapButtons: [...host.querySelectorAll("[data-remap]")],
     remapHelp: byId("remap-help"),
+    nowPlaying: byId("now-playing"),
+    railMotto: host.querySelector(".rail-motto"),
   };
 }
 
@@ -620,6 +765,8 @@ function modeLabel(mode) {
   return {
     measure: "Measure Match",
     practice: "Practice",
+    frolic: "Appalachian Frolic",
+    stepShed: "Step Shed",
     freestyle: "60 second Freestyle",
     battle: "Cypher Battle",
   }[mode] ?? mode;

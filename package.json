@@ -7,12 +7,18 @@
   "scripts": {
     "serve": "python3 -m http.server 4177 --bind 127.0.0.1",
     "audio:build": "node scripts/build-breakbeat.mjs",
+    "audio:frolic:build": "node scripts/build-appalachian-audio.mjs",
+    "art:frolic:build": "python3 tools/art/build_appalachian_atlases.py",
+    "rig:frolic:build": "blender --background --factory-startup --python tools/blender/build_appalachian_frolic_rig.py",
     "check": "node tests/syntax-check.mjs",
     "test": "node --test tests/*.test.js",
     "qa:browser": "node scripts/browser-smoke.mjs",
     "qa:heroes": "node scripts/hero-browser-smoke.mjs",
     "qa:heroes:capture": "node scripts/capture-hero-rescue.mjs",
     "qa:measure:capture": "node scripts/capture-measure-match.mjs",
+    "qa:frolic": "node scripts/appalachian-browser-smoke.mjs",
+    "qa:frolic:chorus": "node scripts/frolic-full-chorus-smoke.mjs",
+    "qa:frolic:capture": "node scripts/capture-appalachian.mjs",
     "verify": "npm run check && npm test"
   },
   "devDependencies": {

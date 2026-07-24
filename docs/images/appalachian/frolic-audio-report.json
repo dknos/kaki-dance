@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "title": "Board & Bow",
+  "provenance": "Original Kaki-Dance composition and deterministic synthesis; no third-party recording or sample.",
+  "bpm": 120,
+  "meter": [
+    4,
+    4
+  ],
+  "form": "AABB",
+  "countInBars": 2,
+  "runBars": 32,
+  "runSeconds": 64,
+  "durationSeconds": 68,
+  "sampleRate": 22050,
+  "channels": 2,
+  "stems": [
+    "fiddle",
+    "banjo",
+    "guitar",
+    "bass"
+  ],
+  "footSampleGroups": [
+    "softSole",
+    "flatContact",
+    "heel",
+    "toeBall",
+    "brush",
+    "scuff",
+    "chug",
+    "drag",
+    "slide",
+    "tapHeel",
+    "tapToe",
+    "heavyAccent",
+    "rivalBoard"
+  ],
+  "files": {
+    "assets/audio/frolic/board-and-bow.wav": {
+      "bytes": 5997644,
+      "sha256": "373e900960546d3fea36876aa3b2982a10992fde273d7f07697f05a6d0ab307b"
+    },
+    "assets/audio/frolic/stems/board-and-bow-fiddle.wav": {
+      "bytes": 2998844,
+      "sha256": "c913c174ca2d7a2c4f690b67a7be847b84158bae67b309200100525d01802f53"
+    },
+    "assets/audio/frolic/stems/board-and-bow-banjo.wav": {
+      "bytes": 2998844,
+      "sha256": "e9ce3a44cf5109bf210905132088b1ca4048351369b84da474b8c652d87c2fc3"
+    },
+    "assets/audio/frolic/stems/board-and-bow-guitar.wav": {
+      "bytes": 2998844,
+      "sha256": "c760044c9cee7fd9769b3ad5b626ac92ca292753b99bde67504662dd92748353"
+    },
+    "assets/audio/frolic/stems/board-and-bow-bass.wav": {
+      "bytes": 2998844,
+      "sha256": "97a9d755d1024d63c8a7f056f454afd96d5ccdbaa9fcbd8993b6a44cf0e5a9db"
+    },
+    "assets/audio/frolic/feet/manifest.json": {
+      "bytes": 2060,
+      "sha256": "963d5ea3c9fa2036a6ad73ba8f3ad0eedfafa8f77c40857d9c10ca275d3e0d4b"
+    },
+    "assets/audio/frolic/feet/softSole-1.wav": {
+      "bytes": 10628,
+      "sha256": "0ceb74504c075fa5bad66cb5b1214b9cafa39acd0e5cec70bce6e4a223a16fe7"
+    },
+    "assets/audio/frolic/feet/softSole-2.wav": {
+      "bytes": 10628,
+      "sha256": "c006cdc6b540817f64d314f1e83570988965b6e2e45fd8b3ceba13bed640388c"
+    },
+    "assets/audio/frolic/feet/softSole-3.wav": {
+      "bytes": 10628,
+      "sha256": "68858874866b64061df97642bca7cf7e5f5e7d33afff1e8a6d48e6ef1869eee2"
+    },
+    "assets/audio/frolic/feet/flatContact-1.wav": {
+      "bytes": 12392,
+      "sha256": "a1264ab70dd7c218ae3ec366f3caf0b8fa2a8962135e3686de2e29a31a610665"
+    },
+    "assets/audio/frolic/feet/flatContact-2.wav": {
+      "bytes": 12392,
+      "sha256": "a6f54978a9755526e320d9529f25f97bccc99c7a16ed974f82e6683629761948"
+    },
+    "assets/audio/frolic/feet/flatContact-3.wav": {
+      "bytes": 12392,
+      "sha256": "c719db08fde6d09d7e0cab79c6923df8b92b59d3678b10eed1f52de1ce33aa56"
+    },
+    "assets/audio/frolic/feet/heel-1.wav": {
+      "bytes": 11510,
+      "sha256": "5e5eb8a1102a5ad97d79ac7c91c0c0319331895666cc0b60e04e8e4850f9495f"
+    },
+    "assets/audio/frolic/feet/heel-2.wav": {
+      "bytes": 11510,
+      "sha256": "7f3a580e2490dde80de73cec05b5299814fe9331201d65660acef33f25e33af9"
+    },
+    "assets/audio/frolic/feet/heel-3.wav": {
+      "bytes": 11510,
+      "sha256": "09779eea9167ec707ea9c53cfed8ca612c1583b2e16ff8c47468b7f1118bdfe9"
+    },
+    "assets/audio/frolic/feet/toeBall-1.wav": {
+      "bytes": 8864,
+      "sha256": "6ef088e7b0aa5d152594c34c948862461b02bd25bcca0021a99802b82d8391a5"
+    },
+    "assets/audio/frolic/feet/toeBall-2.wav": {
+      "bytes": 8864,
+      "sha256": "07ad8125693b357041fd34c1b015fae93590fe9e041b90a3d073923addc54484"
+    },
+    "assets/audio/frolic/feet/toeBall-3.wav": {
+      "bytes": 8864,
+      "sha256": "0ce8c66dbd370b59cec9ed3b95e12f68feec9f6933e9a50c43aa455ed9a6893e"
+    },
+    "assets/audio/frolic/feet/brush-1.wav": {
+      "bytes": 7982,
+      "sha256": "800c1af2f3c81e8b9f8918bf860acb7241c202d65fae8285d32b4a091a3ba8c3"
+    },
+    "assets/audio/frolic/feet/brush-2.wav": {
+      "bytes": 7982,
+      "sha256": "4480632760e77c1673e400cece45d8de2f44424d1aa5c43cff80179c2df675f9"
+    },
+    "assets/audio/frolic/feet/brush-3.wav": {
+      "bytes": 7982,
+      "sha256": "0112917ca550949c377af38160f3624637067f24c71187d5854416371c062a8c"
+    },
+    "assets/audio/frolic/feet/scuff-1.wav": {
+      "bytes": 8864,
+      "sha256": "b2e071e7b6a2abc479bff5e90c8b4ad8ada50b632943fb1bf5b5d4ee76d442e1"
+    },
+    "assets/audio/frolic/feet/scuff-2.wav": {
+      "bytes": 8864,
+      "sha256": "ed208bc47502dfc5300ad88ad0ef28c8628d95632f993ba05175c1e54b59346f"
+    },
+    "assets/audio/frolic/feet/scuff-3.wav": {
+      "bytes": 8864,
+      "sha256": "ee8bbae1beba91155c2d091e424c0d8cb4fce3d2a2e74c955a4e62d917fb4273"
+    },
+    "assets/audio/frolic/feet/chug-1.wav": {
+      "bytes": 15038,
+      "sha256": "737b8382af54bb0abbba9a7dc7ad1827e7b03532c35602a42df563fb865849d1"
+    },
+    "assets/audio/frolic/feet/chug-2.wav": {
+      "bytes": 15038,
+      "sha256": "18a912f4ab32f37722d08c765c95e8ba3e5132ca6c06fec15a5cd7265dc71564"
+    },
+    "assets/audio/frolic/feet/chug-3.wav": {
+      "bytes": 15038,
+      "sha256": "aeaae79f3f2f537be9acd88dba216e7c7128a2a4203e7b5e08af71c9a3cc1522"
+    },
+    "assets/audio/frolic/feet/drag-1.wav": {
+      "bytes": 14156,
+      "sha256": "8fec56f7d0989ee3be20d8b7649ac99167c4b85480c22853910eb59f738f38ae"
+    },
+    "assets/audio/frolic/feet/drag-2.wav": {
+      "bytes": 14156,
+      "sha256": "769741938d8634a87b589cb4083e570d8a8fdaca1f52af86dd7929e06314a62e"
+    },
+    "assets/audio/frolic/feet/drag-3.wav": {
+      "bytes": 14156,
+      "sha256": "6e4063ef5d4e244669bd66a0eda78ce2408f8f58f90c5e19dfbba5352311ee0c"
+    },
+    "assets/audio/frolic/feet/slide-1.wav": {
+      "bytes": 16802,
+      "sha256": "7b4fe9f85725498ef9e37f12ead8198663d0924ef8ac92e6c43871f63c691787"
+    },
+    "assets/audio/frolic/feet/slide-2.wav": {
+      "bytes": 16802,
+      "sha256": "8beec189c3c1f5cfbff043f2c97d7758ceac41659d2e9404cdcb784378b0f114"
+    },
+    "assets/audio/frolic/feet/slide-3.wav": {
+      "bytes": 16802,
+      "sha256": "9ed4ca89778b7b0eaf67f13db460df2e1e0065f39b8cddb366b46bd8f205e1f8"
+    },
+    "assets/audio/frolic/feet/tapHeel-1.wav": {
+      "bytes": 13274,
+      "sha256": "3da20eeac8ef359542c54b7f9dab8da2468c4acad367f2887d27a3a5c9690612"
+    },
+    "assets/audio/frolic/feet/tapHeel-2.wav": {
+      "bytes": 13274,
+      "sha256": "044d13bdfc8c86826bf30157683a13bb5bd6a5d45d00a2184b22830e0456bada"
+    },
+    "assets/audio/frolic/feet/tapHeel-3.wav": {
+      "bytes": 13274,
+      "sha256": "e8e9a0c8a1d736a084efae0c0e7a95fbb350a590b56ada47166cf7c1d3f55b9e"
+    },
+    "assets/audio/frolic/feet/tapToe-1.wav": {
+      "bytes": 10628,
+      "sha256": "f02e2999d4c8bd5c68e5c6c40a065fd96d1fd3ea6957abf4913d86d3de3c43eb"
+    },
+    "assets/audio/frolic/feet/tapToe-2.wav": {
+      "bytes": 10628,
+      "sha256": "350d36beb2a0fd5bd57469a2886c610b3348e25c8f33d22ef4fd2d2ef0befe21"
+    },
+    "assets/audio/frolic/feet/tapToe-3.wav": {
+      "bytes": 10628,
+      "sha256": "624a293d933468e63c743f8f361aad8db0b8bdcdc0545a56d67974e07cc89a92"
+    },
+    "assets/audio/frolic/feet/heavyAccent-1.wav": {
+      "bytes": 20330,
+      "sha256": "b94f2b481bdf3506c61ab58c6fdda0ae0821d98c150066be2de353c0d537ba9c"
+    },
+    "assets/audio/frolic/feet/heavyAccent-2.wav": {
+      "bytes": 20330,
+      "sha256": "671e3d2cbe003d0c9eb9ed04c58851a17d7c7c1fd55466fa290a61c2668a3ddd"
+    },
+    "assets/audio/frolic/feet/heavyAccent-3.wav": {
+      "bytes": 20330,
+      "sha256": "b56bfbd659297234866e41c879e46b91ca53d8e447b3101f6a1ca551e745d6b6"
+    },
+    "assets/audio/frolic/feet/rivalBoard-1.wav": {
+      "bytes": 13274,
+      "sha256": "53fadfc1a258dc2f087d7293bc9f8d69d7fe3125e784fe945fe7d515f0c0013f"
+    },
+    "assets/audio/frolic/feet/rivalBoard-2.wav": {
+      "bytes": 13274,
+      "sha256": "f96cf67da7afeb7fa0df7b3be01c9e3c6c59b722a7fe1eab52e2d0e78d1ebd8f"
+    },
+    "assets/audio/frolic/feet/rivalBoard-3.wav": {
+      "bytes": 13274,
+      "sha256": "f3e716de8d58a17a7cb437affa8bd923052b5bb5c37e6b25727dc862a020bd56"
+    }
+  }
+}

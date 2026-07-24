@@ -1,0 +1,232 @@
+:root {
+  color-scheme: dark;
+  --pine: #101c1a;
+  --pine-2: #182923;
+  --cedar: #b64d32;
+  --amber: #f2bd65;
+  --chalk: #e8d9b9;
+  --indigo: #26314d;
+  --mint: #78b79b;
+  --ink: #07100f;
+  font-family: ui-monospace, "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--chalk);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 23px, rgba(232,217,185,0.018) 24px),
+    linear-gradient(180deg, #0b1514, var(--pine));
+}
+
+a { color: var(--amber); }
+
+button,
+select,
+input { font: inherit; }
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.lab-mast {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: 180px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(242,189,101,0.45);
+  background: rgba(7,16,15,0.9);
+}
+
+.lab-mast a {
+  font-size: 0.72rem;
+  text-decoration: none;
+}
+
+.lab-mast p,
+.lab-mast h1 { margin: 0; }
+
+.lab-mast p {
+  color: var(--mint);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+}
+
+.lab-mast h1 {
+  margin-top: 3px;
+  color: var(--chalk);
+  font: 900 clamp(1rem, 2.8vw, 2rem)/1 Impact, "Arial Black", sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+#lab-status {
+  color: var(--amber);
+  font-size: 0.58rem;
+}
+
+.lab-shell {
+  display: grid;
+  grid-template-columns: 254px minmax(0, 1fr);
+  min-height: calc(100vh - 79px);
+}
+
+.lab-controls {
+  padding: 14px;
+  border-right: 1px solid rgba(232,217,185,0.22);
+  background: rgba(7,16,15,0.64);
+}
+
+fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 13px;
+  padding: 10px;
+  border: 1px solid rgba(120,183,155,0.35);
+}
+
+legend {
+  padding: 0 5px;
+  color: var(--amber);
+  font-size: 0.63rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px;
+  color: rgba(232,217,185,0.78);
+  font-size: 0.62rem;
+}
+
+label select,
+label input[type="range"] { grid-column: 1 / -1; width: 100%; }
+
+label.check {
+  grid-template-columns: auto 1fr;
+  justify-content: start;
+}
+
+select,
+button {
+  border: 1px solid rgba(232,217,185,0.5);
+  padding: 5px;
+  color: var(--chalk);
+  background: var(--pine-2);
+}
+
+button {
+  border-bottom: 3px solid var(--cedar);
+  cursor: pointer;
+}
+
+input { accent-color: var(--amber); }
+
+fieldset p {
+  margin: 0;
+  color: var(--mint);
+  font-size: 0.55rem;
+}
+
+.lab-workbench {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(300px, 0.72fr);
+  align-content: start;
+  gap: 14px;
+  padding: 14px;
+}
+
+.preview-card,
+.data-card,
+.atlas-card {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid rgba(232,217,185,0.28);
+  background: rgba(7,16,15,0.72);
+}
+
+.preview-card header,
+.data-card header,
+.atlas-card header {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 9px;
+  border-bottom: 1px solid rgba(232,217,185,0.2);
+  color: var(--amber);
+  font-size: 0.62rem;
+}
+
+.preview-card header span,
+.data-card header span,
+.atlas-card header span {
+  color: rgba(232,217,185,0.58);
+  font-size: 0.5rem;
+}
+
+.preview-card canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.preview-card--stage canvas {
+  width: min(100%, 768px);
+}
+
+.neutral-viewport {
+  max-height: 500px;
+  overflow: auto;
+  background: #232323;
+}
+
+.preview-card--neutral canvas {
+  width: 1536px;
+  max-width: none;
+}
+
+.data-card pre {
+  min-height: 190px;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  color: var(--mint);
+  font: 0.62rem/1.5 ui-monospace, monospace;
+  white-space: pre-wrap;
+}
+
+.atlas-card img {
+  display: block;
+  width: 100%;
+  max-height: 390px;
+  object-fit: contain;
+  object-position: top left;
+  background: #311f28;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 1000px) {
+  .lab-shell { grid-template-columns: 220px minmax(0, 1fr); }
+  .lab-workbench { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 680px) {
+  .lab-mast { grid-template-columns: 1fr; }
+  .lab-shell { display: block; }
+  .lab-controls { border-right: 0; }
+}

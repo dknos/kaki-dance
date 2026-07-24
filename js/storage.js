@@ -7,9 +7,12 @@ export function createDefaultSave() {
   return {
     version: SAVE_VERSION,
     selectedCharacter: "kitty",
+    selectedFrolicStyle: "flatfoot",
     settings: cloneSettings(DEFAULT_SETTINGS),
     records: {
       freestyleBest: 0,
+      frolicBest: 0,
+      stepShedComplete: false,
       battleWins: 0,
       bestCrowdHeat: 0,
     },
@@ -52,11 +55,16 @@ export function migrateSave(value) {
   return {
     version: SAVE_VERSION,
     selectedCharacter: value.selectedCharacter === "soder" ? "soder" : "kitty",
+    selectedFrolicStyle: ["flatfoot", "buck", "clog"].includes(value.selectedFrolicStyle)
+      ? value.selectedFrolicStyle
+      : "flatfoot",
     settings: {
       ...fallback.settings,
       ...(value.settings ?? {}),
       bindings,
       latencyMs: finiteClamp(value.settings?.latencyMs, -200, 200, 0),
+      audioLatencyMs: finiteClamp(value.settings?.audioLatencyMs, -200, 200, 0),
+      visualLatencyMs: finiteClamp(value.settings?.visualLatencyMs, -200, 200, 0),
       screenShake: finiteClamp(value.settings?.screenShake, 0, 1, 0.7),
       musicVolume: finiteClamp(value.settings?.musicVolume, 0, 1, 0.8),
       effectsVolume: finiteClamp(value.settings?.effectsVolume, 0, 1, 0.8),

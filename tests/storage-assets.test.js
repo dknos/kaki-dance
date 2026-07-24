@@ -20,8 +20,11 @@ test("save migration repairs old, corrupt, and out-of-range values", () => {
   const migrated = migrateSave({
     version: 0,
     selectedCharacter: "soder",
+    selectedFrolicStyle: "clog",
     settings: {
       latencyMs: 999,
+      audioLatencyMs: -999,
+      visualLatencyMs: Number.POSITIVE_INFINITY,
       screenShake: -4,
       musicVolume: 2,
       bindings: { action: "KeyZ" },
@@ -30,11 +33,16 @@ test("save migration repairs old, corrupt, and out-of-range values", () => {
   });
   assert.equal(migrated.version, SAVE_VERSION);
   assert.equal(migrated.selectedCharacter, "soder");
+  assert.equal(migrated.selectedFrolicStyle, "clog");
   assert.equal(migrated.settings.latencyMs, 200);
+  assert.equal(migrated.settings.audioLatencyMs, -200);
+  assert.equal(migrated.settings.visualLatencyMs, 0);
   assert.equal(migrated.settings.screenShake, 0);
   assert.equal(migrated.settings.musicVolume, 1);
   assert.equal(migrated.settings.bindings.action, "KeyZ");
   assert.deepEqual(migrated.calibration.samples, [1, 2]);
+  assert.equal(migrated.records.frolicBest, 0);
+  assert.equal(migrated.records.stepShedComplete, false);
   assert.equal(migrateSave(null).selectedCharacter, "kitty");
 });
 

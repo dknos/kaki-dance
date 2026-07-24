@@ -53,6 +53,14 @@ export class HeroAtlasLibrary {
     return this.records.get(normalizeAtlasCharacter(character)) ?? null;
   }
 
+  releaseAll() {
+    this.records.clear();
+  }
+
+  activeKeys() {
+    return Object.freeze([...this.records.keys()]);
+  }
+
   async loadRecord(id, record) {
     try {
       if (!this.fetchImpl) throw new Error("Fetch is unavailable.");

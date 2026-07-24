@@ -1,5 +1,38 @@
 # Known limitations
 
+## Appalachian Frolic
+
+- The three named styles are deliberately qualified gameplay profiles, not an
+  authoritative taxonomy. Movement names, distinctions, contextual notes, and
+  stage framing still require review by Appalachian percussive dancers from
+  more than one community.
+- “Board & Bow” and all foot samples are original local audio, but they are
+  deterministic studio synthesis rather than a live string-band/player
+  session. The four synchronized stems are checked in; this vertical slice
+  plays the stereo master and does not yet rebalance individual stems live.
+- The authored atlas pipeline clears deterministic anatomy, plant, joint,
+  contact, silhouette, and transition lint, and every approval board and loop
+  has been inspected. Automated checks cannot replace final taste review by a
+  specialist pixel animator or movement review by a dancer.
+- The Blender armature proves shared anatomy, foot controls, camera depth, and
+  export determinism. Its proxy meshes are not public art or a production
+  deformation rig; public pixels come from the authored pose/cleanup pass.
+- The slice is intentionally one solo 32-bar chorus, one tune, and one
+  community-hall stage. Couple dance, square dance, team clogging, crews,
+  additional tunes, and named archival unlockables remain outside scope.
+- The current responsive mix reacts through the player-controlled foot
+  instrument, crowd, board, and phrase cues. Per-stem band foregrounding is a
+  documented next production step, not silently claimed as complete.
+- Browser QA covers native rendering, keyboard, simulated gamepad mappings,
+  real touch events, one-pack lazy loading, local-only assets, and desktop frame
+  pacing. A physical lower-end Android/iOS latency, haptics, thermal, and
+  speaker-mix pass remains required.
+- Cultural-history PDFs supplied with the brief were not copied into the
+  repository. The development provenance document uses their public review
+  records and the cited practitioner/heritage sources.
+
+## Measure Match and shared application
+
 - The authored atlas is a complete playable visual slice, but final artistic
   approval remains a separate human gate. Automated anchors, contacts and
   geometry cannot certify that a paused drawing feels like finished character

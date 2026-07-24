@@ -5,10 +5,12 @@ export const MAX_FRAME_DELTA = 0.1;
 export const MAX_CATCH_UP_STEPS = 14;
 export const GAME_VERSION = "0.1.0";
 
-export const MODE_IDS = Object.freeze(["measure", "practice", "freestyle", "battle"]);
+export const MODE_IDS = Object.freeze(["measure", "practice", "frolic", "stepShed", "freestyle", "battle"]);
 export const ROUND_BARS = Object.freeze({
   measure: 16,
   practice: 999,
+  frolic: 32,
+  stepShed: 999,
   freestyle: 25,
   battle: 8,
 });
@@ -38,6 +40,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   controlMode: "simple",
   timingWindow: "standard",
   latencyMs: 0,
+  audioLatencyMs: 0,
+  visualLatencyMs: 0,
   reducedMotion: false,
   screenShake: 0.7,
   reduceFlashes: false,
@@ -66,4 +70,14 @@ export const STAGE = Object.freeze({
   floorCenterY: 163,
   floorRadiusX: 104,
   floorRadiusY: 34,
+});
+
+export const FROLIC_STAGE = Object.freeze({
+  id: "cedarRidgeFrolicHall",
+  displayName: "Cedar Ridge Frolic Hall",
+  boardLeft: 118,
+  boardRight: 266,
+  boardTop: 151,
+  boardBottom: 187,
+  floorY: 178,
 });
