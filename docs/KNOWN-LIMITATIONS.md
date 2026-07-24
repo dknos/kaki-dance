@@ -1,40 +1,37 @@
 # Known limitations
 
-- The rescued heroes are code-drawn tapered volumes, not a finished modular
-  sprite atlas. This keeps contacts exact and silhouettes editable, but some
-  extreme foreshortening still has fewer bespoke drawings than a production
-  atlas would provide.
-- 6-Step is mechanically six-phase and contact-correct, yet its two most
-  front-facing crossed positions can read flatter at quarter speed than the
-  strongest side-thread keys.
-- Windmill now uses shoulder/back rotation, a large leg scissor and a dedicated
-  clip. The compact chibi head can still overlap the near shoulder during two
-  intermediate drawings, especially on KittyKaki.
-- Soder is fully bipedal, but the padded hood can briefly cover the far shoulder
-  in deep floor poses. The Hero Lab z-order and skeleton overlays make this
-  visible rather than masking it with effects.
-- The shared Blender source is an anatomy/contact blockout with low-poly
-  costume volumes, not a final character mesh or motion-capture solution.
-- The shipped song is an original instrumental synthesis loop. The sparse
-  Japanese female vocal version is a documented Suno production brief, not yet
-  a mastered runtime asset.
-- Power animation is fully interactive at the phase, direction, extension,
-  contact, stamina, and freeze-exit level. The checked-in Blender proxy is a
-  mechanical blockout, not a polished motion-capture rig or final character
-  mesh; the runtime intentionally uses hand-authored 2D keys.
-- Battle contains one AI opponent and alternating turns only. Local two-player,
-  crews, ghosts, and online play are outside this slice.
-- Results show a deterministic best-moment replay frame, while the in-round
-  trail retains five recent poses. Replay export/import and a multi-shot
-  cinematic viewer are next-stage work.
-- Runtime crowd members are original code-authored profiles inspired by the
-  supplied KemonoKaki collection direction. Collection-specific names and
-  token art are not redistributed. The project owner should confirm any
-  collection or character commercial-use rights before a commercial release.
-- Automated performance is a desktop Chromium baseline. A lower-end physical
-  Android pass is still required.
-- Accessibility includes control remapping, timing windows, latency, reduced
-  motion, shake, flash, beat pulse, labels, and volume controls, but there is no
-  screen-reader narration of the continuously rendered dance.
-- No new hero profile should be added until it passes the same fixed-length
-  biped, planted-contact, silhouette and full move-sweep thresholds.
+- The authored atlas is a complete playable visual slice, but final artistic
+  approval remains a separate human gate. Automated anchors, contacts and
+  geometry cannot certify that a paused drawing feels like finished character
+  art.
+- Aseprite and LibreSprite are not installed in this workspace. The checked-in
+  cleanup/export pass is a deterministic Pillow-based equivalent with authored
+  poses, hard palette edges, outlines, trimming, padding and extrusion. A
+  specialist pixel artist may still request local silhouette or facial edits.
+- Soder's soft tail remains behind the biped and never appears in semantic
+  contacts. In several windmill keys it approaches the rear-leg silhouette and
+  deserves particular reviewer attention at quarter speed.
+- Atlas metadata is intentionally explicit and therefore large: about 729 KB
+  per hero. Normal gameplay lazily loads one selected hero at about 0.80 MB
+  compressed and 8 MiB decoded texture memory. Metadata compaction is deferred
+  until visual approval.
+- The hidden semantic rig and atlas share normalized phase and declared
+  contacts, but the atlas is not reconstructed from the rig at runtime.
+  Changing a clip requires regenerating both its atlas metadata and approval
+  sheets.
+- The complete 25-move catalog remains in experimental Freestyle/Cypher logic
+  for compatibility. Public presentation maps it onto the nine authored MVP
+  clips; those modes are intentionally not the milestone's quality bar.
+- The generated Blender armature and costume volumes are orthographic mechanics
+  and camera-depth references, not final production meshes or motion capture.
+- The original track is a local synthesized instrumental. The optional vocal
+  concept remains a production brief rather than a mastered runtime asset.
+- Automated performance is a desktop headless-Chromium baseline. The responsive
+  landscape touch layout is tested, but a lower-end physical Android frame
+  pacing and thermal pass is still required.
+- Accessibility includes remapping, timing windows, latency, reduced motion,
+  shake, flash, beat pulse, labels and volumes. The continuously rendered dance
+  has no screen-reader narration.
+- Freestyle/Cypher still contain one AI opponent, alternating turns and legacy
+  result categories. Local multiplayer, crews, ghosts and online play remain
+  outside this slice.

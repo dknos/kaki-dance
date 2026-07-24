@@ -1,13 +1,21 @@
 # Kaki-Dance
 
-**Catch the beat. Build the round. Hold the freeze.**
+**Listen to one bar. Copy it. Make it yours.**
 
-Kaki-Dance is a standalone browser breaking game starring KittyKaki and Soder.
-It is a freestyle dance toy rather than a note highway: choose moves, connect
-declared stances, answer musical accents, manage power momentum, and actively
-balance freezes.
+Kaki-Dance is a 384×216 Canvas 2D rhythm game starring KittyKaki and Soder.
+The primary game is Measure Match:
 
-![Kaki-Dance shared hero biped review](docs/images/hero-rescue/after/hero-lab.png)
+```text
+LISTEN TO ONE MEASURE
+        ↓
+COPY IT DURING THE NEXT MEASURE
+        ↓
+ADD OPTIONAL STYLE
+        ↓
+LAND THE PHRASE-ENDING FREEZE
+```
+
+![Measure Match gameplay](docs/images/measure-match/final/measure-match-gameplay.png)
 
 ## Play locally
 
@@ -17,71 +25,94 @@ No build is required.
 npm run serve
 ```
 
-Open <http://127.0.0.1:4177>. The first mode selection unlocks Web Audio.
-The same checked-in files deploy unchanged to GitHub Pages.
+Open <http://127.0.0.1:4177>. The first mode selection unlocks Web Audio. The
+same checked-in files remain compatible with static GitHub Pages.
 
-## Included vertical slice
+## Measure Match vertical slice
 
-- One fixed-length `BipedRig` with complete arm and leg anchors, plus distinct
-  KittyKaki and Soder render profiles. Soder is a humanoid plush dancer inside
-  a padded snake kigurumi.
-- Practice Lab with the complete golden chain:
+- One polished 16-bar sequence at 100 BPM and 4/4.
+- Count-in, seven authored call/copy pairs and a freeze/get-up resolution.
+- One required input for the complete beginner song:
+  **Space**, gamepad **A**, or the large touch **PAW**.
+- A sixteen-cell measure strip grouped into four beats; no falling-note
+  highway and no hidden stance vocabulary in the player-facing rules.
+- Nearest-unmatched-target timing, signed early/late errors, misses, extras,
+  separate optional Style cells, phrase streaks and five immediate grades.
+- Predictive choreography selected during CALL. Atlas animation proceeds from
+  the audio clock and never restarts when the player taps.
+- Golden-chain escalation:
   `Basic Rock → Go Down → 6-Step → Windmill → Baby Freeze → Clean Get-Up`.
-- 60-second Freestyle.
-- Alternating two-round Cypher Battle against a same-rules AI, with a tiebreak
-  only when the normal rounds tie.
-- 25 authored moves: 5 toprock, 4 go-downs, 1 recovery, 6 footwork, 5 power,
-  and 4 freezes.
-- Five-category scoring: musicality, vocabulary, originality, technique, and
-  execution.
-- Stamina, momentum, player-corrected freeze balance, crowd heat, repeat decay,
-  buffered transitions, and useful invalid-input feedback.
-- Deterministic best-moment replay frame in the post-round judgment.
-- Keyboard, gamepad, and independent multitouch input.
-- Moonlit Oekaki Block Party stage, twelve KemonoKaki-inspired crowd profiles,
-  reactive DJ/crowd/effects, and an original local 100 BPM breakbeat.
-- Animation Lab, Rhythm Lab, and 114-frame deterministic QA gallery.
+- KittyKaki and Soder use authored, trimmed, indexed sprite atlases. Soder has
+  ordinary plush biped anatomy inside a padded snake kigurumi; the tail is
+  decorative and never supports weight.
+
+Practice is the interactive opening tutorial. Freestyle and Cypher Battle
+remain under **More modes · experimental** and are not expanded by this
+milestone.
 
 ## Controls
 
-Simple Controls are the default.
-
-| Input | Keyboard | Gamepad | Touch |
+| Measure Match | Keyboard | Gamepad | Touch |
 | --- | --- | --- | --- |
-| Direction / balance | WASD or arrows | Left stick | Radial stick |
-| Context action / transition | Space | A | A |
-| Style / variation | F or X | X | S |
-| Power / extend | Shift or Y | Y | P |
-| Freeze / hold | T or B | B | F |
-| Pause | Escape or P | Start | Pause |
+| Copy a lit cell | Space | A | PAW |
+| Pause | Escape / P | Start | Pause |
 
-Simple Action chooses a compatible move from the current stance. Hold down and
-press Action during toprock to go down; press Action on the floor for 6-Step;
-hold up and press Action after a freeze to get up. Direction, Action, Style,
-Power, and Freeze keys are remappable in the Controls panel.
+Optional controls are introduced only after the copy rule:
 
-Advanced Controls select families directly:
+| Optional action | Keyboard | Gamepad |
+| --- | --- | --- |
+| Choreography direction | Left / Right | Left stick |
+| Style cell | F / X | X |
+| Prompted power variation | Shift / Y | Y |
+| Phrase-ending freeze / advanced hold | T / B | B |
 
-- Q — toprock
-- E — footwork
-- F — power
-- T — freeze
-- Space — transition or accent
+The direct Q/E/F/T move-family controls remain available only in the
+experimental advanced modes.
 
-## Development tools
+## Hero production stack
 
-- [Hero Lab](hero-lab.html) — KittyKaki and Soder side by side at the same
-  phase, native/2×/4× views, frame stepping, mirrored playback, onion skinning,
-  silhouette mode, named joints, contacts, COM, support, z-order and live
-  bone-length warnings.
-- [Hero rescue review board](hero-rescue.html) — native before/after pairs,
-  silhouette proofs, individual golden-chain videos and shared Blender source.
-- [Animation and Rhythm Labs](lab.html) — scrub every move, change cadence and
-  speed, mirror it, force stamina/balance, inspect skeleton/contact/COM/support
-  overlays, test legal transitions, capture PNGs, and inspect the audio clock.
-- [Deterministic QA gallery](qa.html) — entry, midpoint, accent, and exit frames
-  for all moves plus golden-chain and failure variants. Filter with
-  `qa.html?family=freeze`.
+Public pixels and gameplay anatomy are deliberately separate:
+
+```text
+AudioContext.currentTime
+          │
+   Measure Match scheduler ─── authored target cells / judgments
+          │
+   normalized clip phase
+          ├── hidden BipedRig: contacts, COM, support, eligibility, replay
+          └── public atlas: authored occlusion, silhouette, costume, face
+```
+
+Each hero has 225 trimmed drawings across nine clips:
+
+- Idle/Groove
+- Basic Rock
+- Go Down
+- 6-Step
+- Windmill
+- Baby Freeze
+- Clean Get-Up
+- Victory
+- Miss/Recovery
+
+The runtime loads the selected hero's two 1024×1024 indexed PNG pages and
+metadata. The rejected procedural renderer is retained only as an optional
+Hero Lab debug layer.
+
+## Development and review tools
+
+- [Authored atlas review board](hero-rescue.html) — ten approval poses,
+  silhouettes, random-frame sheets, normal/quarter-speed videos, gameplay
+  capture and the explicitly rejected `ce32ead` baseline.
+- [Hero Lab](hero-lab.html) — both heroes at identical phase; native, 2× and
+  4× nearest-neighbor; full/half/quarter speed; frame stepping; silhouettes;
+  semantic skeleton, contacts, COM, support, anatomical labels; per-segment
+  depth colors; atlas bounds and pivot; effects/shake disabled; automatic
+  16-bar sequence.
+- [Animation and Rhythm Labs](lab.html) — legacy move development and audio
+  clock inspection.
+- [Deterministic QA gallery](qa.html) — legacy semantic-rig and advanced-mode
+  sweeps.
 
 ## Verification
 
@@ -89,86 +120,41 @@ Advanced Controls select families directly:
 npm run verify
 ```
 
-This runs syntax checks and 40 native Node tests using a fake audio clock. The
-suite covers beat math, pause/resume, latency, fixed-step catch-up, input edges,
-transition legality, every declared contact at 101 phases for both characters,
-fixed bone lengths, bend continuity, mirrored biped semantics, transition
-bridges, IK bounds, balance, stamina, extensions, scoring decay, AI parity,
-deterministic replay, tiebreaks, storage migration, Blender exports, audio
-headers, and asset dimensions.
-
-For browser capture:
+Browser and visual proof:
 
 ```bash
 npm install
 npm run serve
 # in a second terminal
 npm run qa:browser
+npm run qa:heroes
+npm run qa:measure:capture
 ```
 
-The browser pass writes screenshots and a machine-readable report under
-`docs/images/qa-browser/`.
+The native suite covers atlas metadata and indexed PNGs, stable pivots,
+semantic anchors, contacts and segment depths; deterministic atlas playback;
+public-renderer separation from procedural limbs; audio-clock math; latency,
+pause/resume and loop wrapping; nearest unmatched target matching; one-input
+ownership; early/late errors; misses, extras and optional Style; one-button
+tutorial completion; failed-tutorial replay; predictive sequence escalation;
+clean input destruction; and the existing exhaustive semantic-rig geometry,
+contact, transition, scoring and replay tests.
 
-## Architecture
+Browser outputs live under:
 
-```text
-AudioContext.currentTime
-          │
-       BeatClock ────────────────┐
-          │                      │
-  120 Hz DanceSimulation        │
-          │                      │
-  MoveSession / contacts / AI   │
-          │                      │
-   immutable gameplay snapshot  │
-          ├──────── Canvas 2D renderer at 384×216
-          ├──────── semantic Web Audio effects
-          └──────── host callbacks / deterministic replay
-```
-
-Gameplay truth lives in `js/dance` and `js/animation`. The renderer consumes
-named contacts and solved rig anchors; it does not decide stance eligibility,
-balance, timing, or score. The public entry point is:
-
-```js
-const game = await createKakiDance({
-  host,
-  input,
-  audio,
-  storage,
-  settings,
-  profile,
-  onExit,
-  onRoundComplete,
-  onBattleComplete,
-  qaScene,
-});
-
-game.start();
-game.pause();
-game.resume();
-game.restart();
-game.destroy();
-game.getSnapshot();
-```
-
-See [the architecture decision](docs/ADR-001-STANDALONE-DANCE-CORE.md) and
-[the Kaki-Surf portability audit](docs/AUDIT-KAKI-SURF.md).
+- `docs/images/qa-browser/`
+- `docs/images/measure-match/final/`
 
 ## Authoring and production
 
-- [Move references](docs/MOVE-REFERENCES.md)
-- [Move-authoring guide](docs/MOVE-AUTHORING.md)
-- [Offline shared-biped Blender pipeline](tools/blender/README.md)
-- [Hero rescue report](docs/HERO-RESCUE-REPORT.md)
-- [Beatmap schema](docs/BEATMAP-SCHEMA.md)
+- [Measure Match milestone report](docs/MEASURE-MATCH-MILESTONE.md)
+- [Rejected procedural rescue and atlas replacement](docs/HERO-RESCUE-REPORT.md)
+- [Beatmap v2 schema](docs/BEATMAP-SCHEMA.md)
+- [Offline atlas and shared-armature pipeline](tools/blender/README.md)
 - [Asset provenance](docs/ASSET-PROVENANCE.md)
-- [Suno Kaki-Dance brief](docs/SUNO-KAKI-DANCE.md)
 - [Performance report](docs/PERFORMANCE.md)
 - [Known limitations](docs/KNOWN-LIMITATIONS.md)
-- [Prioritized next content](docs/NEXT-CONTENT.md)
+- [Architecture decision](docs/ADR-001-STANDALONE-DANCE-CORE.md)
 
-The checked-in track is generated offline and has no sampled or cloud-fetched
-material. Suno can be used later for a sparse Japanese female vocal version;
-the production prompt and minimal lyrics are documented without making Suno a
-runtime dependency.
+The checked-in track and atlases are local runtime assets. There are no
+runtime AI, cloud, streaming, or generation requests.

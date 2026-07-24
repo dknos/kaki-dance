@@ -1,9 +1,11 @@
 import { DEFAULT_BEATMAP } from "./audio/beatmap.js";
 import { characterDefinition } from "./dance/character-catalog.js";
+import { presentationAtBeat } from "./dance/measure-match-simulation.js";
 import { getMoveDefinition } from "./dance/move-catalog.js";
 import { goldenChainIds } from "./dance/move-session.js";
+import { AtlasHeroRenderer } from "./render/hero-atlas.js";
 import { drawPixelText } from "./render/pixel-font.js";
-import { pixelLine, pixelRect } from "./render/primitives.js";
+import { pixelLine, pixelRect, scalePoint } from "./render/primitives.js";
 import { drawDancer } from "./render/dancer.js";
 import { buildMoveQaSnapshot } from "./render/qa-frame.js";
 
@@ -39,8 +41,21 @@ const GOLDEN_KEYS = Object.freeze([
 ]);
 
 const CHAIN = goldenChainIds().map((id) => getMoveDefinition(id));
-const CHAIN_BEATS = CHAIN.reduce((sum, move) => sum + move.durationBeats, 0);
+const LAB_CLIPS = Object.freeze([
+  { id: "idleGroove", displayName: "IDLE / GROOVE", semanticMoveId: "basicRock", durationBeats: 2 },
+  { id: "basicRock", displayName: "BASIC ROCK", semanticMoveId: "basicRock", durationBeats: 4 },
+  { id: "basicGoDown", displayName: "GO DOWN", semanticMoveId: "basicGoDown", durationBeats: 4 },
+  { id: "sixStep", displayName: "6-STEP", semanticMoveId: "sixStep", durationBeats: 4 },
+  { id: "windmill", displayName: "WINDMILL", semanticMoveId: "windmill", durationBeats: 4 },
+  { id: "babyFreeze", displayName: "BABY FREEZE", semanticMoveId: "babyFreeze", durationBeats: 4 },
+  { id: "cleanGetUp", displayName: "CLEAN GET-UP", semanticMoveId: "cleanGetUp", durationBeats: 4 },
+  { id: "victory", displayName: "VICTORY", semanticMoveId: "basicRock", durationBeats: 2 },
+  { id: "missRecovery", displayName: "MISS / RECOVERY", semanticMoveId: "cleanGetUp", durationBeats: 2 },
+]);
+const LAB_CLIP_BY_ID = new Map(LAB_CLIPS.map((clip) => [clip.id, clip]));
+const CHAIN_BEATS = DEFAULT_BEATMAP.loopBars * DEFAULT_BEATMAP.beatsPerBar;
 const TRANSITION_BEATS = 0.22;
+const atlasHeroes = new AtlasHeroRenderer();
 const canvas = document.getElementById("hero-lab-canvas");
 const ctx = canvas.getContext("2d", { alpha: false });
 const zoomCanvases = [
@@ -61,6 +76,9 @@ const controls = {
   next: document.getElementById("hero-next-frame"),
   mirror: document.getElementById("hero-mirror"),
   onion: document.getElementById("hero-onion"),
+  procedural: document.getElementById("hero-procedural"),
+  effectsOff: document.getElementById("hero-effects-off"),
+  shakeOff: document.getElementById("hero-shake-off"),
   skeleton: document.getElementById("hero-skeleton"),
   jointNames: document.getElementById("hero-joint-names"),
   contacts: document.getElementById("hero-contacts"),
@@ -68,6 +86,7 @@ const controls = {
   support: document.getElementById("hero-support"),
   silhouette: document.getElementById("hero-silhouette"),
   zOrder: document.getElementById("hero-z-order"),
+  atlasBounds: document.getElementById("hero-atlas-bounds"),
   boneWarnings: document.getElementById("hero-bone-warnings"),
   capture: document.getElementById("hero-capture"),
   readout: document.getElementById("hero-lab-readout"),
@@ -83,11 +102,14 @@ let chainBeat = 0;
 let lastTime = performance.now();
 let activeSnapshots = null;
 
-for (const move of CHAIN) {
+for (const clip of LAB_CLIPS) {
   const option = document.createElement("option");
-  option.value = move.id;
-  option.textContent = move.displayName;
+  option.value = clip.id;
+  option.textContent = clip.displayName;
   controls.move.append(option);
+}
+
+for (const move of CHAIN) {
   const segment = document.createElement("span");
   segment.title = move.displayName;
   controls.track.append(segment);
@@ -116,8 +138,14 @@ controls.capture.addEventListener("click", () => downloadCanvas(
   `kaki-dance-hero-lab-${controls.move.value}-${phase.toFixed(3)}.png`,
 ));
 
-buildContactSheet();
 requestAnimationFrame(tick);
+Promise.all([
+  atlasHeroes.preload("kitty"),
+  atlasHeroes.preload("soder"),
+]).then(() => {
+  buildContactSheet();
+  render();
+});
 
 function tick(time) {
   const dt = Math.min(0.05, Math.max(0, (time - lastTime) / 1000));
@@ -127,11 +155,11 @@ function tick(time) {
     if (controls.chain.checked) {
       chainBeat = (chainBeat + dt * DEFAULT_BEATMAP.bpm / 60 * speed) % CHAIN_BEATS;
       const state = chainStateAt(chainBeat);
-      controls.move.value = state.move.id;
+      controls.move.value = state.presentationClip;
       phase = state.phase;
     } else {
-      const move = getMoveDefinition(controls.move.value);
-      const durationSeconds = move.durationBeats * 60 / DEFAULT_BEATMAP.bpm;
+      const clip = selectedLabClip();
+      const durationSeconds = clipDurationBeats(clip) * 60 / DEFAULT_BEATMAP.bpm;
       phase = (phase + dt * speed / durationSeconds) % 1;
     }
     controls.phase.value = String(phase);
@@ -143,12 +171,16 @@ function tick(time) {
 function render() {
   ctx.imageSmoothingEnabled = false;
   drawDeskBackground(ctx);
-  const move = getMoveDefinition(controls.move.value);
   const chainState = controls.chain.checked ? chainStateAt(chainBeat) : null;
+  const clip = chainState
+    ? selectedLabClip(chainState.presentationClip)
+    : selectedLabClip();
+  const move = chainState?.move ?? getMoveDefinition(clip.semanticMoveId);
   const transitionFrom = chainState?.previousMove?.id ?? "";
   const transitionProgress = chainState?.transitionProgress ?? 1;
   const options = {
     moveId: move.id,
+    presentationClip: clip.id,
     phase,
     mirror: controls.mirror.checked,
     transitionFrom,
@@ -166,34 +198,64 @@ function render() {
     jointNames: controls.jointNames.checked,
     contacts: controls.contacts.checked,
     com: controls.com.checked,
-    zOrder: controls.zOrder.checked,
+    zOrder: false,
     boneWarnings: controls.boneWarnings.checked,
   };
   if (controls.onion.checked && !controls.silhouette.checked) {
     drawOnionSkin(ctx, options, "kitty", kitty.character, 111);
     drawOnionSkin(ctx, options, "soder", soder.character, 273);
   }
-  drawDancer(ctx, kitty.dancer, kitty.character, {
-    x: 111,
-    floorY: 162,
-    scale: 1.72,
-    silhouette: controls.silhouette.checked,
-    debug,
-  });
-  drawDancer(ctx, soder.dancer, soder.character, {
-    x: 273,
-    floorY: 162,
-    scale: 1.72,
-    silhouette: controls.silhouette.checked,
-    debug,
-  });
+  let kittyAtlas = null;
+  let soderAtlas = null;
+  if (controls.procedural.checked) {
+    drawDancer(ctx, kitty.dancer, kitty.character, {
+      x: 111,
+      floorY: 162,
+      scale: 1.72,
+      silhouette: controls.silhouette.checked,
+      debug,
+    });
+    drawDancer(ctx, soder.dancer, soder.character, {
+      x: 273,
+      floorY: 162,
+      scale: 1.72,
+      silhouette: controls.silhouette.checked,
+      debug,
+    });
+  } else {
+    const atlasDebug = controls.atlasBounds.checked
+      ? { bounds: true, pivot: true, anchors: false }
+      : null;
+    kittyAtlas = atlasHeroes.draw(ctx, atlasDancer(kitty.dancer, clip.id, phase), kitty.character, {
+      x: 111,
+      floorY: 162,
+      scale: 1,
+      phase,
+      silhouette: controls.silhouette.checked,
+      debug: atlasDebug,
+    });
+    soderAtlas = atlasHeroes.draw(ctx, atlasDancer(soder.dancer, clip.id, phase), soder.character, {
+      x: 273,
+      floorY: 162,
+      scale: 1,
+      phase,
+      silhouette: controls.silhouette.checked,
+      debug: atlasDebug,
+    });
+    drawSemanticOverlay(ctx, kitty, 111, 162, 1.72, debug);
+    drawSemanticOverlay(ctx, soder, 273, 162, 1.72, debug);
+    if (controls.zOrder.checked) {
+      drawSegmentDepth(ctx, kittyAtlas, 111, 162, 1);
+      drawSegmentDepth(ctx, soderAtlas, 273, 162, 1);
+    }
+  }
   if (controls.support.checked) {
     drawSupport(ctx, kitty, 111, 162, 1.72);
     drawSupport(ctx, soder, 273, 162, 1.72);
   }
-  drawDeskLabels(ctx, move);
+  drawDeskLabels(ctx, clip);
   copyZooms();
-  updateReadout(move, kitty, soder, transitionFrom, transitionProgress);
+  updateReadout(clip, kitty, soder, transitionFrom, transitionProgress);
   updateTrack(move.id);
 }
 
@@ -236,8 +298,12 @@ function drawDeskLabels(target, move) {
 
 function drawOnionSkin(target, options, character, definition, x) {
   const move = getMoveDefinition(options.moveId);
-  const durationSeconds = move.durationBeats * 60 / DEFAULT_BEATMAP.bpm;
-  const drawings = Math.max(2, Math.round(durationSeconds * move.poseCadence));
+  const clip = selectedLabClip(options.presentationClip);
+  const atlas = atlasHeroes.library.get(character)?.metadata;
+  const atlasClip = atlas?.clips[clip.id];
+  const durationSeconds = clipDurationBeats(clip) * 60 / DEFAULT_BEATMAP.bpm;
+  const drawings = atlasClip?.frameCount
+    ?? Math.max(2, Math.round(durationSeconds * move.poseCadence));
   const step = 1 / drawings;
   for (const [offset, alpha] of [[-step, 0.12], [step, 0.08]]) {
     const snapshot = buildMoveQaSnapshot({
@@ -247,13 +313,29 @@ function drawOnionSkin(target, options, character, definition, x) {
       transitionFrom: "",
       transitionProgress: 1,
     });
-    drawDancer(target, snapshot.dancer, definition, {
-      x,
-      floorY: 162,
-      scale: 1.72,
-      alpha,
-      ghost: true,
-    });
+    if (controls.procedural.checked) {
+      drawDancer(target, snapshot.dancer, definition, {
+        x,
+        floorY: 162,
+        scale: 1.72,
+        alpha,
+        ghost: true,
+      });
+    } else {
+      atlasHeroes.draw(
+        target,
+        atlasDancer(snapshot.dancer, clip.id, Math.max(0, Math.min(1, phase + offset))),
+        definition,
+        {
+        x,
+        floorY: 162,
+        scale: 1,
+        alpha,
+        ghost: true,
+        phase: Math.max(0, Math.min(1, phase + offset)),
+        },
+      );
+    }
   }
 }
 
@@ -267,6 +349,121 @@ function drawSupport(target, snapshot, x, floorY, scale) {
   pixelRect(target, maximum - 1, floorY + 4, 2, 5, "#f4c95d");
 }
 
+const SEMANTIC_SEGMENTS = Object.freeze({
+  leftUpperArm: ["leftShoulder", "leftElbow", "LUA"],
+  leftForearm: ["leftElbow", "leftWrist", "LFA"],
+  leftHand: ["leftWrist", "leftHand", "LH"],
+  rightUpperArm: ["rightShoulder", "rightElbow", "RUA"],
+  rightForearm: ["rightElbow", "rightWrist", "RFA"],
+  rightHand: ["rightWrist", "rightHand", "RH"],
+  leftThigh: ["leftHip", "leftKnee", "LT"],
+  leftShin: ["leftKnee", "leftAnkle", "LS"],
+  leftFoot: ["leftAnkle", "leftFoot", "LF"],
+  rightThigh: ["rightHip", "rightKnee", "RT"],
+  rightShin: ["rightKnee", "rightAnkle", "RS"],
+  rightFoot: ["rightAnkle", "rightFoot", "RF"],
+});
+
+const SEGMENT_COLORS = Object.freeze({
+  leftUpperArm: "#63d6b3",
+  leftForearm: "#8de6cf",
+  leftHand: "#d1fff2",
+  rightUpperArm: "#f46b45",
+  rightForearm: "#ff9a78",
+  rightHand: "#ffd4bd",
+  leftThigh: "#4db8e8",
+  leftShin: "#7ad8f5",
+  leftFoot: "#c6f2ff",
+  rightThigh: "#e178a5",
+  rightShin: "#ee9fc2",
+  rightFoot: "#ffd2e5",
+});
+
+function drawSemanticOverlay(target, snapshot, x, floorY, scale, debug) {
+  const rig = snapshot.dancer.rig;
+  const anchors = Object.fromEntries(
+    Object.entries(rig.anchors).map(([name, value]) => [name, scalePoint(value, x, floorY, scale)]),
+  );
+  if (debug.skeleton) {
+    for (const [from, to] of [
+      ["head", "neck"],
+      ["neck", "chest"],
+      ["chest", "pelvis"],
+      ...Object.values(SEMANTIC_SEGMENTS).map(([from, to]) => [from, to]),
+    ]) {
+      pixelLine(target, anchors[from], anchors[to], 1, "#63d6b3");
+    }
+    for (const value of Object.values(anchors)) {
+      pixelRect(target, value.x - 1, value.y - 1, 3, 3, "#f46b45");
+    }
+  }
+  if (debug.jointNames) {
+    for (const [name, value] of Object.entries(anchors)) {
+      if (!["head", "pelvis", "leftShoulder", "leftElbow", "leftWrist", "leftHand", "rightShoulder", "rightElbow", "rightWrist", "rightHand", "leftHip", "leftKnee", "leftAnkle", "leftFoot", "rightHip", "rightKnee", "rightAnkle", "rightFoot"].includes(name)) continue;
+      const label = name
+        .replace("left", "L")
+        .replace("right", "R")
+        .replace("Shoulder", "S")
+        .replace("Elbow", "E")
+        .replace("Wrist", "W")
+        .replace("Hand", "H")
+        .replace("Hip", "HP")
+        .replace("Knee", "K")
+        .replace("Ankle", "A")
+        .replace("Foot", "F")
+        .replace("head", "H")
+        .replace("pelvis", "P");
+      drawPixelText(target, label, value.x + 2, value.y - 5, {
+        color: "#f5e9c9",
+        shadow: "#090b1b",
+        scale: 1,
+      });
+    }
+  }
+  if (debug.com) {
+    const center = scalePoint(rig.centerOfMass, x, floorY, scale);
+    pixelLine(target, { x: center.x - 4, y: center.y }, { x: center.x + 4, y: center.y }, 1, "#f4c95d");
+    pixelLine(target, { x: center.x, y: center.y - 4 }, { x: center.x, y: center.y + 4 }, 1, "#f4c95d");
+  }
+  if (debug.contacts) {
+    for (const contact of snapshot.dancer.contacts.contacts ?? []) {
+      const value = scalePoint(contact.anchor, x, floorY, scale);
+      pixelRect(target, value.x - 2, value.y - 1, 5, 3, "#f46b45");
+    }
+  }
+  if (debug.boneWarnings && (rig.maxBoneLengthError > 1e-6 || rig.warnings?.length)) {
+    drawPixelText(target, "BONE WARNING", x, 17, {
+      align: "center",
+      color: "#f46b45",
+      shadow: "#090b1b",
+      scale: 1,
+    });
+  }
+}
+
+function drawSegmentDepth(target, selection, x, floorY, scale) {
+  if (!selection?.frame) return;
+  const frame = selection.frame;
+  const originX = x - frame.pivot[0] * scale;
+  const originY = floorY - frame.pivot[1] * scale;
+  for (const [segment, [from, to, label]] of Object.entries(SEMANTIC_SEGMENTS)) {
+    const start = frame.semanticAnchors[from];
+    const end = frame.semanticAnchors[to];
+    if (!start || !end) continue;
+    const a = { x: originX + start[0] * scale, y: originY + start[1] * scale };
+    const b = { x: originX + end[0] * scale, y: originY + end[1] * scale };
+    const color = SEGMENT_COLORS[segment];
+    pixelLine(target, a, b, 2, color);
+    const middle = { x: Math.round((a.x + b.x) / 2), y: Math.round((a.y + b.y) / 2) };
+    drawPixelText(target, `${label}${frame.segmentDepth[segment] >= 0 ? "+" : ""}`, middle.x, middle.y - 4, {
+      align: "center",
+      color,
+      shadow: "#090b1b",
+      scale: 1,
+    });
+  }
+}
+
 function copyZooms() {
   for (const zoom of zoomCanvases) {
     const zoomContext = zoom.getContext("2d", { alpha: false });
@@ -276,15 +473,15 @@ function copyZooms() {
   }
 }
 
-function updateReadout(move, kitty, soder, transitionFrom, transitionProgress) {
+function updateReadout(clip, kitty, soder, transitionFrom, transitionProgress) {
   controls.phaseOutput.textContent = phase.toFixed(3);
   controls.staminaOutput.textContent = String(Math.round(Number(controls.stamina.value)));
   controls.balanceOutput.textContent = Number(controls.balance.value).toFixed(2);
   const contacts = kitty.dancer.contacts.contacts.map((contact) => contact.limb).join(", ") || "air";
   const bridge = transitionFrom && transitionProgress < 1
     ? `bridge ${transitionFrom} ${(transitionProgress * 100).toFixed(0)}%`
-    : "authored clip";
-  controls.readout.textContent = `${move.displayName} · ${kitty.dancer.pose.label} · phase ${phase.toFixed(3)} · ${contacts} · ${bridge}`;
+    : controls.procedural.checked ? "procedural debug" : "authored atlas";
+  controls.readout.textContent = `${clip.displayName} · phase ${phase.toFixed(3)} · ${contacts} · ${bridge} · shared semantic BipedRig`;
   updateCharacterMetrics("kitty", kitty);
   updateCharacterMetrics("soder", soder);
 }
@@ -310,9 +507,11 @@ function updateTrack(moveId) {
 }
 
 function stepDrawing(direction) {
-  const move = getMoveDefinition(controls.move.value);
-  const durationSeconds = move.durationBeats * 60 / DEFAULT_BEATMAP.bpm;
-  const drawings = Math.max(2, Math.round(durationSeconds * move.poseCadence));
+  const clip = selectedLabClip();
+  const durationSeconds = clipDurationBeats(clip) * 60 / DEFAULT_BEATMAP.bpm;
+  const atlas = atlasHeroes.library.get("kitty")?.metadata;
+  const drawings = atlas?.clips[clip.id]?.frameCount
+    ?? Math.max(2, Math.round(durationSeconds * 12));
   phase = Math.max(0, Math.min(1, phase + direction / drawings));
   controls.phase.value = String(phase);
   controls.speed.value = "0";
@@ -321,24 +520,26 @@ function stepDrawing(direction) {
 }
 
 function chainStateAt(beat) {
-  let cursor = 0;
-  for (let index = 0; index < CHAIN.length; index += 1) {
-    const move = CHAIN[index];
-    const end = cursor + move.durationBeats;
-    if (beat < end || index === CHAIN.length - 1) {
-      const localBeat = beat - cursor;
-      return {
-        move,
-        previousMove: index > 0 ? CHAIN[index - 1] : CHAIN.at(-1),
-        phase: Math.max(0, Math.min(1, localBeat / move.durationBeats)),
-        transitionProgress: localBeat < TRANSITION_BEATS
-          ? localBeat / TRANSITION_BEATS
-          : 1,
-      };
-    }
-    cursor = end;
-  }
-  return { move: CHAIN[0], previousMove: CHAIN.at(-1), phase: 0, transitionProgress: 0 };
+  const state = presentationAtBeat(beat, DEFAULT_BEATMAP);
+  const previousState = presentationAtBeat(Math.max(0, beat - 0.02), DEFAULT_BEATMAP);
+  const moveId = state.moveId && getMoveDefinition(state.moveId)
+    ? state.moveId
+    : state.semanticClip && getMoveDefinition(state.semanticClip)
+      ? state.semanticClip
+      : "basicRock";
+  const previousId = previousState.moveId && getMoveDefinition(previousState.moveId)
+    ? previousState.moveId
+    : "basicRock";
+  const localBeat = ((beat % 4) + 4) % 4;
+  return {
+    move: getMoveDefinition(moveId),
+    previousMove: getMoveDefinition(previousId),
+    presentationClip: LAB_CLIP_BY_ID.has(state.clip) ? state.clip : moveId,
+    phase: state.phase,
+    transitionProgress: localBeat < TRANSITION_BEATS
+      ? localBeat / TRANSITION_BEATS
+      : 1,
+  };
 }
 
 function buildContactSheet() {
@@ -358,10 +559,11 @@ function buildContactSheet() {
         character,
         beat: 16 + keyPhase,
       });
-      drawDancer(cardContext, snapshot.dancer, characterDefinition(character), {
+      atlasHeroes.draw(cardContext, snapshot.dancer, characterDefinition(character), {
         x,
         floorY: 162,
-        scale: 1.72,
+        scale: 1,
+        phase: keyPhase,
       });
     }
     const move = getMoveDefinition(moveId);
@@ -391,6 +593,7 @@ function downloadCanvas(source, filename) {
 globalThis.heroLab = Object.freeze({
   setState({
     moveId,
+    clipId,
     nextPhase,
     mirror,
     chain,
@@ -399,7 +602,13 @@ globalThis.heroLab = Object.freeze({
     stamina,
     balance,
   } = {}) {
-    if (moveId && getMoveDefinition(moveId)) controls.move.value = moveId;
+    const requestedClip = clipId ?? moveId;
+    if (requestedClip && LAB_CLIP_BY_ID.has(requestedClip)) {
+      controls.move.value = requestedClip;
+    } else if (moveId && getMoveDefinition(moveId)) {
+      const matchingClip = LAB_CLIPS.find((clip) => clip.semanticMoveId === moveId);
+      if (matchingClip) controls.move.value = matchingClip.id;
+    }
     if (Number.isFinite(nextPhase)) {
       phase = Math.max(0, Math.min(1, nextPhase));
       controls.phase.value = String(phase);
@@ -414,8 +623,10 @@ globalThis.heroLab = Object.freeze({
   },
   render,
   getState() {
+    const clip = selectedLabClip();
     return {
-      moveId: controls.move.value,
+      moveId: clip.semanticMoveId,
+      clipId: clip.id,
       phase,
       chainBeat,
       chain: controls.chain.checked,
@@ -428,3 +639,20 @@ globalThis.heroLab = Object.freeze({
   canvas,
   chainBeats: CHAIN_BEATS,
 });
+
+function selectedLabClip(id = controls.move.value) {
+  return LAB_CLIP_BY_ID.get(id) ?? LAB_CLIP_BY_ID.get("basicRock");
+}
+
+function clipDurationBeats(clip) {
+  return atlasHeroes.library.get("kitty")?.metadata?.clips?.[clip.id]?.durationBeats
+    ?? clip.durationBeats;
+}
+
+function atlasDancer(dancer, presentationClip, presentationPhase) {
+  return {
+    ...dancer,
+    presentationClip,
+    presentationPhase,
+  };
+}

@@ -23,7 +23,7 @@ export class EffectsRenderer {
     this.replayTrail = [];
   }
 
-  onEvent(event, snapshot, settings) {
+  onEvent(event, snapshot, settings, visual = null) {
     if (event.type === "moveStarted") {
       if (event.family === "power") {
         this.spawnBurst(192, 157, 12, "#63d6b3", 0.75);
@@ -49,6 +49,23 @@ export class EffectsRenderer {
       this.camera.punch = 4;
     }
     if (event.type === "roundStarted") this.spawnBurst(192, 162, 18, "#8f86d9", 0.7);
+    if (event.type === "rhythmHit") {
+      const contact = visualImpactAnchor(visual, event.matchType);
+      const x = contact?.x ?? 192;
+      const y = contact?.y ?? 154;
+      const perfect = event.judgment === "perfect";
+      this.spawnBurst(
+        x,
+        y,
+        perfect ? 7 : 3,
+        perfect ? "#f4c95d" : event.matchType === "style" ? "#8f86d9" : "#63d6b3",
+        perfect ? 0.46 : 0.28,
+      );
+      this.camera.punch = Math.max(this.camera.punch, perfect ? 0.7 : 0.2);
+    }
+    if (event.type === "measureCompleted" && event.result?.grade === "PURRFECT") {
+      this.spawnBurst(192, 148, 12, "#f4c95d", 0.62);
+    }
   }
 
   update(dt, snapshot, settings) {
@@ -128,6 +145,20 @@ export class EffectsRenderer {
       ctx.restore();
     }
   }
+}
+
+function visualImpactAnchor(visual, matchType) {
+  const frame = visual?.frame;
+  if (!frame) return null;
+  const contact = matchType === "style" ? null : Object.values(frame.contacts ?? {})[0];
+  const anchor = contact
+    ?? (matchType === "style" ? frame.effectAnchors?.rightPaw : frame.effectAnchors?.leftFoot)
+    ?? frame.effectAnchors?.root;
+  if (!anchor) return null;
+  return {
+    x: 192 + anchor[0] - frame.pivot[0],
+    y: 158 + anchor[1] - frame.pivot[1],
+  };
 }
 
 function createParticle() {

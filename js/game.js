@@ -5,6 +5,7 @@ import { SoundEffects } from "./audio/sfx.js";
 import { DEFAULT_SETTINGS, FIXED_STEP, TIMING_WINDOWS } from "./config.js";
 import { FixedStepLoop } from "./core/fixed-step.js";
 import { characterDefinition, normalizeCharacterId } from "./dance/character-catalog.js";
+import { MeasureMatchSimulation } from "./dance/measure-match-simulation.js";
 import { DanceSimulation } from "./dance/simulation.js";
 import { InputManager, createInputStep } from "./input.js";
 import { KakiDanceRenderer } from "./render/renderer.js";
@@ -60,7 +61,7 @@ export class KakiDanceGame {
       seed: 0x5245504c,
     });
     this.state = "title";
-    this.mode = "practice";
+    this.mode = "measure";
     this.simulation = null;
     this.attract = null;
     this.snapshot = null;
@@ -94,13 +95,15 @@ export class KakiDanceGame {
       if (options.immediate) return this.startMode(options.mode);
       this.mode = options.mode;
     }
+    delete this.host.dataset.mode;
     this.showLayer("title");
     return this.getSnapshot();
   }
 
   async startMode(mode = this.mode) {
     if (this.destroyed) return;
-    this.mode = ["practice", "freestyle", "battle"].includes(mode) ? mode : "practice";
+    this.mode = ["measure", "practice", "freestyle", "battle"].includes(mode) ? mode : "measure";
+    this.host.dataset.mode = this.mode;
     this.state = "loading";
     announce(this.elements.liveStatus, "Loading the Moon Block Party beat.");
     this.input.clear?.();
@@ -113,14 +116,7 @@ export class KakiDanceGame {
     this.transport.setLatency?.(this.settings.latencyMs);
     this.transport.start?.({ offsetSeconds: 0 });
     const beatSnapshot = this.transport.clock.getSnapshot();
-    this.simulation = new DanceSimulation({
-      mode: this.mode,
-      character: this.selectedCharacter,
-      beatmap: this.beatmap,
-      timingWindows: TIMING_WINDOWS[this.settings.timingWindow] ?? TIMING_WINDOWS.standard,
-      reducedMotion: this.motion.reducedMotion,
-      seed: 0x4b414b49,
-    });
+    this.simulation = this.createSimulation();
     this.simulation.begin(beatSnapshot);
     this.state = "running";
     this.renderer.reset();
@@ -128,6 +124,34 @@ export class KakiDanceGame {
     this.elements.canvas.focus({ preventScroll: true });
     this.loop.resetClock();
     announce(this.elements.liveStatus, `${modeLabel(this.mode)} started with ${characterDefinition(this.selectedCharacter).displayName}.`);
+  }
+
+  createSimulation() {
+    const Simulation = this.mode === "measure" || this.mode === "practice"
+      ? MeasureMatchSimulation
+      : DanceSimulation;
+    return new Simulation({
+      mode: this.mode,
+      character: this.selectedCharacter,
+      beatmap: this.beatmap,
+      timingWindows: TIMING_WINDOWS[this.settings.timingWindow] ?? TIMING_WINDOWS.standard,
+      reducedMotion: this.motion.reducedMotion,
+      seed: 0x4b414b49,
+    });
+  }
+
+  replayTutorialPattern(callBar = 2) {
+    if (this.mode !== "measure" && this.mode !== "practice") return;
+    const beat = (Math.max(1, callBar) - 1) * this.beatmap.beatsPerBar;
+    const offsetSeconds = this.beatmap.offsetSeconds + beat * 60 / this.beatmap.bpm;
+    this.input.clear?.();
+    this.transport.start?.({ offsetSeconds });
+    const beatSnapshot = this.transport.clock.getSnapshot();
+    this.simulation = this.createSimulation();
+    this.simulation.begin(beatSnapshot);
+    this.renderer.reset();
+    this.loop.resetClock();
+    announce(this.elements.liveStatus, "Listen once more, then copy with Space.");
   }
 
   pause(reason = "player") {
@@ -162,6 +186,7 @@ export class KakiDanceGame {
     this.sfx.stopAll();
     this.input.clear?.();
     this.state = "title";
+    delete this.host.dataset.mode;
     this.createAttractSimulation();
     this.showLayer("title");
     announce(this.elements.liveStatus, "Returned to the title.");
@@ -240,6 +265,19 @@ export class KakiDanceGame {
         this.sfx.play("crowd", { strength: 1, crowd: true });
         this.transport.duck?.(0.15, 0.16);
       }
+      if (event.type === "rhythmHit") {
+        this.sfx.play(event.judgment === "perfect" ? "perfect" : "footContact", {
+          strength: event.strength ?? 0.75,
+        });
+      }
+      if (event.type === "measureCompleted") {
+        if (event.result.grade === "PURRFECT" || event.result.grade === "CLEAN") {
+          this.sfx.play("crowd", { strength: event.result.grade === "PURRFECT" ? 1 : 0.65, crowd: true });
+        }
+      }
+      if (event.type === "tutorialReplay") {
+        this.replayTutorialPattern(event.callBar);
+      }
       if (event.type === "roundStarted") {
         this.sfx.play("crowd", { strength: 0.7, crowd: true });
       }
@@ -275,12 +313,15 @@ export class KakiDanceGame {
     }
     this.elements.resultsKicker.textContent = this.mode === "battle"
       ? won ? "CYPHER WON" : result.winner === "tie" ? "TIE BREAK ENERGY" : "MIKAN TAKES IT"
+      : this.mode === "measure" || this.mode === "practice" ? "PHRASE COMPLETE"
       : "ROUND COMPLETE";
     this.elements.resultsTitle.textContent = this.mode === "battle"
       ? won
         ? `${characterDefinition(this.selectedCharacter).displayName} cooked!`
         : result.winner === "tie" ? "Dead even!" : "Run it back!"
-      : player.total >= 70 ? "Clean round!" : "Build the next phrase";
+      : this.mode === "measure" || this.mode === "practice"
+        ? player.total >= 82 ? "PURRFECT echo!" : player.total >= 62 ? "In the pocket!" : "Run the echo again"
+        : player.total >= 70 ? "Clean round!" : "Build the next phrase";
     this.elements.judgeGrid.replaceChildren(...["musicality", "vocabulary", "originality", "technique", "execution"].map((category) => {
       const cell = document.createElement("div");
       cell.className = "judge-score";
@@ -291,7 +332,10 @@ export class KakiDanceGame {
       cell.append(score, label);
       return cell;
     }));
-    this.elements.resultsReason.textContent = player.reasons?.slice(0, 3).join(" ") || "Keep listening, varying families, and finishing cleanly.";
+    this.elements.resultsReason.textContent = player.reasons?.slice(0, 3).join(" ")
+      || (this.mode === "measure" || this.mode === "practice"
+        ? "Listen to one bar, then echo the lit cells."
+        : "Keep listening, varying families, and finishing cleanly.");
     this.updateRecords(result);
     this.showLayer("results");
     announce(this.elements.liveStatus, `${this.elements.resultsTitle.textContent} Score ${player.total}.`);
@@ -321,6 +365,8 @@ export class KakiDanceGame {
   selectCharacter(character, { persist = true } = {}) {
     this.selectedCharacter = normalizeCharacterId(character);
     this.save.selectedCharacter = this.selectedCharacter;
+    this.renderer.preloadCharacter(this.selectedCharacter);
+    this.replayRenderer.preloadCharacter(this.selectedCharacter);
     for (const button of this.elements.characterButtons) {
       const selected = button.dataset.character === this.selectedCharacter;
       button.classList.toggle("is-selected", selected);
@@ -571,5 +617,10 @@ function keyLabel(code) {
 }
 
 function modeLabel(mode) {
-  return { practice: "Practice Lab", freestyle: "60 second Freestyle", battle: "Cypher Battle" }[mode] ?? mode;
+  return {
+    measure: "Measure Match",
+    practice: "Practice",
+    freestyle: "60 second Freestyle",
+    battle: "Cypher Battle",
+  }[mode] ?? mode;
 }

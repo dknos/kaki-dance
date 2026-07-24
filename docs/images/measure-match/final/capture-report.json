@@ -1,0 +1,111 @@
+{
+  "capturedAt": "2026-07-24T14:34:35.193Z",
+  "sourceUrl": "http://127.0.0.1:4177",
+  "logicalSize": [
+    384,
+    216
+  ],
+  "fps": 12,
+  "records": [
+    {
+      "type": "hero",
+      "character": "kitty",
+      "label": "full-speed",
+      "path": "docs/images/measure-match/final/kitty-full-speed.mp4",
+      "dimensions": [
+        384,
+        216
+      ],
+      "fps": 12,
+      "frameCount": 173,
+      "uniqueAtlasFrames": 173,
+      "durationSeconds": 14.4,
+      "bytes": 151478
+    },
+    {
+      "type": "hero",
+      "character": "kitty",
+      "label": "quarter-speed",
+      "path": "docs/images/measure-match/final/kitty-quarter-speed.mp4",
+      "dimensions": [
+        384,
+        216
+      ],
+      "fps": 12,
+      "frameCount": 692,
+      "uniqueAtlasFrames": 180,
+      "durationSeconds": 57.6,
+      "bytes": 260327
+    },
+    {
+      "type": "hero",
+      "character": "soder",
+      "label": "full-speed",
+      "path": "docs/images/measure-match/final/soder-full-speed.mp4",
+      "dimensions": [
+        384,
+        216
+      ],
+      "fps": 12,
+      "frameCount": 173,
+      "uniqueAtlasFrames": 173,
+      "durationSeconds": 14.4,
+      "bytes": 223881
+    },
+    {
+      "type": "hero",
+      "character": "soder",
+      "label": "quarter-speed",
+      "path": "docs/images/measure-match/final/soder-quarter-speed.mp4",
+      "dimensions": [
+        384,
+        216
+      ],
+      "fps": 12,
+      "frameCount": 692,
+      "uniqueAtlasFrames": 180,
+      "durationSeconds": 57.6,
+      "bytes": 347719
+    },
+    {
+      "type": "gameplay",
+      "character": "kitty",
+      "label": "measure-match-gameplay",
+      "mode": "measure",
+      "path": "docs/images/measure-match/final/measure-match-gameplay.mp4",
+      "dimensions": [
+        384,
+        216
+      ],
+      "fps": 12,
+      "frameCount": 461,
+      "durationSeconds": 38.4,
+      "bytes": 1214125,
+      "finalBar": 16,
+      "finalState": "freeze",
+      "completedMeasures": 7,
+      "claimedTargets": 35
+    },
+    {
+      "type": "gameplay",
+      "character": "kitty",
+      "label": "tutorial",
+      "mode": "practice",
+      "path": "docs/images/measure-match/final/tutorial.mp4",
+      "dimensions": [
+        384,
+        216
+      ],
+      "fps": 12,
+      "frameCount": 144,
+      "durationSeconds": 12,
+      "bytes": 357280,
+      "finalBar": 5,
+      "finalState": "copy",
+      "completedMeasures": 1,
+      "claimedTargets": 8
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

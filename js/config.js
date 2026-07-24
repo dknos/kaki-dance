@@ -5,8 +5,9 @@ export const MAX_FRAME_DELTA = 0.1;
 export const MAX_CATCH_UP_STEPS = 14;
 export const GAME_VERSION = "0.1.0";
 
-export const MODE_IDS = Object.freeze(["practice", "freestyle", "battle"]);
+export const MODE_IDS = Object.freeze(["measure", "practice", "freestyle", "battle"]);
 export const ROUND_BARS = Object.freeze({
+  measure: 16,
   practice: 999,
   freestyle: 25,
   battle: 8,

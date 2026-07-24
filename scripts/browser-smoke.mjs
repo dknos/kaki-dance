@@ -32,6 +32,16 @@ page.on("requestfailed", (request) => failedRequests.push(`${request.url()} — 
 await page.goto(`${baseUrl}/index.html`, { waitUntil: "networkidle" });
 await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().state === "title");
 await page.screenshot({ path: resolve(outputDir, "title-kitty.png") });
+const initialHeroResources = await page.evaluate(() => (
+  performance.getEntriesByType("resource")
+    .filter((entry) => entry.name.includes("/assets/heroes/"))
+    .map((entry) => ({
+      name: new URL(entry.name).pathname,
+      transferSize: entry.transferSize,
+      decodedBodySize: entry.decodedBodySize,
+      durationMs: entry.duration,
+    }))
+));
 
 await page.locator('[data-start-mode="practice"]').click();
 await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().state === "running");
@@ -83,6 +93,10 @@ const practiceSnapshot = await page.evaluate(() => {
     beat: snapshot.simulation?.beat?.beat,
     chainIndex: snapshot.simulation?.practiceChainIndex,
     next: snapshot.simulation?.practiceNext,
+    measureState: snapshot.simulation?.measureMatch?.state,
+    measureBar: snapshot.simulation?.measureMatch?.bar,
+    measureCells: snapshot.simulation?.measureMatch?.cells?.length,
+    presentationClip: snapshot.simulation?.dancer?.presentationClip,
   };
 });
 
@@ -163,6 +177,7 @@ const renderProfile = await page.evaluate(async () => {
   const renderer = new KakiDanceRenderer(canvas, {
     settings: { beatPulse: true, reducedMotion: false, reduceFlashes: true, screenShake: 0 },
   });
+  await renderer.preloadCharacter("soder");
   const snapshot = buildMoveQaSnapshot({ character: "soder", moveId: "windmill", phase: 0.48 });
   for (let index = 0; index < 30; index += 1) renderer.render(snapshot);
   const samples = 600;
@@ -213,6 +228,20 @@ const touchVisible = await touchPage.locator("#touch-controls").evaluate((elemen
   display: getComputedStyle(element).display,
   width: element.getBoundingClientRect().width,
   height: element.getBoundingClientRect().height,
+  mode: document.getElementById("app")?.dataset.mode,
+  paw: (() => {
+    const button = element.querySelector(".touch-action");
+    const bounds = button.getBoundingClientRect();
+    return {
+      display: getComputedStyle(button).display,
+      width: bounds.width,
+      height: bounds.height,
+      label: button.textContent.trim(),
+    };
+  })(),
+  stickDisplay: getComputedStyle(element.querySelector(".touch-stick")).display,
+  optionalDisplays: [...element.querySelectorAll(".touch-buttons button:not(.touch-action)")]
+    .map((button) => getComputedStyle(button).display),
 }));
 await touchPage.screenshot({ path: resolve(outputDir, "touch-layout.png") });
 const lifecycleDestroy = await touchPage.evaluate(() => {
@@ -238,6 +267,7 @@ const report = {
   settingsVisible,
   soderSnapshot,
   restartSnapshot,
+  initialHeroResources,
   frameProfile,
   renderProfile,
   labReadout,

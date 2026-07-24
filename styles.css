@@ -323,6 +323,45 @@ button {
   opacity: 0.8;
 }
 
+.more-modes {
+  border-top: 1px dashed rgba(245,233,201,0.3);
+  color: rgba(245,233,201,0.78);
+  font: 800 clamp(0.42rem, 0.85vw, 0.64rem)/1 ui-monospace, "Courier New", monospace;
+}
+
+.more-modes summary {
+  padding: 5px 2px 3px;
+  color: var(--lavender);
+  cursor: pointer;
+  list-style-position: inside;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.more-modes[open] {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.more-modes[open] summary {
+  grid-column: 1 / -1;
+}
+
+.more-modes .mode-card {
+  padding-block: clamp(5px, 0.9vw, 9px);
+  border-color: rgba(143,134,217,0.58);
+  box-shadow: inset 0 0 0 1px var(--ink), 2px 2px 0 var(--ink);
+}
+
+.more-modes .mode-card__name {
+  font-size: clamp(0.48rem, 1vw, 0.72rem);
+}
+
+.more-modes .mode-card__detail {
+  font-size: clamp(0.36rem, 0.72vw, 0.56rem);
+}
+
 .title-actions {
   position: absolute;
   right: 7%;
@@ -751,6 +790,33 @@ kbd,
   .touch-buttons button:nth-child(3) { left: 44px; top: 54px; }
   .touch-buttons button:nth-child(4) { right: 0; top: 28px; background: rgba(244,107,69,0.78); }
   .touch-buttons button.is-active { background: var(--mint); color: var(--ink); }
+
+  #app[data-mode="measure"] .touch-stick,
+  #app[data-mode="practice"] .touch-stick,
+  #app[data-mode="measure"] .touch-buttons button:not(.touch-action),
+  #app[data-mode="practice"] .touch-buttons button:not(.touch-action) {
+    display: none;
+  }
+
+  #app[data-mode="measure"] .touch-buttons,
+  #app[data-mode="practice"] .touch-buttons {
+    right: max(18px, env(safe-area-inset-right));
+    bottom: max(15px, env(safe-area-inset-bottom));
+    width: 84px;
+    height: 84px;
+  }
+
+  #app[data-mode="measure"] .touch-action,
+  #app[data-mode="practice"] .touch-action {
+    inset: 0;
+    width: 78px;
+    height: 78px;
+    border-width: 3px;
+    color: var(--ink);
+    background: rgba(99,214,179,0.88);
+    box-shadow: 0 0 0 5px rgba(9,11,27,0.62), 0 7px 0 rgba(9,11,27,0.72);
+    font-size: 0.8rem;
+  }
 
   .touch-pause {
     right: max(10px, env(safe-area-inset-right));

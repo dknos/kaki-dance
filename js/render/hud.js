@@ -6,6 +6,10 @@ import { pixelEllipse, pixelRect } from "./primitives.js";
 
 export function drawHud(ctx, snapshot, settings) {
   if (!snapshot?.started) return;
+  if (snapshot.measureMatch) {
+    drawMeasureMatchHud(ctx, snapshot, settings);
+    return;
+  }
   drawTopRail(ctx, snapshot);
   drawStamina(ctx, snapshot.dancer.stamina);
   drawCrowdHeat(ctx, snapshot.crowdHeat);
@@ -13,6 +17,165 @@ export function drawHud(ctx, snapshot, settings) {
   if (snapshot.mode === "practice") drawPracticeCoach(ctx, snapshot, settings);
   if (settings.beatPulse && snapshot.mode === "practice") drawBeatPips(ctx, snapshot);
   if (snapshot.callout) drawCallout(ctx, snapshot.callout, snapshot.calloutAge);
+}
+
+function drawMeasureMatchHud(ctx, snapshot, settings) {
+  const measure = snapshot.measureMatch;
+  drawMeasureTopRail(ctx, snapshot, measure);
+  drawMeasureStrip(ctx, measure);
+  drawMeasureInstruction(ctx, measure);
+  if (snapshot.callout && settings.timingLabels) {
+    if (measure.state === "call") {
+      drawMeasureResultBadge(ctx, snapshot.callout, snapshot.calloutAge);
+    } else {
+      drawCallout(ctx, snapshot.callout, snapshot.calloutAge, 39);
+    }
+  }
+}
+
+function drawMeasureResultBadge(ctx, message, age) {
+  const alpha = age < 0.15 ? age / 0.15 : age > 0.82 ? Math.max(0, (1.1 - age) / 0.28) : 1;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const width = Math.min(87, Math.max(47, message.length * 4 + 10));
+  pixelRect(ctx, 377 - width, 39, width, 11, "#090b1b");
+  pixelRect(ctx, 378 - width, 40, width - 2, 9, "#24264b");
+  drawPixelText(ctx, message, 372, 42, {
+    align: "right",
+    color: "#f4c95d",
+    scale: 1,
+  });
+  ctx.restore();
+}
+
+function drawMeasureTopRail(ctx, snapshot, measure) {
+  pixelRect(ctx, 7, 7, 103, 15, "#090b1b");
+  pixelRect(ctx, 8, 8, 101, 13, "#1c2143");
+  drawPixelText(ctx, "MEASURE MATCH", 13, 12, { color: "#63d6b3", scale: 1 });
+  const bar = Math.max(1, Math.min(16, measure.bar));
+  drawPixelText(ctx, `BAR ${String(bar).padStart(2, "0")}/16`, 372, 12, {
+    align: "right",
+    color: "#f5e9c9",
+    scale: 1,
+    shadow: "#090b1b",
+  });
+  if (measure.phraseStreak > 0) {
+    pixelRect(ctx, 304, 25, 70, 11, "#090b1b");
+    drawPixelText(ctx, `PHRASE ${measure.phraseStreak}`, 369, 28, {
+      align: "right",
+      color: "#f4c95d",
+      scale: 1,
+    });
+  }
+}
+
+function drawMeasureInstruction(ctx, measure) {
+  if (measure.state === "countIn") {
+    const count = Math.min(4, Math.floor(measure.tick / 4) + 1);
+    drawPixelText(ctx, String(count), 192, 31, {
+      align: "center",
+      color: "#f5e9c9",
+      scale: 4,
+      shadow: "#090b1b",
+    });
+    drawPixelText(ctx, "GET IN THE POCKET", 192, 60, {
+      align: "center",
+      color: "#8f86d9",
+      scale: 1,
+      shadow: "#090b1b",
+    });
+    return;
+  }
+  const color = measure.state === "call"
+    ? "#f4c95d"
+    : measure.state === "copy"
+      ? "#63d6b3"
+      : measure.state === "freeze"
+        ? "#f46b45"
+        : "#f5e9c9";
+  drawPixelText(ctx, measure.label, 192, 25, {
+    align: "center",
+    color,
+    scale: measure.state === "call" || measure.state === "copy" ? 2 : 1,
+    shadow: "#090b1b",
+  });
+  if (measure.state === "call" && measure.onboarding) {
+    drawPixelText(ctx, "HEAR ONE BAR", 192, 42, {
+      align: "center",
+      color: "#f5e9c9",
+      scale: 1,
+      shadow: "#090b1b",
+    });
+  } else if (measure.state === "copy" && measure.onboarding) {
+    drawPixelText(ctx, `TAP ${measure.inputPrompt} ON THE LIT CELLS`, 192, 42, {
+      align: "center",
+      color: "#f5e9c9",
+      scale: 1,
+      shadow: "#090b1b",
+    });
+  }
+}
+
+function drawMeasureStrip(ctx, measure) {
+  const cellWidth = 13;
+  const cellHeight = 11;
+  const gap = 1;
+  const beatGap = 3;
+  const totalWidth = 16 * cellWidth + 15 * gap + 3 * beatGap;
+  const startX = Math.round((384 - totalWidth) / 2);
+  const y = 188;
+  pixelRect(ctx, startX - 6, y - 15, totalWidth + 12, cellHeight + 22, "#090b1b");
+  pixelRect(ctx, startX - 5, y - 14, totalWidth + 10, cellHeight + 20, "#171b35");
+  drawPixelText(ctx, measure.state === "call" ? "LISTEN" : measure.state === "copy" ? "COPY" : "ONE BAR", startX, y - 11, {
+    color: measure.state === "call" ? "#f4c95d" : "#63d6b3",
+    scale: 1,
+  });
+  drawPixelText(ctx, "[....] [....] [....] [....]", startX + totalWidth, y - 11, {
+    align: "right",
+    color: "#615b8d",
+    scale: 1,
+  });
+  let x = startX;
+  for (let index = 0; index < 16; index += 1) {
+    const cell = measure.cells[index] ?? { status: "empty" };
+    const playhead = Math.floor(measure.playheadTick) === index;
+    const downbeat = index % 4 === 0;
+    const fill = measureCellColor(cell, measure, index);
+    pixelRect(ctx, x - 1, y - 1, cellWidth + 2, cellHeight + 2, playhead ? "#fff5dc" : downbeat ? "#514b78" : "#292647");
+    pixelRect(ctx, x, y, cellWidth, cellHeight, fill);
+    if (cell.target) {
+      const strengthHeight = (cell.status === "hit" || cell.status === "style" ? 3 : 2)
+        + Math.round((cell.strength ?? 0.7) * 3);
+      pixelRect(ctx, x + 4, y + cellHeight - strengthHeight - 2, 5, strengthHeight, cellAccentColor(cell));
+    }
+    if (cell.status === "miss") {
+      pixelRect(ctx, x + 2, y + 2, 2, 2, "#ce4772");
+      pixelRect(ctx, x + cellWidth - 4, y + cellHeight - 4, 2, 2, "#ce4772");
+    }
+    if (cell.errorMs != null && Math.abs(cell.errorMs) > 45) {
+      const markerX = cell.errorMs < 0 ? x + 2 : x + cellWidth - 3;
+      pixelRect(ctx, markerX, y + 2, 1, cellHeight - 4, cell.errorMs < 0 ? "#8f86d9" : "#f46b45");
+    }
+    x += cellWidth + gap;
+    if (index % 4 === 3 && index !== 15) x += beatGap;
+  }
+}
+
+function measureCellColor(cell, measure, index) {
+  if (cell.status === "hit") return cell.judgment === "perfect" ? "#397f74" : "#285f59";
+  if (cell.status === "style") return "#5f5598";
+  if (cell.status === "miss") return "#4b233e";
+  if (cell.optional && !cell.target) return "#29264e";
+  if (!cell.target) return "#161831";
+  if (measure.state === "call" && measure.playheadTick >= index && measure.playheadTick < index + 0.85) return "#7d6535";
+  return measure.state === "call" ? "#4e432e" : "#34464b";
+}
+
+function cellAccentColor(cell) {
+  if (cell.status === "hit") return cell.judgment === "perfect" ? "#fff5dc" : "#63d6b3";
+  if (cell.status === "style") return "#d2c4ff";
+  if (cell.status === "miss") return "#ce4772";
+  return cell.optional ? "#8f86d9" : "#f5e9c9";
 }
 
 function drawTopRail(ctx, snapshot) {
@@ -83,12 +246,12 @@ function drawBeatPips(ctx, snapshot) {
   }
 }
 
-function drawCallout(ctx, message, age) {
+function drawCallout(ctx, message, age, y = 42) {
   const alpha = age < 0.15 ? age / 0.15 : age > 0.82 ? Math.max(0, (1.1 - age) / 0.28) : 1;
   ctx.save();
   ctx.globalAlpha = alpha;
   const scale = message.length < 11 ? 2 : 1;
-  drawPixelText(ctx, message, 192, 42, { align: "center", color: "#f5e9c9", scale, shadow: "#090b1b" });
+  drawPixelText(ctx, message, 192, y, { align: "center", color: "#f5e9c9", scale, shadow: "#090b1b" });
   ctx.restore();
 }
 

@@ -1,0 +1,68 @@
+{
+  "url": "http://127.0.0.1:4177",
+  "capturedAt": "2026-07-24T14:34:41.078Z",
+  "lab": {
+    "contactCards": 28,
+    "clipOptions": [
+      "idleGroove",
+      "basicRock",
+      "basicGoDown",
+      "sixStep",
+      "windmill",
+      "babyFreeze",
+      "cleanGetUp",
+      "victory",
+      "missRecovery"
+    ],
+    "nativeSize": [
+      384,
+      216
+    ],
+    "imageRendering": "pixelated",
+    "kittyStatus": "BIPED · CLEAN",
+    "soderStatus": "BIPED · CLEAN",
+    "forcedStamina": 18,
+    "forcedBalance": 0.84,
+    "zoom2": [
+      384,
+      216
+    ],
+    "zoom4": [
+      384,
+      216
+    ]
+  },
+  "sampledStates": 24,
+  "worstBoneError": 5.329070518200751e-15,
+  "worstContactError": 3.604446298597818e-15,
+  "reviewBoard": {
+    "approvalCards": 2,
+    "videos": 6,
+    "sampleFigures": 4,
+    "rejectedProofs": 2,
+    "brokenImages": [],
+    "rejectedImagesAreNative": true,
+    "nativeApprovalDimensions": [
+      [
+        560,
+        118
+      ],
+      [
+        560,
+        118
+      ]
+    ],
+    "enlargedApprovalDimensions": [
+      [
+        2240,
+        472
+      ],
+      [
+        2240,
+        472
+      ]
+    ]
+  },
+  "errors": [],
+  "failedRequests": []
+}

@@ -12,6 +12,7 @@
     "qa:browser": "node scripts/browser-smoke.mjs",
     "qa:heroes": "node scripts/hero-browser-smoke.mjs",
     "qa:heroes:capture": "node scripts/capture-hero-rescue.mjs",
+    "qa:measure:capture": "node scripts/capture-measure-match.mjs",
     "verify": "npm run check && npm test"
   },
   "devDependencies": {

@@ -1,37 +1,39 @@
 {
   "url": "http://127.0.0.1:4177",
-  "capturedAt": "2026-07-23T21:05:49.380Z",
+  "capturedAt": "2026-07-24T14:35:39.095Z",
   "freezeSnapshot": {
-    "move": "babyFreeze",
-    "family": "freeze",
-    "stamina": 70.92772222222088,
+    "move": "basicRock",
+    "family": "toprock",
+    "stamina": 100,
     "contacts": 2,
-    "contactError": 3.738404036654769e-15,
+    "contactError": 3.6211472945713036e-15,
     "balance": {
-      "offset": 0.09296757466641212,
-      "velocity": 0.01554025994391417,
-      "wobble": 0.08101749426266851,
-      "failed": false,
-      "stableBeats": 1.0061980347694623
+      "offset": 0,
+      "wobble": 0,
+      "failed": false
     }
   },
   "practiceSnapshot": {
     "state": "running",
     "mode": "practice",
-    "move": "",
-    "family": "idle",
-    "stamina": 73.5955555555542,
+    "move": "basicRock",
+    "family": "toprock",
+    "stamina": 100,
     "contacts": 0,
     "contactError": 0,
-    "beat": 10.947244897959184,
+    "beat": 11.024644746787603,
     "chainIndex": 0,
-    "next": "basicRock"
+    "next": "",
+    "measureState": "copy",
+    "measureBar": 3,
+    "measureCells": 16,
+    "presentationClip": "basicRock"
   },
   "pauseResume": {
-    "pausedBeatA": 10.947244897959184,
-    "pausedBeatB": 10.947244897959184,
+    "pausedBeatA": 11.024644746787603,
+    "pausedBeatB": 11.024644746787603,
     "pausedDriftBeats": 0,
-    "resumedAdvanceBeats": 0.5028155706727144
+    "resumedAdvanceBeats": 0.5221655328798196
   },
   "settingsVisible": {
     "scrollHeight": 574,
@@ -41,23 +43,43 @@
   "soderSnapshot": {
     "character": "soder",
     "topology": "biped",
-    "move": "basicRock"
+    "move": ""
   },
   "restartSnapshot": {
     "state": "running",
     "character": "soder",
-    "beat": -0.14
+    "beat": 0.7691647770219188
   },
+  "initialHeroResources": [
+    {
+      "name": "/assets/heroes/kitty/atlas.json",
+      "transferSize": 729645,
+      "decodedBodySize": 729345,
+      "durationMs": 2.7000000178813934
+    },
+    {
+      "name": "/assets/heroes/kitty/atlas-0.png",
+      "transferSize": 61490,
+      "decodedBodySize": 61190,
+      "durationMs": 2
+    },
+    {
+      "name": "/assets/heroes/kitty/atlas-1.png",
+      "transferSize": 9988,
+      "decodedBodySize": 9688,
+      "durationMs": 1.9000000059604645
+    }
+  ],
   "frameProfile": {
     "samples": 120,
-    "averageMs": 16.666666666666668,
-    "p95Ms": 16.700000000000728,
+    "averageMs": 16.665833333333346,
+    "p95Ms": 16.799999999999272,
     "maxMs": 16.80000000000109
   },
   "renderProfile": {
     "samples": 600,
-    "elapsedMs": 282.1000000089407,
-    "averageMs": 0.4701666666815678
+    "elapsedMs": 174.7000000178814,
+    "averageMs": 0.291166666696469
   },
   "labReadout": "clip four-back-table  ·  sample 0.500  ·  IK/contact avg 0.00 px  ·  support 26.0 px  ·  rig biped",
   "qaCards": 114,
@@ -65,7 +87,20 @@
   "touchVisible": {
     "display": "block",
     "width": 844,
-    "height": 390
+    "height": 390,
+    "mode": "practice",
+    "paw": {
+      "display": "block",
+      "width": 78,
+      "height": 78,
+      "label": "PAW"
+    },
+    "stickDisplay": "none",
+    "optionalDisplays": [
+      "none",
+      "none",
+      "none"
+    ]
   },
   "lifecycleDestroy": {
     "state": "destroyed",

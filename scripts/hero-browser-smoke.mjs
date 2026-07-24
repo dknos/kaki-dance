@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const baseUrl = process.env.KAKI_DANCE_URL ?? "http://127.0.0.1:4177";
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const outputDir = resolve(projectRoot, "docs/images/hero-rescue/after");
+const outputDir = resolve(projectRoot, "docs/images/measure-match/final");
 mkdirSync(outputDir, { recursive: true });
 const workspaceChromium = "/home/nemoclaw/bin/chromium";
 const executablePath = process.env.CHROMIUM_PATH
@@ -70,6 +70,7 @@ for (const mirror of [false, true]) {
 }
 const lab = await page.evaluate(() => ({
   contactCards: document.querySelectorAll(".contact-card").length,
+  clipOptions: [...document.querySelectorAll("#hero-move option")].map((option) => option.value),
   nativeSize: [
     globalThis.heroLab.canvas.width,
     globalThis.heroLab.canvas.height,
@@ -88,26 +89,37 @@ const lab = await page.evaluate(() => ({
     document.getElementById("hero-lab-4x").height,
   ],
 }));
+const secondaryClips = await page.evaluate(() => (
+  ["idleGroove", "victory", "missRecovery"].map((clipId) => {
+    globalThis.heroLab.setState({ clipId, nextPhase: 0.4, chain: false, speed: 0 });
+    return globalThis.heroLab.getState().clipId;
+  })
+));
 await page.check("#hero-silhouette");
 await page.click("#hero-next-frame");
 await page.check("#hero-mirror");
 await page.uncheck("#hero-silhouette");
 
 await page.goto(`${baseUrl}/hero-rescue.html`, { waitUntil: "networkidle" });
-await page.waitForSelector(".comparison-card");
+await page.waitForSelector(".approval-card");
 const reviewBoard = await page.evaluate(() => ({
-  comparisons: document.querySelectorAll(".comparison-card").length,
+  approvalCards: document.querySelectorAll(".approval-card").length,
   videos: document.querySelectorAll(".motion-grid video").length,
-  silhouettes: document.querySelectorAll(".silhouette-grid figure").length,
+  sampleFigures: document.querySelectorAll(".sample-grid figure").length,
+  rejectedProofs: document.querySelectorAll(".rejected-pair img").length,
   brokenImages: [...document.images]
     .filter((image) => !image.complete || image.naturalWidth === 0)
     .map((image) => image.src),
-  nativeProofImages: [...document.querySelectorAll(".frame-pair img")].every(
+  rejectedImagesAreNative: [...document.querySelectorAll(".rejected-pair img")].every(
     (image) => image.naturalWidth === 384 && image.naturalHeight === 216,
   ),
+  nativeApprovalDimensions: [...document.querySelectorAll(".approval-card > img")]
+    .map((image) => [image.naturalWidth, image.naturalHeight]),
+  enlargedApprovalDimensions: [...document.querySelectorAll(".approval-card a img")]
+    .map((image) => [image.naturalWidth, image.naturalHeight]),
 }));
 await page.screenshot({
-  path: resolve(outputDir, "review-board.png"),
+  path: resolve(outputDir, "review-board-browser.png"),
   fullPage: false,
 });
 
@@ -116,6 +128,18 @@ assert.deepEqual(lab.zoom2, [384, 216]);
 assert.deepEqual(lab.zoom4, [384, 216]);
 assert.match(lab.imageRendering, /pixelated|crisp-edges/);
 assert.equal(lab.contactCards, 28);
+assert.deepEqual(lab.clipOptions, [
+  "idleGroove",
+  "basicRock",
+  "basicGoDown",
+  "sixStep",
+  "windmill",
+  "babyFreeze",
+  "cleanGetUp",
+  "victory",
+  "missRecovery",
+]);
+assert.deepEqual(secondaryClips, ["idleGroove", "victory", "missRecovery"]);
 assert.match(lab.kittyStatus, /BIPED/);
 assert.match(lab.soderStatus, /BIPED/);
 assert.equal(lab.forcedStamina, 18);
@@ -129,11 +153,14 @@ for (const sample of samples) {
     assert.ok(sample[character].contactError <= 0.01);
   }
 }
-assert.equal(reviewBoard.comparisons, 12);
-assert.equal(reviewBoard.videos, 2);
-assert.equal(reviewBoard.silhouettes, 6);
+assert.equal(reviewBoard.approvalCards, 2);
+assert.equal(reviewBoard.videos, 6);
+assert.equal(reviewBoard.sampleFigures, 4);
+assert.equal(reviewBoard.rejectedProofs, 2);
 assert.deepEqual(reviewBoard.brokenImages, []);
-assert.equal(reviewBoard.nativeProofImages, true);
+assert.equal(reviewBoard.rejectedImagesAreNative, true);
+assert.deepEqual(reviewBoard.nativeApprovalDimensions, [[560, 118], [560, 118]]);
+assert.deepEqual(reviewBoard.enlargedApprovalDimensions, [[2240, 472], [2240, 472]]);
 assert.deepEqual(errors, []);
 assert.deepEqual(failedRequests, []);
 

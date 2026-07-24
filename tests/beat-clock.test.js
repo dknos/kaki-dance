@@ -91,6 +91,24 @@ test("beatmap helpers validate boundaries and wrap accents", () => {
   assert.ok(validateBeatmap({ bpm: 0 }).length >= 4);
 });
 
+test("a sixteen-bar audio loop returns to beat zero at the authored downbeat offset", () => {
+  let audioTime = 0;
+  const beatmap = {
+    ...BEATMAP,
+    bpm: 100,
+    offsetSeconds: 0.084,
+    loopBars: 16,
+    sections: [{ id: "loop", startBar: 0, endBar: 16, intensity: 1 }],
+  };
+  const clock = new BeatClock({ beatmap, now: () => audioTime });
+  clock.start();
+  audioTime = 0.084;
+  approximate(clock.getSnapshot().beat, 0);
+  audioTime = 38.484;
+  approximate(clock.getSnapshot().beat, 64);
+  assert.equal(sectionAtBeat(clock.getSnapshot().beat, beatmap).id, "loop");
+});
+
 test("fixed-step loop caps catch-up work and stays frame-rate independent", () => {
   let scheduled = null;
   let updates = 0;

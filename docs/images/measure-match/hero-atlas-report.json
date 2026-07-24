@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "bpm": 100,
+  "logicalResolution": [
+    384,
+    216
+  ],
+  "characters": {
+    "kitty": {
+      "atlasDimensions": [
+        1024,
+        1024
+      ],
+      "atlasPages": 2,
+      "frameCount": 225,
+      "compressedBytes": 800223,
+      "pageBytes": {
+        "atlas-0.png": 61190,
+        "atlas-1.png": 9688
+      },
+      "metadataBytes": 729345,
+      "estimatedDecodedTextureBytes": 8388608,
+      "sha256": {
+        "atlas-0.png": "13e38c34931c9b80d234c4a1c00ed1475d5350e328c71604b3bf8e62323e8ec8",
+        "atlas-1.png": "33246a79ef0351fc5d428ea730c78c055f000b242d288b209ddba9d1fd84a642",
+        "atlas.json": "cd3f7c5ec21af5d508c462f32b92a342ed69e2412c49f65acdceb3b2a1d312d8"
+      }
+    },
+    "soder": {
+      "atlasDimensions": [
+        1024,
+        1024
+      ],
+      "atlasPages": 2,
+      "frameCount": 225,
+      "compressedBytes": 804564,
+      "pageBytes": {
+        "atlas-0.png": 62202,
+        "atlas-1.png": 12917
+      },
+      "metadataBytes": 729445,
+      "estimatedDecodedTextureBytes": 8388608,
+      "sha256": {
+        "atlas-0.png": "b03c96f2d861eb877b073ed9cc22ad5d1953240769236c2b3e36ccac764cc374",
+        "atlas-1.png": "9d20e44c78341792762f5571be1cc9cd90c92ab9d5ee21cc6bd70af792b7fe48",
+        "atlas.json": "834a16298633531852b02810d849b1538734250e3188f00dfce3d59b8c3e4c9a"
+      }
+    }
+  }
+}

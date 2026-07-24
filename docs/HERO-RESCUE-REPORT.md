@@ -1,129 +1,148 @@
-# Hero rig rescue report
+# Rejected procedural rescue and authored-atlas replacement
 
-## Failure removed
+## Status of `ce32ead`
 
-The old hero layer had two incompatible solvers. KittyKaki could silently
-lengthen a planted arm from roughly 9.5 to 12.8 logical pixels, while Soder used
-a separate segmented lower-body path. Final limbs were thick `pixelLine`
-strokes, so elbows, wrists, knees, ankles, hand direction and shoe weight were
-not consistently designed. Several floor-power moves also shared one
-parameterized clip.
+Commit `ce32ead1003f44d32ab5a6add6e39dd50fa7e8ec` is an **unsuccessful visual
+attempt**. It is not production-quality hero rendering.
 
-The rescue removes those shortcuts. Gameplay, stage, music, crowd, scoring and
-input architecture were not expanded.
+That rescue correctly proved:
 
-## Shared architecture
+- one fixed-length `BipedRig` for KittyKaki and Soder;
+- deterministic IK and finite geometry;
+- exact contact targets and biped support semantics;
+- normal Soder arms and legs beneath the snake costume.
 
-| Layer | Result |
+Those are valuable hidden-rig properties. They did not prove that the rendered
+characters were anatomically believable.
+
+## Root cause
+
+`js/render/dancer.js` used `rig.depthFront` to choose one complete far side and
+one complete near side. An entire arm therefore rendered behind the torso while
+the other rendered in front. Cross-body breaking needs independent camera depth
+for upper arm, forearm and hand. A valid pose can require:
+
+```text
+upper arm behind torso
+elbow beside torso
+forearm in front
+hand in front of the opposite shoulder
+```
+
+No additional whole-arm boolean can represent that sequence. The failure
+produced disconnected shoulders, backward-looking hands, center-fused elbows
+and whole limbs disappearing behind the body.
+
+The original deterministic evidence is preserved under
+`docs/images/measure-match/rejected-ce32ead/`. It is intentionally shown as
+rejected on the [visual review board](../hero-rescue.html).
+
+## Replacement architecture
+
+| Layer | Responsibility |
 | --- | --- |
-| `BipedRig` | One deterministic fixed-length solve for both heroes: root, pelvis, chest, neck, head, paired shoulders/elbows/wrists/hands and hips/knees/ankles/feet |
-| Profiles | `kittyProfile` and `soderProfile` own volumes, joint preferences, palette, head/costume treatment, hands, shoes and secondary attachments |
-| IK | Joint limits, stable pole/bend preference, previous-frame continuity, authored flips only, unreachable-target clamping and bounded body correction |
-| Clips | Dedicated golden-chain mechanics plus separate backspin, swipe, windmill, flare and headspin clips; no shared generic power clip |
-| Transitions | Stepped deterministic bridges with shortest-angle interpolation, bend-side preservation and exact active contacts |
-| Rendering | Tapered polygon volumes, upper/lower limb separation, joint overlaps, cuffs, directional extremities and controlled near/far order; skeleton lines are debug-only |
+| Hidden `BipedRig` | contacts, center of mass, support regions, balance, eligibility, deterministic replay, debug overlays and effect anchors |
+| Blender reference armature | one biped armature, both costumes, orthographic camera and independent segment camera depth |
+| Authored pose library | dedicated mechanics, anatomical left/right, clearance drawings, contacts, markers and normalized phase |
+| Offline pixel cleanup/export | constrained palette, hard outlines, cuffs, paws, directional shoes, trimmed bounds, padding and extrusion |
+| Runtime atlas renderer | nearest-neighbor Canvas playback from audio-clock phase; no public procedural limbs |
 
-## Deleted alternate-anatomy assumptions
+The old procedural renderer remains available only through the **Procedural rig
+(debug)** Hero Lab checkbox.
 
-- Soder-only rig solver and topology dispatch.
-- Segmented lower-body data and render loop.
-- Lower-body endpoints presented as feet.
-- Character-catalog claims that Soder needs different move anatomy.
-- Move nicknames and documentation built around a non-humanoid lower body.
-- Kitty's planted-arm length override.
+Rhythm contact flashes resolve against the selected atlas frame's exported
+contact/effect anchors. Gameplay contact truth remains in `BipedRig`; both
+layers sample the same normalized phase, while only the authored atlas decides
+public occlusion and silhouette.
 
-Soder now has the same biped contract as KittyKaki. His hood, belly panel,
-padded sleeves/leggings and soft tail are costume rendering only; the tail is
-not support geometry.
+## Character approval gate
 
-## Approval media
+Five native gameplay poses and 4× nearest-neighbor proofs were generated for
+each hero:
 
-- [Native before/after review board](../hero-rescue.html)
-- [Focused Hero Lab](../hero-lab.html)
-- [KittyKaki golden-chain GIF](images/hero-rescue/after/kitty-golden-chain.gif)
-  and [MP4](images/hero-rescue/after/kitty-golden-chain.mp4)
-- [Soder golden-chain GIF](images/hero-rescue/after/soder-golden-chain.gif)
-  and [MP4](images/hero-rescue/after/soder-golden-chain.mp4)
-- [Hero Lab full capture](images/hero-rescue/after/hero-lab.png)
+1. Neutral groove
+2. Cross-body arm groove
+3. Deep go-down
+4. Floorwork leg-cross
+5. Baby Freeze
 
-The GIFs and MP4s are deterministic 384×216, 20 fps, 7.2-second captures with
-no camera effects, particles or blur. The review board contains twelve native
-before/after pairs and six native one-color silhouette proofs.
+Artifacts:
 
-## Hero Lab
+- `docs/images/measure-match/approval/kitty-approval-native.png`
+- `docs/images/measure-match/approval/kitty-approval-4x.png`
+- `docs/images/measure-match/approval/soder-approval-native.png`
+- `docs/images/measure-match/approval/soder-approval-4x.png`
+- per-hero silhouette, golden-chain and random-20 sheets in the same directory.
 
-Run `npm run serve`, then open
-`http://127.0.0.1:4177/hero-lab.html`.
+The cross-body keys use independent segment depth: for example, KittyKaki's
+left upper arm is behind the torso while the same arm's forearm and paw are in
+front. Anatomical left remains dancer-left regardless of its screen position.
 
-The lab synchronizes both profiles at one move phase and supplies native, 2×
-and 4× nearest-neighbor views; automatic chain playback; full/half/quarter
-speed; frame stepping; mirroring; onion skin; skeleton and joint labels;
-contacts; COM; support; silhouette; z-order; bone warnings; and a 28-card
-golden-chain key-pose sheet.
+Soder uses the same humanoid joint chain and motion source as KittyKaki. The
+green hood, belly, sleeves, trouser legs, cuffs and tail are costume. The tail
+is never a contact or support anchor.
 
-## Blender and reference sources
+## Authored animation scope
 
-- `tools/blender/kaki-hero-biped.blend` — one constrained armature and both
-  costume profiles.
-- `tools/blender/exports/kaki-hero-golden-chain.json` — five phases per move,
-  complete named biped endpoints, bone lengths and contact metadata.
-- `tools/blender/reference/hero-rescue/` — thirty 384×216 color, silhouette and
-  turnaround passes.
-- `docs/art-source/hero-rescue/` — two Grok anatomy/costume ideation sheets.
-  Exact selection metadata, hashes and prompts are in
-  `ASSET-PROVENANCE.md`.
+The public atlas contains only the MVP presentation clips:
 
-Blender and generated references are offline authoring inputs only. Runtime
-heroes remain hand-directed Canvas drawings.
+| Clip | Beats | Drawings |
+| --- | ---: | ---: |
+| Idle/Groove | 2 | 15 |
+| Basic Rock | 4 | 30 |
+| Go Down | 4 | 30 |
+| 6-Step | 4 | 30 |
+| Windmill | 4 | 30 |
+| Baby Freeze | 4 | 30 |
+| Clean Get-Up | 4 | 30 |
+| Victory | 2 | 15 |
+| Miss/Recovery | 2 | 15 |
 
-## Asset and compression report
+Every clip declares entry/exit stance, duration, atlas frames, stable root
+pivots, contacts, anticipation/accent/recovery markers, semantic anchors,
+effect anchors and whether mirroring is safe.
 
-| Asset | Dimensions / duration | Bytes |
-| --- | --- | ---: |
-| KittyKaki MP4 | 384×216, 7.2 s, H.264, 20 fps | 99,719 |
-| KittyKaki GIF | 384×216, 7.2 s, 64-color, 20 fps | 227,814 |
-| Soder MP4 | 384×216, 7.2 s, H.264, 20 fps | 131,751 |
-| Soder GIF | 384×216, 7.2 s, 64-color, 20 fps | 264,961 |
-| Final hero proof package | 27 files | 1,944,548 |
-| Shared Blender `.blend` | authoring source | 172,688 |
-| Blender joint/contact JSON | schema 2 | 281,207 |
-| Blender reference passes | 30 PNG files | 2,945,248 |
+The 6-Step has six authored support steps. Windmill has bespoke quarter-turn
+drawings, shoulder/back travel and a leg scissor. Clean Get-Up begins from the
+actual freeze and pushes, plants, transfers and rises rather than resetting to
+idle.
 
-No runtime atlas was added; final characters are code-authored volumes. Motion
-capture frames are documentation assets and never downloaded by gameplay.
+## Atlas report
 
-## Verification
+| Hero | Pages | Page dimensions | Drawings | PNG bytes | Metadata bytes | Total selected-hero transfer | Decoded texture memory |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| KittyKaki | 2 | 1024×1024 | 225 | 70,878 | 729,345 | 800,223 | 8,388,608 |
+| Soder | 2 | 1024×1024 | 225 | 75,119 | 729,445 | 804,564 | 8,388,608 |
 
-- Syntax: 57 JavaScript modules pass.
-- Native tests: 40/40 pass.
-- Exhaustive geometry: 10,100 move/profile/mirror/phase samples.
-- Worst declared-contact error: `7.944109290391274e-15` logical pixels.
-- Worst bone-length error: `8.881784197001252e-15` logical pixels.
-- Focused browser QA: 24 golden-chain hero states, 28 contact cards, 12
-  before/after pairs, six silhouettes, two videos, zero failed requests and
-  zero console errors.
-- Full browser loop: keyboard, live golden chain, freeze balance, pause/resume,
-  retry, Soder selection, touch, labs, QA gallery and destroy lifecycle pass.
-- Presentation: 16.666 ms average over 120 frames; isolated Soder windmill
-  render averages 0.470 ms over 600 samples.
+Both pages are indexed PNG with one-pixel extrusion and three-pixel packing
+padding. Runtime Canvas smoothing is disabled. Only the selected hero is
+preloaded by normal gameplay.
 
-Machine-readable reports:
+## Visual proof
 
-- `docs/images/hero-rescue/after/hero-browser-report.json`
-- `docs/images/qa-browser/smoke-report.json`
+- [Authored atlas review board](../hero-rescue.html)
+- [Hero Lab](../hero-lab.html)
+- `docs/images/measure-match/final/kitty-full-speed.mp4`
+- `docs/images/measure-match/final/kitty-quarter-speed.mp4`
+- `docs/images/measure-match/final/soder-full-speed.mp4`
+- `docs/images/measure-match/final/soder-quarter-speed.mp4`
 
-## Remaining hero-specific shortcomings
+The normal-speed videos are 14.4 seconds at 12 selected drawings per second.
+Quarter-speed videos are 57.6 seconds and expose every held drawing without
+camera shake, particle cover or motion blur. Twenty deterministic frames per
+hero are also presented as still sheets because automated geometry tests do
+not replace visual inspection.
 
-- The most front-facing 6-Step crosses are flatter than its strongest thread
-  poses when examined at quarter speed.
-- KittyKaki's oversized chibi head still overlaps the near shoulder in two
-  windmill in-betweens.
-- Soder's padded hood briefly hides the far shoulder in deep floor poses.
-- Extreme power-move foreshortening has fewer bespoke drawings than a future
-  modular atlas could provide.
-- The Blender costume proxies are deliberately low-poly mechanics blocks, not
-  production meshes.
+## Honest visual status
 
-These are visible in Hero Lab and are not concealed with effects. Broader
-content and placeholder polish remain out of scope until the hero milestone is
-approved.
+The implemented atlas fixes the rejected whole-side occlusion model and passed
+this development pass's still and quarter-speed trace audit. Final artistic
+acceptance still belongs to the project reviewer. In particular:
+
+- Soder's decorative tail approaches the rear leg silhouette in a small number
+  of windmill drawings, though it remains behind and never carries weight.
+- The offline cleanup is a deterministic Pillow-based equivalent workflow
+  because Aseprite/LibreSprite is not installed in this workspace; an art
+  director may still request pixel-level revisions after reviewing the board.
+- The Blender costume meshes are mechanics/depth blockouts, not final rendered
+  characters. Public art is the cleaned atlas, not the Blender proxy.

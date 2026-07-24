@@ -64,6 +64,10 @@
   gap: 14px;
 }
 
+.motion-grid--four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .motion-grid figure,
 .source-grid figure,
 .silhouette-grid figure {
@@ -94,6 +98,69 @@
 
 .motion-grid a {
   color: var(--desk-mint);
+}
+
+.motion-grid figcaption span {
+  color: rgba(245, 233, 201, 0.48);
+}
+
+.approval-grid,
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.approval-card,
+.sample-grid figure {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--desk-rule);
+  background: var(--desk-ink);
+}
+
+.approval-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  color: var(--desk-paper);
+  font: 800 0.62rem/1 ui-monospace, monospace;
+}
+
+.approval-card header span {
+  color: var(--desk-mint);
+}
+
+.approval-card img,
+.sample-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.approval-card > img {
+  border-block: 1px solid var(--desk-rule);
+}
+
+.sample-grid figcaption {
+  padding: 10px;
+  color: var(--desk-mint);
+  font: 800 0.62rem/1 ui-monospace, monospace;
+}
+
+.eyebrow--rejected {
+  color: #e178a5;
+}
+
+.rejected-pair {
+  border: 1px solid #62344d;
+  background: rgba(98, 52, 77, 0.12);
+}
+
+.rejected-pair figure:last-child figcaption {
+  color: #e178a5;
 }
 
 .comparison-grid {
@@ -180,7 +247,9 @@
   .rescue-intro,
   .section-heading,
   .motion-grid,
-  .source-grid {
+  .source-grid,
+  .approval-grid,
+  .sample-grid {
     grid-template-columns: 1fr;
   }
 

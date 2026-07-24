@@ -1,47 +1,85 @@
-# Performance report
+# Performance and compression report
 
-Measured 2026-07-23 from the checked-in tree at 384×216 using headless Chromium
-and the browser smoke sequence.
+Measured 2026-07-24 from the checked-in tree at the 384×216 logical resolution
+with headless Chromium. Source:
+`docs/images/qa-browser/smoke-report.json`.
 
-## Results
+## Runtime results
 
 | Check | Result |
-| --- | --- |
-| 120 presentation frames | 16.666 ms average |
-| Presentation p95 | 16.8 ms |
-| Presentation maximum | 16.8 ms |
-| Isolated rescued Soder windmill render, 600 samples | 0.470 ms average |
-| Shared-biped contact/bone sweep | 10,100 poses |
-| Worst declared-contact error | 7.95×10⁻¹⁵ logical px |
-| Worst bone-length error | 8.89×10⁻¹⁵ logical px |
-| Native test suite | 40/40 passing |
-| Runtime audio | 38.4 s, mono PCM, 44.1 kHz, 3.23 MiB |
-| Hero review/capture package | 1.94 MB across 27 files |
-| Full tree excluding `.git` and `node_modules` | 20.08 MB |
+| --- | ---: |
+| Display pacing, 120 presentation intervals | 16.666 ms average |
+| Display pacing p95 | 16.800 ms |
+| Display pacing maximum | 16.800 ms |
+| Isolated atlas + stage + HUD render, 600 samples | 0.291 ms average |
+| Fixed simulation rate | 120 Hz |
+| Paused audio-clock drift | 0 beats |
+| Resume advance in 320 ms wall time | 0.522 beats |
+| Native test suite | 58/58 passing |
+| Worst focused semantic-rig contact error | 3.61×10⁻¹⁵ logical px |
+| Worst focused semantic-rig bone error | 5.33×10⁻¹⁵ logical px |
 
-The browser report is stored in
-`docs/images/qa-browser/smoke-report.json`. Its request and console error arrays
-were empty. Pause/resume measured zero beat drift while paused.
+The full 120-interval sample remained inside one nominal 60 Hz display
+interval; isolated Canvas work averaged 0.291 ms. This is a desktop automated
+baseline, not a substitute for a physical low-end Android pass.
 
-The focused Hero Lab browser report is stored at
-`docs/images/hero-rescue/after/hero-browser-report.json`. It sampled the six
-golden-chain moves in both directions for both profiles, verified native
-384×216 proof images and reported no request or console errors.
+## Hero atlas cost
+
+| Hero | Pages | Drawings | Compressed runtime bytes | Decoded texture estimate |
+| --- | ---: | ---: | ---: | ---: |
+| KittyKaki | 2 × 1024×1024 indexed PNG | 225 | 800,223 | 8,388,608 |
+| Soder | 2 × 1024×1024 indexed PNG | 225 | 804,564 | 8,388,608 |
+
+The compressed figure includes explicit JSON metadata. Image bytes alone are
+70,878 for KittyKaki and 75,119 for Soder. Normal gameplay preloads only the
+selected hero. Hero Lab intentionally holds both, for an estimated 16 MiB of
+decoded atlas textures.
+
+On the local HTTP server, initial KittyKaki resources measured:
+
+| Resource | Decoded body | Local fetch duration |
+| --- | ---: | ---: |
+| `atlas.json` | 729,345 bytes | 2.7 ms |
+| `atlas-0.png` | 61,190 bytes | 2.0 ms |
+| `atlas-1.png` | 9,688 bytes | 1.9 ms |
+
+The browser requests the pages in parallel after metadata validation. There is
+no runtime reference-art, Blender, AI or cloud request.
+
+## Other asset cost
+
+| Asset/package | Result |
+| --- | ---: |
+| Runtime audio | 3,386,924 bytes; 38.4 s mono PCM, 44.1 kHz |
+| Final proof media | 12 files, 3,996,545 bytes |
+| Approval stills | 10 files, 217,279 bytes |
+| Tree excluding `.git` and `node_modules` | 30,075,125 bytes |
+
+Proof videos and source/reference art are documentation files; the game does
+not fetch them.
+
+## Mobile viewport
+
+The automated landscape mobile viewport is 844×390. In Measure Match and
+Practice it shows:
+
+- one 78×78 PAW button;
+- no direction stick;
+- no Style, Power or Freeze buttons;
+- a 16-cell strip clear of the hero;
+- the existing 384×216 canvas scaled with nearest-neighbor presentation.
+
+Portrait remains a rotate-device gate. Browser QA completed with zero console
+errors and zero failed requests.
 
 ## Runtime bounds
 
 - Simulation uses a fixed 1/120-second step and caps catch-up at 14 steps.
-- Canvas is fixed at 384×216 with smoothing disabled.
+- Canvas dimensions remain 384×216 with smoothing disabled.
+- Atlas pages are lossless indexed PNG with trimmed frames, padding and
+  extrusion.
 - Crowd count is bounded at twelve code-authored profiles.
 - Particles use a fixed pool of 96.
 - Replay trails retain at most five poses.
-- Audio sources are stopped on pause, retry, and destroy.
-- Camera transforms and stage coordinates are integer-snapped.
-
-## Profiling rule
-
-Keep Canvas 2D until an ordinary target device shows sustained render work over
-the frame budget. Renderer replacement must not change `MoveSession`, contact,
-beat, scoring, AI, or replay state. Test at least one lower-end Android device
-before calling mobile performance final; the current automated result is a
-desktop headless baseline.
+- Audio sources stop on pause, retry and destroy.
+- Atlas metadata compaction is deferred until after visual approval.

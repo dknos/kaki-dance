@@ -41,8 +41,8 @@ an image service.
 
 Grok Imagine was used only for controlled reference ideation on 2026-07-23.
 Neither sheet is loaded at runtime or copied frame-for-frame. Anatomy and
-contacts were rebuilt on the shared Blender armature, simplified by hand into
-procedural pixel poses, and inspected at 384×216.
+contacts were rebuilt on the shared Blender armature, simplified into authored
+pixel-pose keys, and inspected at 384×216.
 
 | Selected file | Dimensions | Bytes | SHA-256 | Transformation |
 | --- | ---: | ---: | --- | --- |
@@ -82,6 +82,54 @@ The sheets were treated as fallible suggestions: inconsistent generated
 anatomy was not imported. The accepted runtime sources are the authored rig,
 clips and renderer.
 
+## Measure Match five-pose ideation
+
+On 2026-07-24 the already-configured local Grok Imagine workflow generated two
+additional offline references for the required five-pose gate. They were
+inspected and rejected as final sprites; they guide costume continuity and
+large pose intent only.
+
+| Selected file | Dimensions | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| `docs/art-source/measure-match/grok/kitty-five-pose-reference.png` | 1280×720 | 518,338 | `9be93441a998ee31fed41f398d2681caae9d80c64a4c539ff2bee60dd8e8f0df` |
+| `docs/art-source/measure-match/grok/soder-five-pose-reference.jpg` | 1280×720 | 181,214 | `b5840c8f80f5de626910143489abbb273d4e8c4bae8774fc5f3bd35e968d2e1d` |
+
+KittyKaki prompt:
+
+> Offline character-design reference sheet for Kaki-Dance: one consistent
+> blue-haired cat-girl plush breakdancer named KittyKaki in dark charcoal
+> oversized street hoodie, strong athletic shoulders and thighs, directional
+> black dancer shoes, expressive small cream paws, recognizable sleepy navy
+> eyes and tiny cat mouth, late-16-bit neo-chibi game proportions. Show exactly
+> five separate full-body orthographic three-quarter poses left-to-right on a
+> plain neutral background: neutral groove, anatomically clear cross-body arm
+> groove, deep controlled go-down with reaching hand, low floorwork leg-cross
+> with readable hips/knees, and a strong baby freeze support triangle. Every
+> shoulder to upper arm to elbow to forearm to wrist to paw and every hip to
+> thigh to knee to shin to ankle to foot must be visible and unambiguous;
+> believable weight and occlusion. Costume and face stay identical. Reference
+> art only, crisp hard edges. Avoid text, labels, logos, extra limbs, merged
+> joints, backward hands, floating paws, giant white forearms, blurry edges,
+> and scenery.
+
+Soder prompt:
+
+> Offline character-design reference sheet for Kaki-Dance: one consistent
+> humanoid plush breakdancer named Soder, with KittyKaki-like normal biped
+> anatomy inside a padded green snake kigurumi: snake hood over blue hair and
+> plush face, two normal shoulders and arms in green sleeves with cuffs and
+> small cream paws, padded green torso with brown belly panel, pelvis, two
+> costume legs, directional green dancer shoes, and a soft decorative tail
+> that never bears weight. Late-16-bit neo-chibi proportions. Show exactly five
+> separate full-body orthographic three-quarter poses left-to-right on a plain
+> neutral background: neutral groove, anatomically clear cross-body arm groove,
+> deep controlled go-down with reaching hand, low floorwork leg-cross with
+> readable hips/knees, and strong baby freeze support triangle. Every limb
+> chain must be visible and unambiguous with believable weight and occlusion;
+> costume and face identical. Reference art only, crisp hard edges. Avoid text,
+> labels, logos, coil anatomy, tail support, extra limbs, merged joints,
+> backward hands, floating paws, blurry edges, and scenery.
+
 ## Runtime audio
 
 `assets/audio/moon-block-party.wav` is generated offline by
@@ -99,9 +147,10 @@ playback is local Web Audio; no streaming service or cloud API is required.
 
 - Moonlit Oekaki Block Party background, floor, DJ booth, speakers, skyline,
   banners, foreground silhouettes, and vinyl-groove beat ring.
-- One fixed-length biped solver with KittyKaki and Soder volume/render profiles.
-- Tapered upper/lower limbs, joint overlaps, cuffs, directional hands and feet,
-  profile-specific torso/head/costume shapes, and decorative secondary tails.
+- One fixed-length hidden biped solver for KittyKaki and Soder gameplay
+  semantics.
+- Authored, trimmed indexed hero atlases with camera-space occlusion, cuffs,
+  directional hands/feet and profile-specific costume cleanup.
 - Twelve KemonoKaki-inspired crowd profiles.
 - HUD, timing labels, particles, shadows, contact marks, and replay trails.
 
@@ -124,3 +173,31 @@ elbow/knee limits, six golden-chain timeline blocks, floor contact markers and
 a fixed orthographic camera. It exports five phases per move with contacts and
 bone lengths. `tools/blender/reference/hero-rescue/` contains 30 deterministic
 384×216 color, silhouette and turnaround passes totaling 2,945,248 bytes.
+
+## Measure Match production source and runtime atlases
+
+The replacement production source was generated offline on 2026-07-24:
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `tools/blender/kaki-measure-match-production.blend` | 1,006,856 | `c6b42f6ab347ac2d538391c222222f7dca553f69b4025682acc303bf3fed48ae` |
+| `tools/blender/exports/kaki-measure-match-camera-depth.json` | 555,341 | `65625a6ef319fc3881b8689f9514622d64ecd99f674a46f8cc34b9685aa5b7b0` |
+
+The source contains one `KakiDanceProductionBiped` armature for both costume
+profiles and independent camera-space depths for twelve arm/leg segments. Ten
+384×216 mechanics renders live under
+`tools/blender/reference/measure-match/`. They are not runtime sprites.
+
+`tools/art/hero_pose_library.py` and
+`tools/art/build_hero_atlases.py` implement the authored pose, cleanup and
+export workflow. Runtime outputs:
+
+| Hero | PNG pages | PNG bytes | Metadata bytes | Total bytes | Decoded texture estimate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| KittyKaki | two indexed 1024×1024 | 70,878 | 729,345 | 800,223 | 8,388,608 |
+| Soder | two indexed 1024×1024 | 75,119 | 729,445 | 804,564 | 8,388,608 |
+
+Every page is local, lossless and nearest-neighbor. The metadata carries trimmed
+bounds, stable pivots, contacts, twenty-one semantic anchors, effect anchors,
+markers and twelve segment depths per drawing. No reference, Blender or cloud
+asset is fetched at runtime.
