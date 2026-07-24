@@ -204,45 +204,57 @@ asset is fetched at runtime.
 
 ## Appalachian Frolic source, atlases, and audio
 
-Frolic adds no generated-image or third-party media dependency. Practitioner
-footage listed in `docs/appalachian-sources.md` informed movement principles
-only; no frames, motion capture, recordings, or samples were redistributed.
+Rescue candidate 1 is a Flatfoot-only replacement pipeline. Practitioner
+footage listed in `docs/appalachian-sources.md` informed movement principles;
+no footage frames or motion capture are redistributed.
 
-The deterministic shared-biped source:
+The production biped source is:
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `tools/blender/kaki-appalachian-frolic.blend` | 863,924 | `97b7119de226ceba5c7b294cea8bb7b637594219faf7bc2447a00d1579d42451` |
-| `tools/blender/exports/kaki-appalachian-frolic-rig.json` | 2,028,074 | `c2006298dac2d749a8bee77c87b97e357472ef41f24f857f1f836616d9b41641` |
+| `tools/blender/kaki-appalachian-frolic.blend` | 387,185 | `4662b8251d05a246c948868c9ab4183538598919b7e53a8d0280538bddc55178` |
+| `tools/blender/exports/kaki-appalachian-frolic-production.json` | 7,903 | `0793ea640a9f58d2f367c8d6ac94370b95b1722f6ecd1be70d68c0562adff3b9` |
 
-The Blender container can change a few bytes when re-saved by the same Blender
-build; the JSON export is the byte-deterministic review contract.
-`KakiFrolicSharedBiped` contains paired arms, hands, legs, heel/toe controls,
-foot IK, knee poles, and non-supporting Soder costume controls. The Blender
-profiles and camera are authoring/diagnostic sources, not public sprites.
+`KakiFrolicProductionBiped` is a shared weighted armature with complete paired
+arms, hands, legs, foot IK, knee poles, heel/ball/toe pivots, and separate
+Soter hood/tail controls. The fixed
+`FrolicGameplayCamera` renders the actual modeled characters at 512×512 and
+30 fps; those renders, not Pillow primitives, are the source of public
+Flatfoot pixels.
 
-`tools/art/appalachian_pose_library.py` and
-`tools/art/build_appalachian_atlases.py` create six local runtime packs. Each
-contains 164 authored drawings across fourteen movements and six transition
-clips on one indexed 1024×1024 page:
+`tools/art/build_frolic_blender_atlases.py` converts 181 Blender-rendered
+frames per hero to 128×128 and packs each hero on two 1024² RGBA pages:
 
-| Profile packs | Compressed bytes each | Decoded texture each |
+| Candidate Flatfoot pack | PNG + metadata bytes | Decoded texture |
 | --- | ---: | ---: |
-| KittyKaki Flatfoot/Buck/Clog | 595,244–598,964 | 4,194,304 |
-| Soder Flatfoot/Buck/Clog | 604,621–608,991 | 4,194,304 |
+| KittyKaki | 834,567 | 8,388,608 |
+| Soter | 895,298 | 8,388,608 |
 
-Normal play retains one selected hero/profile pack. The report, per-file
-hashes, plant/joint lint, and page sizes are in
-`docs/images/appalachian/frolic-atlas-report.json`.
+Atlas metadata records the scene hash, camera, render resolution, conversion,
+cleanup revision, action, support state, and contact frames. Its cleanup
+revision is explicitly `candidate-1-unretouched-toon`; Aseprite/LibreSprite
+manual cleanup is pending. The old six Pillow packs and original synthesized
+foot kit are preserved only in `docs/review/rejected-0c82fe7/`.
 
-`scripts/build-appalachian-audio.mjs` composes and synthesizes the checked-in
-original “Board & Bow” master, four synchronized stems, and 39 round-robin
-wood-board contacts. It uses no sample library:
+The checked-in “Board & Bow” master and synchronized stems are unchanged:
 
 | Runtime master | Format | Duration | Bytes | SHA-256 |
 | --- | --- | ---: | ---: | --- |
 | `assets/audio/frolic/board-and-bow.wav` | stereo 16-bit PCM, 22.05 kHz | 68.000 s | 5,997,644 | `373e900960546d3fea36876aa3b2982a10992fde273d7f07697f05a6d0ab307b` |
 
-The four stems are source assets and are not requested by normal play. All
-runtime foot samples and their hashes are recorded in
-`docs/images/appalachian/frolic-audio-report.json`.
+The tune is deterministic code synthesis and remains audibly unapproved.
+
+The replacement foot kit is derived from three retained CC0 recordings: Joseph
+SARDIN / BigSoundBank 1515 (shoes on wood), Joseph SARDIN / BigSoundBank 0376
+(shoes on parquet), and sturmankin / Freesound 273380 (trekking-shoe shuffle on
+wood). Source files, source hashes, URLs, licenses, exact cut ranges, and all 66
+output hashes live in `assets/audio/frolic/feet/manifest.json`. No oscillator
+impact, resonant pitch tail, peak normalization, or pitch-only left/right
+variant is used.
+
+The two generated model sheets under
+`docs/review/frolic-rescue-candidate-1/model-sheets/` were used for character
+turnaround, proportion, palette, hand, and shoe ideation only. They are not
+animation frames and are not fetched by the runtime. The original generated
+files and prompt record are retained under
+`docs/art-source/frolic-rescue-candidate-1/imagegen/`.

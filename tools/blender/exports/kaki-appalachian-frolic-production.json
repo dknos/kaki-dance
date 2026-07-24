@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 2,
+  "candidateStatus": "human-review-required",
+  "source": "tools\\blender\\kaki-appalachian-frolic.blend",
+  "publicSpriteSource": "actual Blender rendered character",
+  "sharedArmature": "KakiFrolicProductionBiped",
+  "topology": "weighted-biped",
+  "characters": [
+    "kitty",
+    "soder"
+  ],
+  "userFacingCharacters": [
+    "KittyKaki",
+    "Soter"
+  ],
+  "sourceFPS": 30,
+  "bpm": 120,
+  "renderResolution": [
+    512,
+    512
+  ],
+  "camera": "FrolicGameplayCamera",
+  "cameraType": "orthographic-three-quarter-front",
+  "deformBones": [
+    "root",
+    "pelvis",
+    "spine",
+    "chest",
+    "neck",
+    "head",
+    "clavicle.L",
+    "upperArm.L",
+    "forearm.L",
+    "hand.L",
+    "clavicle.R",
+    "upperArm.R",
+    "forearm.R",
+    "hand.R",
+    "thigh.L",
+    "shin.L",
+    "foot.L",
+    "toe.L",
+    "thigh.R",
+    "shin.R",
+    "foot.R",
+    "toe.R"
+  ],
+  "controls": [
+    "costume.hood",
+    "costume.tail",
+    "CTRL.root",
+    "CTRL.pelvis",
+    "CTRL.chest",
+    "handIK.L",
+    "handIK.R",
+    "footIK.L",
+    "heelPivot.L",
+    "ballPivot.L",
+    "toePivot.L",
+    "footIK.R",
+    "heelPivot.R",
+    "ballPivot.R",
+    "toePivot.R",
+    "kneePole.L",
+    "kneePole.R"
+  ],
+  "meshSummary": {
+    "Hero.KittyKaki": {
+      "meshObjects": 44,
+      "weightedMeshObjects": 40,
+      "vertices": 3110
+    },
+    "Hero.Soter": {
+      "meshObjects": 53,
+      "weightedMeshObjects": 48,
+      "vertices": 4412
+    }
+  },
+  "actions": {
+    "groove": {
+      "action": "FrolicCandidate.groove",
+      "displayName": "Neutral musical groove",
+      "frameRange": [
+        1,
+        31
+      ],
+      "sourceFrames": 31,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "left",
+          "contact": "soft",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        8,
+        16,
+        24,
+        31
+      ]
+    },
+    "walkingStep": {
+      "action": "FrolicCandidate.walkingStep",
+      "displayName": "Alternating foundation step",
+      "frameRange": [
+        1,
+        31
+      ],
+      "sourceFrames": 31,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 31,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        31
+      ]
+    },
+    "shuffle": {
+      "action": "FrolicCandidate.shuffle",
+      "displayName": "Shuffle and brush",
+      "frameRange": [
+        1,
+        16
+      ],
+      "sourceFrames": 16,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "brush-prep",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "right",
+          "contact": "brush",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        8,
+        11,
+        16
+      ]
+    },
+    "heelToeChange": {
+      "action": "FrolicCandidate.heelToeChange",
+      "displayName": "Heel-toe change",
+      "frameRange": [
+        1,
+        31
+      ],
+      "sourceFrames": 31,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 6,
+          "support": "right",
+          "contact": "heel-left",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "toe-left",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 21,
+          "support": "left",
+          "contact": "heel-right",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 26,
+          "support": "left",
+          "contact": "toe-right",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        6,
+        11,
+        16,
+        21,
+        26,
+        31
+      ]
+    },
+    "backstep": {
+      "action": "FrolicCandidate.backstep",
+      "displayName": "Backstep",
+      "frameRange": [
+        1,
+        16
+      ],
+      "sourceFrames": 16,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 9,
+          "support": "right",
+          "contact": "backstep",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        5,
+        9,
+        13,
+        16
+      ]
+    },
+    "chug": {
+      "action": "FrolicCandidate.chug",
+      "displayName": "Chug",
+      "frameRange": [
+        1,
+        16
+      ],
+      "sourceFrames": 16,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 5,
+          "support": "none",
+          "contact": "depart",
+          "freeFoot": "both"
+        },
+        {
+          "frame": 10,
+          "support": "both",
+          "contact": "chug",
+          "freeFoot": "both"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        7,
+        10,
+        16
+      ]
+    },
+    "recovery": {
+      "action": "FrolicCandidate.recovery",
+      "displayName": "Short recovery and weight transfer",
+      "frameRange": [
+        1,
+        9
+      ],
+      "sourceFrames": 9,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "recovery",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 9,
+          "support": "left",
+          "contact": "soft",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        7,
+        9
+      ]
+    },
+    "turnaround": {
+      "action": "FrolicCandidate.turnaround",
+      "displayName": "Turnaround and ending",
+      "frameRange": [
+        1,
+        31
+      ],
+      "sourceFrames": 31,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "cross",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 14,
+          "support": "left",
+          "contact": "turn",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 26,
+          "support": "both",
+          "contact": "ending",
+          "freeFoot": "both"
+        }
+      ],
+      "keyframes": [
+        1,
+        6,
+        11,
+        14,
+        16,
+        21,
+        26,
+        31
+      ]
+    }
+  },
+  "manualPixelCleanup": {
+    "status": "blocked",
+    "reason": "Aseprite and LibreSprite are not installed; retain toon-rendered candidate for human review."
+  }
+}

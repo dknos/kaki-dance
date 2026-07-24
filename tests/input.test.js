@@ -21,7 +21,7 @@ test("press and release edges survive a complete tap between simulation polls", 
   input.destroy();
 });
 
-test("simple and advanced mappings preserve contextual and Q/E/F/T controls", () => {
+test("simple and advanced mappings preserve Z/X/C/V, aliases, and Q/E controls", () => {
   const input = new InputManager({ target: null, controlMode: "simple" });
   input.bufferCode("KeyF", true);
   assert.equal(input.consumeStep().stylePressed, true);
@@ -29,11 +29,12 @@ test("simple and advanced mappings preserve contextual and Q/E/F/T controls", ()
   input.bufferCode("KeyQ", true);
   input.bufferCode("KeyE", true);
   input.bufferCode("KeyF", true);
+  input.bufferCode("KeyC", true);
   const step = input.consumeStep();
   assert.equal(step.toprockPressed, true);
   assert.equal(step.footworkPressed, true);
   assert.equal(step.powerPressed, true);
-  assert.equal(step.stylePressed, false);
+  assert.equal(step.stylePressed, true);
   input.destroy();
 });
 

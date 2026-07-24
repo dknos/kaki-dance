@@ -56,10 +56,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
     right: "KeyD",
     up: "KeyW",
     down: "KeyS",
-    action: "Space",
-    style: "KeyF",
-    power: "ShiftLeft",
-    freeze: "KeyT",
+    action: "KeyZ",
+    style: "KeyX",
+    power: "KeyC",
+    freeze: "KeyV",
   }),
 });
 

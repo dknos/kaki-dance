@@ -11,16 +11,22 @@ const DEFAULT_BINDINGS = Object.freeze({
   right: ["ArrowRight", "KeyD"],
   up: ["ArrowUp", "KeyW"],
   down: ["ArrowDown", "KeyS"],
-  action: ["Space"],
-  style: ["KeyF", "KeyX"],
-  power: ["ShiftLeft", "ShiftRight", "KeyY"],
-  freeze: ["KeyT", "KeyB"],
+  action: ["KeyZ", "Space"],
+  style: ["KeyX", "KeyF"],
+  power: ["KeyC", "ShiftLeft", "ShiftRight", "KeyY"],
+  freeze: ["KeyV", "KeyT", "KeyB"],
   toprock: ["KeyQ"],
   footwork: ["KeyE"],
   pause: ["Escape", "KeyP"],
 });
 
 const ACTIONS = Object.freeze(["action", "style", "power", "freeze", "toprock", "footwork"]);
+const REQUIRED_ALIASES = Object.freeze({
+  action: Object.freeze(["KeyZ", "Space"]),
+  style: Object.freeze(["KeyX", "KeyF"]),
+  power: Object.freeze(["KeyC", "ShiftLeft", "ShiftRight"]),
+  freeze: Object.freeze(["KeyV", "KeyT"]),
+});
 
 export function createInputStep() {
   const step = { x: 0, y: 0, pausePressed: false, device: "keyboard" };
@@ -39,6 +45,7 @@ export class InputManager {
     getGamepads = () => globalThis.navigator?.getGamepads?.() ?? [],
     controlMode = "simple",
     bindings = {},
+    onActionEdge = null,
   } = {}) {
     this.target = target;
     this.getGamepads = getGamepads;
@@ -48,6 +55,9 @@ export class InputManager {
     this.previous = booleanRecord([...ACTIONS, "pause"]);
     this.buffers = bufferRecord(ACTIONS);
     this.releaseBuffers = bufferRecord(ACTIONS);
+    this.edgeMetadata = Object.fromEntries(ACTIONS.map((action) => [action, null]));
+    this.directHeld = new Set();
+    this.onActionEdge = onActionEdge;
     this.pauseBuffer = 0;
     this.touchButtons = new Map();
     this.touchPointers = new Map();
@@ -70,7 +80,14 @@ export class InputManager {
       event.preventDefault();
       const wasDown = this.keys.has(event.code);
       this.keys.add(event.code);
-      if (!wasDown) this.bufferCode(event.code, true);
+      if (!wasDown) {
+        this.bufferCode(event.code, true, {
+          rawTimeStamp: event.timeStamp,
+          receivedTimeStamp: now(),
+          device: "keyboard",
+          code: event.code,
+        });
+      }
       this.lastDevice = "keyboard";
     }, options);
     this.target.addEventListener("keyup", (event) => {
@@ -78,7 +95,14 @@ export class InputManager {
       if (!isTextControl(event.target)) event.preventDefault();
       const wasDown = this.keys.has(event.code);
       this.keys.delete(event.code);
-      if (wasDown) this.bufferCode(event.code, false);
+      if (wasDown) {
+        this.bufferCode(event.code, false, {
+          rawTimeStamp: event.timeStamp,
+          receivedTimeStamp: now(),
+          device: "keyboard",
+          code: event.code,
+        });
+      }
     }, options);
     this.target.addEventListener("blur", () => this.clear(), options);
   }
@@ -93,7 +117,12 @@ export class InputManager {
         this.touchPointers.delete(event.pointerId);
         this.touchButtons.delete(control);
         button.classList.remove("is-active");
-        this.bufferAction(control, false);
+        this.bufferAction(control, false, {
+          rawTimeStamp: event.timeStamp,
+          receivedTimeStamp: now(),
+          device: "touch",
+          pointerType: event.pointerType || "touch",
+        });
       };
       button.addEventListener("pointerdown", (event) => {
         event.preventDefault();
@@ -101,9 +130,18 @@ export class InputManager {
         this.touchPointers.set(event.pointerId, { button, control });
         this.touchButtons.set(control, event.pointerId);
         button.classList.add("is-active");
-        this.bufferAction(control, true);
+        this.bufferAction(control, true, {
+          rawTimeStamp: event.timeStamp,
+          receivedTimeStamp: now(),
+          device: "touch",
+          pointerType: event.pointerType || "touch",
+        });
         this.lastDevice = "touch";
-        button.setPointerCapture?.(event.pointerId);
+        try {
+          button.setPointerCapture?.(event.pointerId);
+        } catch {
+          // Synthetic QA events cannot own browser pointer capture.
+        }
       }, options);
       button.addEventListener("pointerup", release, options);
       button.addEventListener("pointercancel", release, options);
@@ -140,7 +178,11 @@ export class InputManager {
       this.touchStick.rect = stick.getBoundingClientRect();
       stick.classList.add("is-active");
       this.lastDevice = "touch";
-      stick.setPointerCapture?.(event.pointerId);
+      try {
+        stick.setPointerCapture?.(event.pointerId);
+      } catch {
+        // Synthetic QA events cannot own browser pointer capture.
+      }
       move(event);
     }, options);
     stick.addEventListener("pointermove", move, options);
@@ -163,8 +205,24 @@ export class InputManager {
     const held = {};
     for (const action of ACTIONS) {
       held[action] = this.actionHeld(action) || Boolean(this.gamepad[action]);
-      if (held[action] && !this.previous[action]) this.buffers[action] = INPUT_BUFFER_SECONDS;
-      if (!held[action] && this.previous[action]) this.releaseBuffers[action] = INPUT_BUFFER_SECONDS;
+      if (held[action] && !this.previous[action]) {
+        if (this.directHeld.has(action)) {
+          this.directHeld.delete(action);
+        } else {
+          this.bufferAction(action, true, {
+            rawTimeStamp: now(),
+            receivedTimeStamp: now(),
+            device: this.gamepad[action] ? "gamepad" : this.lastDevice,
+          });
+        }
+      }
+      if (!held[action] && this.previous[action]) {
+        this.bufferAction(action, false, {
+          rawTimeStamp: now(),
+          receivedTimeStamp: now(),
+          device: this.lastDevice,
+        });
+      }
       this.previous[action] = held[action];
     }
     const pauseHeld = this.actionHeld("pause") || this.gamepad.pause;
@@ -189,7 +247,11 @@ export class InputManager {
       result[action] = this.previous[action];
       result[`${action}Pressed`] = this.buffers[action] > 0;
       result[`${action}Released`] = this.releaseBuffers[action] > 0;
-      if (result[`${action}Pressed`]) this.buffers[action] = 0;
+      if (result[`${action}Pressed`]) {
+        result[`${action}Event`] = this.edgeMetadata[action];
+        this.buffers[action] = 0;
+        this.edgeMetadata[action] = null;
+      }
       if (result[`${action}Released`]) this.releaseBuffers[action] = 0;
     }
     result.pausePressed = this.pauseBuffer > 0;
@@ -210,6 +272,26 @@ export class InputManager {
   setEnabled(enabled) {
     this.enabled = Boolean(enabled);
     if (!this.enabled) this.clear();
+  }
+
+  setEdgeHandler(handler) {
+    this.onActionEdge = typeof handler === "function" ? handler : null;
+  }
+
+  inputStepForEdge(edge) {
+    const result = createInputStep();
+    const action = edge?.action;
+    if (!ACTIONS.includes(action)) return result;
+    const keyboardX = Number(this.keyHeld("right")) - Number(this.keyHeld("left"));
+    const keyboardY = Number(this.keyHeld("down")) - Number(this.keyHeld("up"));
+    const touchActive = this.touchStick.pointerId !== null;
+    result.x = clamp(touchActive ? this.touchStick.x : this.gamepad.active ? this.gamepad.x : keyboardX, -1, 1);
+    result.y = clamp(touchActive ? this.touchStick.y : this.gamepad.active ? this.gamepad.y : keyboardY, -1, 1);
+    result.device = edge.device ?? this.lastDevice;
+    result[action] = true;
+    result[`${action}Pressed`] = true;
+    result[`${action}Event`] = Object.freeze({ ...edge });
+    return result;
   }
 
   clearEdges() {
@@ -233,6 +315,7 @@ export class InputManager {
     this.touchStick.element?.style.setProperty("--stick-x", "0px");
     this.touchStick.element?.style.setProperty("--stick-y", "0px");
     this.gamepad = disconnectedGamepad();
+    this.directHeld.clear();
     this.step = createInputStep();
     this.clearEdges();
   }
@@ -246,10 +329,10 @@ export class InputManager {
   keyHeld(action) {
     if (this.controlMode === "advanced") {
       const direct = {
-        action: ["Space"],
-        style: ["KeyX"],
-        power: ["KeyF"],
-        freeze: ["KeyT"],
+        action: ["KeyZ", "Space"],
+        style: ["KeyX", "KeyF"],
+        power: ["KeyC", "ShiftLeft", "ShiftRight"],
+        freeze: ["KeyV", "KeyT"],
         toprock: ["KeyQ"],
         footwork: ["KeyE"],
       }[action];
@@ -268,26 +351,46 @@ export class InputManager {
     return Object.values(this.bindings).some((codes) => codes.includes(code));
   }
 
-  bufferCode(code, pressedEdge) {
-    for (const action of this.actionsForCode(code)) this.bufferAction(action, pressedEdge);
+  bufferCode(code, pressedEdge, metadata = {}) {
+    for (const action of this.actionsForCode(code)) this.bufferAction(action, pressedEdge, metadata);
   }
 
-  bufferAction(action, pressedEdge) {
+  bufferAction(action, pressedEdge, metadata = {}) {
     if (action === "pause") {
       if (pressedEdge) this.pauseBuffer = INPUT_BUFFER_SECONDS;
       return;
     }
     if (!ACTIONS.includes(action)) return;
-    if (pressedEdge) this.buffers[action] = INPUT_BUFFER_SECONDS;
-    else this.releaseBuffers[action] = INPUT_BUFFER_SECONDS;
+    if (pressedEdge) {
+      const edge = Object.freeze({
+        action,
+        rawTimeStamp: finiteTimestamp(metadata.rawTimeStamp),
+        receivedTimeStamp: finiteTimestamp(metadata.receivedTimeStamp),
+        device: metadata.device ?? this.lastDevice,
+        code: metadata.code ?? "",
+        pointerType: metadata.pointerType ?? "",
+      });
+      this.edgeMetadata[action] = edge;
+      const handled = this.onActionEdge?.(edge) === true;
+      this.buffers[action] = handled ? 0 : INPUT_BUFFER_SECONDS;
+      if (handled) this.directHeld.add(action);
+    } else {
+      this.releaseBuffers[action] = INPUT_BUFFER_SECONDS;
+      this.directHeld.delete(action);
+    }
   }
 
   actionsForCode(code) {
     if (this.controlMode === "advanced") {
       const direct = {
+        KeyZ: "action",
         Space: "action",
         KeyX: "style",
-        KeyF: "power",
+        KeyF: "style",
+        KeyC: "power",
+        ShiftLeft: "power",
+        ShiftRight: "power",
+        KeyV: "freeze",
         KeyT: "freeze",
         KeyQ: "toprock",
         KeyE: "footwork",
@@ -363,14 +466,24 @@ function mergeBindings(overrides) {
   const result = {};
   for (const [action, defaults] of Object.entries(DEFAULT_BINDINGS)) {
     const custom = overrides[action];
-    result[action] = Array.isArray(custom)
+    const selected = Array.isArray(custom)
       ? [...new Set([
           ...custom,
           ...defaults.filter((code) => code.startsWith("Arrow") || ["Escape", "KeyP"].includes(code)),
         ])]
       : [...defaults];
+    result[action] = [...new Set([...selected, ...(REQUIRED_ALIASES[action] ?? [])])];
   }
   return result;
+}
+
+function now() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
+function finiteTimestamp(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : now();
 }
 
 function booleanRecord(keys) {

@@ -364,7 +364,7 @@ const rawCatalog = [
       contact(0, "lead", "flat", 0.66, "flatContact"),
       contact(48, "trail", "toe", 0.74, "toeBall"),
       contact(96, "lead", "heel", 0.78, "heel"),
-      contact(144, "trail", "flat", 0.9, "heavyAccent"),
+      contact(144, "trail", "flat", 0.9, "flatContact"),
     ],
     rootMotion: { forward: 0, lateral: 3 },
     directionOptions: ["turn-left", "turn-right"],
@@ -388,7 +388,7 @@ const rawCatalog = [
     contacts: [
       contact(0, "lead", "toe", 0.68, "toeBall"),
       contact(72, "trail", "heel", 0.76, "heel"),
-      contact(144, "both", "flat", 1, "heavyAccent"),
+      contact(144, "both", "flat", 1, "flatContact"),
     ],
     rootMotion: { forward: 0, lateral: 0 },
     directionOptions: ["neutral"],

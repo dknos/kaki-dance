@@ -164,7 +164,7 @@ test("semantic STEP inputs alternate the foundation foot and emit immediate cont
   assert.deepEqual(feet, ["left", "right", "left", "right"]);
 });
 
-test("valid rhythm still sounds immediately while the authored body queue is full", () => {
+test("rapid valid rhythm retargets the body immediately without a hidden queue", () => {
   const simulation = new AppalachianJamSimulation({ style: "buck" });
   simulation.begin(snapshotAtTick(-768));
   simulation.update(0.05, snapshotAtTick(0), frolicInput("step"));
@@ -182,7 +182,9 @@ test("valid rhythm still sounds immediately while the authored body queue is ful
     && value.inputKind === "drive"
   ));
   assert.ok(driveContact);
-  assert.equal(driveInput?.rhythmOnly, true);
+  assert.equal(driveInput?.rhythmOnly, false);
+  assert.equal(driveInput?.queued, false);
+  assert.equal(driveInput?.moveId, "chug");
   assert.equal(
     events.some((value) => value.type === "frolicInputRejected" && value.inputKind === "drive"),
     false,

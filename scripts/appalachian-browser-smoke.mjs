@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const baseUrl = process.env.KAKI_DANCE_URL ?? "http://127.0.0.1:4177";
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const outputDir = resolve(projectRoot, "docs/images/appalachian/final");
+const outputDir = resolve(projectRoot, "docs/review/frolic-rescue-candidate-1/reports");
 mkdirSync(outputDir, { recursive: true });
 const executablePath = process.env.CHROMIUM_PATH
   ?? (existsSync("/home/nemoclaw/bin/chromium") ? "/home/nemoclaw/bin/chromium" : undefined);
@@ -31,6 +31,8 @@ assert.equal(await page.locator("[data-start-mode='frolic']").isVisible(), true)
 assert.equal(await page.locator("[data-start-mode='measure']").isVisible(), true);
 assert.equal(await page.locator("[data-start-mode='stepShed']").isVisible(), true);
 assert.equal(await page.locator("[data-frolic-style]").count(), 3);
+assert.equal(await page.locator("[data-frolic-style='buck']").isDisabled(), true);
+assert.equal(await page.locator("[data-frolic-style='clog']").isDisabled(), true);
 await page.click("[data-start-mode='frolic']");
 await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().state === "running");
 await page.waitForFunction(
@@ -46,7 +48,6 @@ const immediate = await page.evaluate(() => {
     mode: value.mode,
     style: value.frolicStyle,
     input: value.simulation?.frolic?.lastInput,
-    microResponse: value.simulation?.dancer?.microResponse,
     topology: value.simulation?.character?.topology,
     practice: value.simulation?.frolic?.practice,
   };
@@ -54,7 +55,8 @@ const immediate = await page.evaluate(() => {
 assert.equal(immediate.mode, "frolic");
 assert.equal(immediate.style, "flatfoot");
 assert.equal(immediate.input.kind, "step");
-assert.ok(immediate.microResponse > 0);
+assert.ok(immediate.input.actionId > 0);
+assert.ok(Number.isFinite(immediate.input.simulationReceiptTimestamp));
 assert.equal(immediate.topology, "biped");
 assert.equal(immediate.practice, null);
 
@@ -88,7 +90,7 @@ runtime.frameProfile = await page.evaluate(() => new Promise((resolveProfile) =>
 const frolicAtlases = runtime.resources.filter((url) => /\/heroes\/.+\/frolic\/.+\/atlas\.json$/.test(url));
 const frolicPages = runtime.resources.filter((url) => /\/heroes\/.+\/frolic\/.+\/atlas-\d+\.png$/.test(url));
 assert.equal(frolicAtlases.length, 1);
-assert.equal(frolicPages.length, 1);
+assert.equal(frolicPages.length, 2);
 assert.match(frolicAtlases[0], /kitty\/frolic\/flatfoot/);
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/board-and-bow.wav")));
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/feet/manifest.json")));
@@ -100,9 +102,9 @@ await page.check("#frolic-skeleton");
 await page.check("#frolic-contacts");
 await page.check("#frolic-com");
 await page.selectOption("#frolic-hero", "soder");
-await page.selectOption("#frolic-style", "clog");
-await page.selectOption("#frolic-move", "crisscross");
-await page.waitForFunction(() => globalThis.frolicLab?.getState?.().activePacks?.[0] === "soder:clog");
+await page.selectOption("#frolic-style", "flatfoot");
+await page.selectOption("#frolic-move", "turnaround");
+await page.waitForFunction(() => globalThis.frolicLab?.getState?.().activePacks?.[0] === "soder:flatfoot");
 const lab = await page.evaluate(() => ({
   state: globalThis.frolicLab.getState(),
   nativeSize: [globalThis.frolicLab.canvas.width, globalThis.frolicLab.canvas.height],
@@ -122,7 +124,7 @@ lab.renderProfile = await page.evaluate(() => {
     averageMs: elapsedMs / samples,
   };
 });
-assert.deepEqual(lab.state.activePacks, ["soder:clog"]);
+assert.deepEqual(lab.state.activePacks, ["soder:flatfoot"]);
 assert.deepEqual(lab.nativeSize, [384, 216]);
 assert.deepEqual(lab.neutralSize, [384, 216]);
 assert.match(lab.imageRendering, /pixelated|crisp-edges/);
@@ -133,7 +135,6 @@ assert.equal(lab.atlas, 1024);
 
 await page.goto(baseUrl, { waitUntil: "networkidle" });
 await page.click("[data-character='soder']");
-await page.click("[data-frolic-style='clog']");
 await page.click("[data-start-mode='frolic']");
 await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().state === "running");
 const soder = await page.evaluate(() => ({
@@ -141,9 +142,9 @@ const soder = await page.evaluate(() => ({
   resources: performance.getEntriesByType("resource").map((entry) => entry.name),
 }));
 assert.equal(soder.state.character, "soder");
-assert.equal(soder.state.frolicStyle, "clog");
+assert.equal(soder.state.frolicStyle, "flatfoot");
 assert.equal(soder.state.simulation.character.topology, "biped");
-assert.ok(soder.resources.some((url) => /soder\/frolic\/clog\/atlas\.json$/.test(url)));
+assert.ok(soder.resources.some((url) => /soder\/frolic\/flatfoot\/atlas\.json$/.test(url)));
 
 const touchContext = await browser.newContext({
   viewport: { width: 844, height: 390 },
@@ -168,12 +169,11 @@ const touchInput = await touchPage.evaluate(() => {
   const snapshot = globalThis.kakiDance.getSnapshot();
   return {
     lastInput: snapshot.simulation?.frolic?.lastInput,
-    microResponse: snapshot.simulation?.dancer?.microResponse,
   };
 });
 assert.equal(touchInput.lastInput.kind, "step");
 assert.equal(touchInput.lastInput.device, "touch");
-assert.ok(touchInput.microResponse > 0);
+assert.ok(touchInput.lastInput.actionId > 0);
 const touch = await touchPage.evaluate(() => {
   const canvas = document.getElementById("game-canvas").getBoundingClientRect();
   const buttons = [...document.querySelectorAll("#touch-controls .touch-buttons button")].map((button) => {

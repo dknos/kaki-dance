@@ -43,5 +43,13 @@ export async function createKakiDance({
     restart: () => game.restart(),
     destroy: () => game.destroy(),
     getSnapshot: () => game.getSnapshot(),
+    getFrolicLatencyRecords: () => Object.freeze([...game.frolicLatencyRecords]),
+    getFrolicVisualBounds: () => game.renderer.lastFrolicVisual?.bounds ?? null,
+    setFrolicQaMode: (enabled) => game.renderer.setFrolicQaMode(enabled),
+    setFrolicDebugOverlay: (enabled) => game.renderer.setFrolicDebugOverlay(enabled),
+    setFrolicReviewArt: (value) => game.setFrolicReviewArt(value),
+    setFrolicReviewFoley: (value) => game.setFrolicReviewFoley(value),
+    setFrolicReviewMix: (value) => game.setFrolicReviewMix(value),
+    setFrolicReviewKey: (code, pressed) => game.setFrolicReviewKey(code, pressed),
   });
 }

@@ -35,8 +35,8 @@ test("foot percussion follows the real input timestamp, latency, and round-robin
 
   assert.deepEqual(sources.map((source) => source.buffer), [first, second]);
   assert.deepEqual(starts, [10.035, 10.045]);
-  assert.equal(sources[0].playbackRate.value, 0.992);
-  assert.equal(sources[1].playbackRate.value, 1.012);
+  assert.equal(sources[0].playbackRate.value, 1);
+  assert.equal(sources[1].playbackRate.value, 1);
 });
 
 test("clog contacts select authored tap timbres without affecting other profiles", () => {

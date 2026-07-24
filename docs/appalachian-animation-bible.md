@@ -1,99 +1,107 @@
 # Appalachian Frolic animation bible
 
-## Product gate
+## Candidate 1 product gate
 
-The dancers are the product. Environment polish cannot excuse an unreadable
-hand, reversed arm, merged foot, centered unsupported pelvis, planted-foot
-skate, or Soder losing the human biped inside the costume.
+The dancers are the product. Environment polish and automated checks cannot
+excuse an unreadable hand, reversed arm, merged foot, centered unsupported
+pelvis, planted-foot skate, or Soter losing the biped inside the costume.
+Candidate 1 is Flatfoot-only and requires human approval before Buck or Clog
+work resumes.
 
-Both heroes use the same full topology:
+## Canonical anatomy
 
-- root, pelvis, lower and upper spine, neck, head;
+KittyKaki and Soter use the same weighted
+`KakiFrolicProductionBiped` armature:
+
+- root, pelvis, spine, chest, neck, and head;
 - paired clavicles, upper arms, forearms, wrists, and hands;
-- paired thighs, knees, shins, ankles, heels, toes, and foot IK;
-- paired knee poles;
-- non-contact-bearing Soder hood and fabric controls.
+- paired thighs, shins, feet, and toes;
+- paired foot IK, knee poles, heel pivots, ball pivots, and toe pivots;
+- separate Soter hood and decorative-tail controls.
 
-Anatomical left/right is stable even when the sprite is mirrored. Soder’s hood
-and padded tail are costume fabric attached to the shared anatomy, never a
-coil-body solver.
+Soter is KittyKaki inside a padded snake kigurumi. The hood, padded torso, and
+tail layer over the complete shoulders, elbows, hips, knees, hands, and feet.
+The tail is never a support contact.
 
-## Profile pose languages
+## Flatfoot movement language
 
-### Flatfoot
+- low, grounded pelvis and relaxed knees;
+- small vertical range and feet kept close to the board;
+- the pelvis travels toward the supporting foot;
+- shoulders and relaxed arms counterbalance the hips;
+- near and far limbs keep separate values and silhouettes;
+- heel lifts pivot around the toe and toe lifts pivot around the heel;
+- planted feet remain fixed until their declared departure;
+- contact compression is localized instead of bouncing the whole body;
+- head and costume settle after the stronger movement.
 
-- pelvis low, knees continuously responsive;
-- small vertical range and close-to-board foot trajectories;
-- smoother lateral/root travel;
-- heels, toes, drags, and brushes stay visually distinct;
-- quiet arms counterbalance the pelvis;
-- holds and lower density are positive animation choices.
+The candidate action catalog contains:
 
-### Buck
+| Action | Frames at 30 fps | Purpose |
+| --- | ---: | --- |
+| `groove` | 31 | interruptible neutral musical base |
+| `walkingStep` | 31 | alternating foundation step |
+| `shuffle` | 16 | free-foot brush/shuffle |
+| `heelToeChange` | 31 | readable heel and toe pivots |
+| `backstep` | 16 | backward placement and support change |
+| `chug` | 16 | compact strong weight transfer |
+| `recovery` | 9 | short support correction |
+| `turnaround` | 31 | cross, turn, and ending |
 
-- more elastic foot spring and ball-of-foot emphasis;
-- brighter syncopated recoil below the knee;
-- scissor/cross paths use independent depth for each leg;
-- torso remains restrained while arms answer sharper weight shifts.
+Actions are pose-to-pose keys in Blender. The source does not use the rejected
+Pillow anchor library or sine-coordinate motion.
 
-### Clog
+## Production source and atlas path
 
-- higher knee paths and clearer projected silhouettes;
-- repeated double/triple patterns have decisive recoil;
-- optional tap heel/toe pixels identify the shoe profile;
-- turns and final poses project farther without becoming weightless.
+1. Canonical character sheets live in
+   `docs/review/frolic-rescue-candidate-1/model-sheets/`. They are identity and
+   proportion references, not unattended animation frames.
+2. `tools/blender/build_appalachian_frolic_rig.py` builds the modeled,
+   weighted characters, shared armature, controls, toon materials, stable
+   three-quarter orthographic camera, and eight named 30 fps actions in
+   `tools/blender/kaki-appalachian-frolic.blend`.
+3. `tools/blender/render_appalachian_frolic_candidate.py` opens that scene and
+   renders every actual action frame to transparent 512×512 RGBA.
+4. `tools/art/build_frolic_blender_atlases.py` reduces each render to 128×128,
+   applies one page-level 96-color palette without dithering, and packs 181
+   frames per hero across two 1024² pages.
+5. Runtime metadata records the Blender scene hash, camera, action, render
+   settings, cleanup revision, atlas revision, exact contacts, support state,
+   and center of mass.
 
-Speed, bounce, color, and volume are not the style system. Each pack has its
-own anchors, pelvis height, lift, arm counterbalance, shoe treatment, contact
-timing, and sound mapping.
+The public Flatfoot sprite is the actual Blender render. The Pillow capsule
+renderer survives only in the preserved rejected baseline and debug tooling.
 
-## Contact rules
+## Cleanup truth
 
-- A declared plant remains fixed in board space. Current generated result:
-  `0.000 px` worst displacement across all six packs.
-- Heel lift pivots around a fixed toe; toe lift pivots around a fixed heel.
-- Sliding and dragging frames are explicitly non-planted until they settle.
-- The pelvis moves toward the supporting leg.
-- Crossing toes remain separated by the silhouette lint; the build has zero
-  merge warnings.
-- A joint may not jump more than 16 source pixels between frames. The current
-  worst case is below 12 px.
-- Every percussive catalog contact maps to an atlas accent phase and local
-  sample family.
+The Blender render is not automatically approved pixel art. Aseprite and
+LibreSprite are not installed in this workspace, so candidate 1 is labelled
+`candidate-1-unretouched-toon`; specialist manual cleanup of hands, contact
+keys, outline crawl, and any merged silhouettes remains blocked. It is
+incorrect to call the palette conversion “authored cleanup.”
 
-## Source and cleanup pipeline
+Every frame has been exposed through native 384×216 stills, 4× stills,
+neutral-background strips, normal/half-speed loops, skeleton/contact overlays,
+and rejected/candidate comparisons. Current visible weaknesses are recorded in
+the review package and must not be waived by green motion tests.
 
-1. `tools/art/appalachian_pose_library.py` authors independent biped anchors,
-   support truth, center of mass, segment depth, contacts, and style mechanics.
-2. `tools/blender/build_appalachian_frolic_rig.py` deterministically creates
-   `KakiFrolicSharedBiped`, 30 bones/controls, KittyKaki and Soder costume
-   proxies, three 24 fps actions, a 384×216 orthographic camera, and a JSON
-   review export.
-3. `tools/art/build_appalachian_atlases.py` performs the deliberate pixel
-   cleanup pass: stable volume, hard edges, one/two-pixel outlines, separate
-   limbs and joints, directional shoes, style shoe details, camera-space
-   occlusion, trimming, extrusion, indexed packing, and lint.
-4. Runtime loads one selected hero/profile 1024² indexed atlas. Animation is
-   sampled at 60 Hz from audio-clock phase while source drawings use purposeful
-   12–16 fps holds.
+## Responsive runtime contract
 
-Blender proxy meshes are mechanics and occlusion proof, not public art.
-Generated pixels are not approved by mere frame completeness; native stills,
-4× nearest boards, diagnostic overlays, and six loops are the approval media.
+The animation controller now has an interruptible groove base, an atomic action
+layer, and a phrase-intention layer. STEP, BRUSH, DRIVE, or LICK starts or
+retargets the atomic action at the raw input time; no one- or two-beat clip
+queue, transition bridge, hidden input counter, or generic squash may delay the
+first action pose.
 
-## Approval poses
+Contacts created at input are deduplicated from later action metadata. The
+phrase layer may influence follow-through and recovery, but never buffer the
+initial foot response.
 
-Every hero/profile board contains neutral, foundation walk, shuffle, backstep,
-chug, heel-toe change, drag-slide, crisscross, turnaround, and controlled
-ending. The capture set contains actual-stage native and 4× boards,
-split-contrast neutral native and 4× boards, and diagnostic boards. Diagnostic
-versions mark:
+## Mechanical checks versus approval
 
-- anatomical left skeleton in mint;
-- anatomical right skeleton in orange;
-- contact boxes in amber;
-- center of mass in chalk;
-- support-foot label.
-
-The Footwork Lab adds actual-stage, neutral-contrast, transition, root trail,
-atlas-page, and world-coordinate inspection.
+`npm run qa:frolic:motion` checks planted-foot world drift, support/center of
+mass, heel/toe pivots, knee and elbow continuity, hand attachment, left/right
+depth, silhouette separation, outfit volume, and loop compatibility.
+`npm run qa:frolic:latency` measures real event timestamps through first changed
+hero pixels. Both suites are regression gates only. They cannot approve
+anatomy, weight, groove, musicality, or taste.

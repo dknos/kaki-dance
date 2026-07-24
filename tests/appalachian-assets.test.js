@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
 import {
   FOOTWORK_CATALOG,
-  FROLIC_STYLE_IDS,
 } from "../js/appalachian/footwork-catalog.js";
 import { APPALACHIAN_TUNE_MAP } from "../js/appalachian/tune-map.js";
 import {
@@ -16,24 +16,32 @@ import {
 const ROOT = resolve(import.meta.dirname, "..");
 const HEROES = ["kitty", "soder"];
 
-test("all six lazy Frolic packs are indexed complete bipeds within one-page active memory", () => {
+test("both Flatfoot candidate packs are Blender-sourced complete bipeds with bounded two-page memory", () => {
+  const pilotClips = [
+    "groove", "walkingStep", "shuffle", "heelToeChange",
+    "backstep", "chug", "recovery", "turnaround",
+  ];
   for (const character of HEROES) {
-    for (const style of FROLIC_STYLE_IDS) {
-      const root = resolve(ROOT, `assets/heroes/${character}/frolic/${style}`);
+    for (const style of ["flatfoot"]) {
+      const root = resolve(ROOT, `assets/heroes/${character}/frolic/flatfoot`);
       const metadata = JSON.parse(readFileSync(resolve(root, "atlas.json"), "utf8"));
       assert.deepEqual(validateFrolicAtlasMetadata(metadata, { character, style }), []);
       assert.equal(metadata.topology, "biped");
-      assert.deepEqual(metadata.pages, ["atlas-0.png"]);
-      const page = readFileSync(resolve(root, "atlas-0.png"));
-      assert.equal(page.toString("hex", 0, 8), "89504e470d0a1a0a");
-      assert.equal(page.readUInt32BE(16), 1024);
-      assert.equal(page.readUInt32BE(20), 1024);
-      assert.equal(page[25], 3, `${character}/${style} must be indexed color`);
-      assert.equal(1024 * 1024 * 4, 4_194_304);
-      for (const move of Object.values(FOOTWORK_CATALOG).filter((value) => value.styles.includes(style))) {
-        assert.ok(metadata.clips[move.id], `${character}/${style}/${move.id}`);
+      assert.equal(metadata.candidateStatus, "human-review-required");
+      assert.equal(metadata.productionSource.sourceFPS, 30);
+      assert.match(metadata.productionSource.blenderScene, /\.blend$/);
+      assert.deepEqual(metadata.pages, ["atlas-0.png", "atlas-1.png"]);
+      for (const filename of metadata.pages) {
+        const page = readFileSync(resolve(root, filename));
+        assert.equal(page.toString("hex", 0, 8), "89504e470d0a1a0a");
+        assert.equal(page.readUInt32BE(16), 1024);
+        assert.equal(page.readUInt32BE(20), 1024);
+        assert.equal(page[25], 3, `${character}/${style}/${filename} must be indexed color`);
       }
+      assert.equal(metadata.pages.length * 1024 * 1024 * 4, 8_388_608);
+      assert.deepEqual(Object.keys(metadata.clips).sort(), pilotClips.sort());
       for (const clip of Object.values(metadata.clips)) {
+        assert.equal(clip.fps, 30);
         for (const frame of clip.frames) {
           assert.ok(frame.semanticAnchors.leftHand);
           assert.ok(frame.semanticAnchors.rightHand);
@@ -46,19 +54,20 @@ test("all six lazy Frolic packs are indexed complete bipeds within one-page acti
   }
 });
 
-test("animation lint certifies fixed plants, bounded joints, and distinct crossing feet", () => {
+test("candidate motion QA bounds plants and joints without claiming aesthetic approval", () => {
   const report = JSON.parse(readFileSync(
-    resolve(ROOT, "docs/images/appalachian/frolic-atlas-report.json"),
+    resolve(ROOT, "docs/review/frolic-rescue-candidate-1/reports/motion-report.json"),
     "utf8",
   ));
-  assert.equal(report.activePackPolicy, "one selected hero/style pack");
-  for (const [key, pack] of Object.entries(report.packs)) {
-    assert.equal(pack.pages, 1, key);
-    assert.equal(pack.drawings, 164, key);
-    assert.equal(pack.estimatedDecodedTextureBytes, 4_194_304, key);
-    assert.equal(pack.lint.worstPlantedFootDisplacementPx, 0, key);
-    assert.ok(pack.lint.worstJointFrameJumpPx < 12, key);
-    assert.deepEqual(pack.lint.warnings, [], key);
+  assert.equal(report.candidateStatus, "human-review-required");
+  assert.equal(report.sourceFPS, 30);
+  assert.equal(report.renderedFrameCount, 362);
+  assert.equal(report.checks.automatedApproval.pass, false);
+  for (const [key, hero] of Object.entries(report.heroReports)) {
+    assert.ok(hero.plantedFootMaxDriftLogicalPixels <= 2, key);
+    assert.ok(hero.maximumConsecutiveSegmentLengthChangeSourcePixels < 18, key);
+    assert.ok(hero.minimumFootSeparationLogicalPixels >= 6, key);
+    assert.ok(hero.handAttachmentDistanceLogicalPixels.maximum <= 8, key);
   }
 });
 
@@ -67,32 +76,39 @@ test("foot contacts agree with animation accents and every sample group is local
     resolve(ROOT, "assets/audio/frolic/feet/manifest.json"),
     "utf8",
   ));
-  assert.equal(manifest.roundRobin, 3);
+  assert.equal(manifest.roundRobin, 6);
+  assert.equal(manifest.sampleRate, 48_000);
+  assert.equal(manifest.provenance.noSynthesis, true);
+  for (const character of HEROES) {
+    const atlas = JSON.parse(readFileSync(
+      resolve(ROOT, `assets/heroes/${character}/frolic/flatfoot/atlas.json`),
+      "utf8",
+    ));
+    for (const [clipId, clip] of Object.entries(atlas.clips)) {
+      for (const contact of clip.contacts) {
+        const frame = clip.frames.find((value) => value.sourceFrame === contact.frame);
+        assert.ok(frame, `${character}/${clipId} contact frame ${contact.frame}`);
+        assert.ok(
+          frame.markers.includes(contact.contact.toUpperCase().replaceAll("-", "_")),
+          `${character}/${clipId}/${contact.contact}`,
+        );
+      }
+    }
+  }
   for (const move of Object.values(FOOTWORK_CATALOG)) {
     for (const contact of move.contacts) {
-      const phase = contact.tick / move.durationTicks;
-      for (const character of HEROES) {
-        for (const style of move.styles) {
-          const atlas = JSON.parse(readFileSync(
-            resolve(ROOT, `assets/heroes/${character}/frolic/${style}/atlas.json`),
-            "utf8",
-          ));
-          const accents = atlas.clips[move.id].accentPhases;
-          assert.ok(
-            accents.some((accent) => Math.abs(accent - phase) <= 0.045),
-            `${character}/${style}/${move.id} contact ${contact.tick}`,
-          );
-        }
-      }
       assert.ok(manifest.groups[contact.sampleGroup], `${move.id}/${contact.sampleGroup}`);
     }
   }
   for (const [group, definition] of Object.entries(manifest.groups)) {
-    assert.equal(definition.files.length, 3, group);
+    assert.equal(definition.files.length, 6, group);
+    for (const layer of ["soft", "medium", "strong"]) {
+      assert.equal(definition.layers[layer].length, 2, `${group}/${layer}`);
+    }
     for (const file of definition.files) {
       assert.doesNotMatch(file, /^https?:/);
       const wave = readFileSync(resolve(ROOT, "assets/audio/frolic/feet", file));
-      assertWave(wave, { channels: 1, sampleRate: 22_050 });
+      assertWave(wave, { channels: 1, sampleRate: 48_000, bitsPerSample: 24 });
     }
   }
 });
@@ -114,34 +130,45 @@ test("Board & Bow master and responsive stems have exact original AABB dimension
   }
 });
 
-test("one shared Blender biped carries every profile, style, movement, and foot control", () => {
+test("production Blender source models and weights both candidate heroes on one controlled biped", () => {
   const blend = readFileSync(resolve(ROOT, "tools/blender/kaki-appalachian-frolic.blend"));
   const exportValue = JSON.parse(readFileSync(
-    resolve(ROOT, "tools/blender/exports/kaki-appalachian-frolic-rig.json"),
+    resolve(ROOT, "tools/blender/exports/kaki-appalachian-frolic-production.json"),
     "utf8",
   ));
-  assert.ok(blend.length > 500_000 && blend.length < 2_000_000);
-  assert.equal(exportValue.topology, "biped");
-  assert.equal(exportValue.sharedArmature, "KakiFrolicSharedBiped");
-  assert.deepEqual(exportValue.profiles, HEROES);
-  assert.deepEqual(exportValue.styles, FROLIC_STYLE_IDS);
+  assert.ok(blend.length > 300_000);
+  const atlas = JSON.parse(readFileSync(
+    resolve(ROOT, "assets/heroes/kitty/frolic/flatfoot/atlas.json"),
+    "utf8",
+  ));
+  assert.equal(
+    createHash("sha256").update(blend).digest("hex"),
+    atlas.productionSource.blenderSceneSha256,
+  );
+  assert.equal(exportValue.topology, "weighted-biped");
+  assert.equal(exportValue.publicSpriteSource, "actual Blender rendered character");
+  assert.equal(exportValue.sharedArmature, "KakiFrolicProductionBiped");
+  assert.deepEqual(exportValue.characters, HEROES);
+  assert.equal(exportValue.sourceFPS, 30);
+  assert.equal(exportValue.cameraType, "orthographic-three-quarter-front");
+  assert.ok(exportValue.meshSummary["Hero.KittyKaki"].weightedMeshObjects >= 40);
+  assert.ok(exportValue.meshSummary["Hero.Soter"].weightedMeshObjects >= 48);
   for (const name of [
     "upperArm.L", "upperArm.R", "forearm.L", "forearm.R", "hand.L", "hand.R",
-    "thigh.L", "thigh.R", "shin.L", "shin.R", "ankle.L", "ankle.R",
-    "heel.L", "heel.R", "toe.L", "toe.R", "footIK.L", "footIK.R",
-    "kneePole.L", "kneePole.R", "costume.hood", "costume.fabric",
+    "thigh.L", "thigh.R", "shin.L", "shin.R", "foot.L", "foot.R",
+    "toe.L", "toe.R",
   ]) {
-    assert.ok(exportValue.bones.includes(name), name);
+    assert.ok(exportValue.deformBones.includes(name), name);
   }
-  for (const style of FROLIC_STYLE_IDS) {
-    assert.deepEqual(
-      Object.keys(exportValue.actions[style]),
-      Object.keys(JSON.parse(readFileSync(
-        resolve(ROOT, `assets/heroes/kitty/frolic/${style}/atlas.json`),
-        "utf8",
-      )).clips),
-    );
+  for (const name of [
+    "CTRL.root", "CTRL.pelvis", "CTRL.chest",
+    "footIK.L", "footIK.R", "kneePole.L", "kneePole.R",
+    "heelPivot.L", "heelPivot.R", "ballPivot.L", "ballPivot.R",
+    "toePivot.L", "toePivot.R", "costume.hood", "costume.tail",
+  ]) {
+    assert.ok(exportValue.controls.includes(name), name);
   }
+  assert.equal(Object.keys(exportValue.actions).length, 8);
 });
 
 test("lazy library releases inactive hero/style packs", async () => {
@@ -235,13 +262,28 @@ test("a real-time browser chorus reaches five-category results without errors", 
 function assertWave(buffer, expected) {
   assert.equal(buffer.toString("ascii", 0, 4), "RIFF");
   assert.equal(buffer.toString("ascii", 8, 12), "WAVE");
-  const channels = buffer.readUInt16LE(22);
-  const sampleRate = buffer.readUInt32LE(24);
-  const bitsPerSample = buffer.readUInt16LE(34);
+  let offset = 12;
+  let format = null;
+  let dataBytes = 0;
+  while (offset + 8 <= buffer.length) {
+    const id = buffer.toString("ascii", offset, offset + 4);
+    const length = buffer.readUInt32LE(offset + 4);
+    const start = offset + 8;
+    if (id === "fmt ") {
+      format = {
+        channels: buffer.readUInt16LE(start + 2),
+        sampleRate: buffer.readUInt32LE(start + 4),
+        bitsPerSample: buffer.readUInt16LE(start + 14),
+      };
+    }
+    if (id === "data") dataBytes = length;
+    offset = start + length + (length % 2);
+  }
+  assert.ok(format);
+  const { channels, sampleRate, bitsPerSample } = format;
   assert.equal(channels, expected.channels);
   assert.equal(sampleRate, expected.sampleRate);
-  assert.equal(bitsPerSample, 16);
-  const dataBytes = buffer.readUInt32LE(40);
+  assert.equal(bitsPerSample, expected.bitsPerSample ?? 16);
   return {
     channels,
     sampleRate,

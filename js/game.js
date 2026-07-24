@@ -5,7 +5,6 @@ import { MusicTransport } from "./audio/music-transport.js";
 import { SoundEffects } from "./audio/sfx.js";
 import { AppalachianJamSimulation } from "./appalachian/simulation.js";
 import { APPALACHIAN_TUNE_MAP } from "./appalachian/tune-map.js";
-import { normalizeFrolicStyle } from "./appalachian/footwork-catalog.js";
 import { DEFAULT_SETTINGS, FIXED_STEP, TIMING_WINDOWS } from "./config.js";
 import { FixedStepLoop } from "./core/fixed-step.js";
 import { characterDefinition, normalizeCharacterId } from "./dance/character-catalog.js";
@@ -44,7 +43,7 @@ export class KakiDanceGame {
     if (profile?.character) this.save.selectedCharacter = normalizeCharacterId(profile.character);
     this.settings = this.save.settings;
     this.selectedCharacter = normalizeCharacterId(this.save.selectedCharacter);
-    this.selectedFrolicStyle = normalizeFrolicStyle(this.save.selectedFrolicStyle);
+    this.selectedFrolicStyle = "flatfoot";
     this.onExit = onExit;
     this.onRoundComplete = onRoundComplete;
     this.onBattleComplete = onBattleComplete;
@@ -75,9 +74,11 @@ export class KakiDanceGame {
     this.simulation = null;
     this.attract = null;
     this.snapshot = null;
+    this.frolicLatencyRecords = [];
     this.destroyed = false;
     this.remapAction = "";
     this.listeners = new AbortController();
+    this.input.setEdgeHandler?.((edge) => this.handleImmediateFrolicEdge(edge));
     this.bindUi();
     this.syncUiFromSettings();
     this.selectCharacter(this.selectedCharacter, { persist: false });
@@ -256,6 +257,99 @@ export class KakiDanceGame {
     if (this.state === "running") this.input.update?.(dt);
   }
 
+  handleImmediateFrolicEdge(edge) {
+    if (
+      this.state !== "running"
+      || !FROLIC_MODES.has(this.mode)
+      || !this.simulation?.handleImmediateInput
+    ) {
+      return false;
+    }
+    const receiptTimestamp = now();
+    const beatSnapshot = this.transport.clock.getSnapshot();
+    const inputAudioTime = eventTimestampToAudioTime(
+      edge.rawTimeStamp,
+      receiptTimestamp,
+      this.transport.context,
+    );
+    const timedEdge = Object.freeze({
+      ...edge,
+      audioTime: inputAudioTime,
+      gameReceiptTimeStamp: receiptTimestamp,
+    });
+    const input = this.input.inputStepForEdge(timedEdge);
+    if (!this.simulation.handleImmediateInput(input, beatSnapshot)) return false;
+    this.processSimulationEvents(beatSnapshot);
+    this.render(0);
+    const renderedTimestamp = now();
+    const lastInput = this.simulation.lastInput;
+    const schedule = this.footPercussion.lastSchedule;
+    const record = Object.freeze({
+      actionId: lastInput?.actionId ?? 0,
+      inputKind: lastInput?.kind ?? edge.action,
+      device: edge.device,
+      rawEventTimestamp: edge.rawTimeStamp,
+      inputManagerReceiptTimestamp: edge.receivedTimeStamp,
+      gameReceiptTimestamp: receiptTimestamp,
+      simulationReceiptTimestamp: lastInput?.simulationReceiptTimestamp ?? null,
+      audioSchedulingTimestamp: schedule?.schedulingCallTimestamp ?? null,
+      scheduledAudioTime: schedule?.scheduledAudioTime ?? null,
+      immediateRenderCompletedTimestamp: renderedTimestamp,
+      audioContextBaseLatency: Number(this.transport.context?.baseLatency) || 0,
+      audioContextOutputLatency: Number(this.transport.context?.outputLatency) || 0,
+    });
+    this.frolicLatencyRecords.push(record);
+    if (this.frolicLatencyRecords.length > 1200) this.frolicLatencyRecords.splice(0, 200);
+    return true;
+  }
+
+  async setFrolicReviewArt(value) {
+    await Promise.all([
+      this.renderer.setFrolicReviewVariant(value, this.selectedCharacter, "flatfoot"),
+      this.replayRenderer.setFrolicReviewVariant(value, this.selectedCharacter, "flatfoot"),
+    ]);
+    this.render(0);
+    return value === "rejected" ? "rejected" : "candidate";
+  }
+
+  async setFrolicReviewFoley(value) {
+    await this.footPercussion.setReviewVariant(value);
+    return value === "rejected" ? "rejected" : "candidate";
+  }
+
+  setFrolicReviewMix({ music = true, effects = true } = {}) {
+    this.transport.setSettings({
+      musicVolume: music ? this.settings.musicVolume : 0,
+      effectsVolume: effects ? this.settings.effectsVolume : 0,
+    });
+    return { music: Boolean(music), effects: Boolean(effects) };
+  }
+
+  setFrolicReviewKey(code, pressed) {
+    const value = String(code ?? "");
+    const allowed = new Set([
+      "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+      "KeyA", "KeyD", "KeyW", "KeyS",
+      "KeyZ", "KeyX", "KeyC", "KeyV",
+      "Space", "KeyF", "ShiftLeft", "ShiftRight", "KeyT",
+    ]);
+    if (!allowed.has(value)) return false;
+    const isPressed = Boolean(pressed);
+    const wasPressed = this.input.keys?.has(value) ?? false;
+    if (isPressed) this.input.keys?.add(value);
+    else this.input.keys?.delete(value);
+    this.input.lastDevice = "keyboard";
+    if (isPressed !== wasPressed) {
+      this.input.bufferCode(value, isPressed, {
+        rawTimeStamp: now(),
+        receivedTimeStamp: now(),
+        device: "keyboard",
+        code: value,
+      });
+    }
+    return true;
+  }
+
   fixedUpdate(dt) {
     if (this.state === "running" && this.simulation) {
       const input = this.input.consumeStep?.() ?? EMPTY_INPUT;
@@ -317,12 +411,7 @@ export class KakiDanceGame {
         });
       }
       if (event.type === "footContact") {
-        this.footPercussion.playContact(event.immediate
-          ? {
-              ...event,
-              inputAudioTime: this.transport.getAudioTime?.() ?? event.inputAudioTime,
-            }
-          : event);
+        this.footPercussion.playContact(event);
         if (event.immediate && globalThis.navigator?.vibrate) globalThis.navigator.vibrate(8);
       }
       if (event.type === "tradeCall") {
@@ -456,7 +545,8 @@ export class KakiDanceGame {
   }
 
   selectFrolicStyle(style, { persist = true } = {}) {
-    this.selectedFrolicStyle = normalizeFrolicStyle(style);
+    void style;
+    this.selectedFrolicStyle = "flatfoot";
     this.save.selectedFrolicStyle = this.selectedFrolicStyle;
     for (const button of this.elements.frolicStyleButtons) {
       const selected = button.dataset.frolicStyle === this.selectedFrolicStyle;
@@ -759,6 +849,21 @@ function keyLabel(code) {
     KeyF: "F",
     KeyT: "T",
   }[code] ?? String(code ?? "").replace(/^Key/, "").replace(/^Digit/, "");
+}
+
+function now() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
+function eventTimestampToAudioTime(rawTimeStamp, receiptTimestamp, context) {
+  const currentTime = Number(context?.currentTime) || 0;
+  const raw = Number(rawTimeStamp);
+  const receipt = Number(receiptTimestamp);
+  if (!Number.isFinite(raw) || !Number.isFinite(receipt)) return currentTime;
+  const ageMilliseconds = Math.abs(receipt - raw) < 60_000
+    ? Math.max(0, receipt - raw)
+    : 0;
+  return Math.max(0, currentTime - ageMilliseconds / 1000);
 }
 
 function modeLabel(mode) {

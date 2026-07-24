@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kaki Dance — Frolic rescue candidate 1 review</title>
+  <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="frolic-rescue-review.css">
+</head>
+<body>
+  <header class="review-header">
+    <div>
+      <p class="kicker">Appalachian Frolic · stop gate</p>
+      <h1>Put the dancer under the work light.</h1>
+    </div>
+    <div class="candidate-stamp" aria-label="Candidate status">
+      <strong>Candidate 1</strong>
+      <span>Human approval required</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="camera-bench" aria-labelledby="camera-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Actual game renderer · 384 × 216</p>
+          <h2 id="camera-title">Native camera</h2>
+        </div>
+        <button class="start-button" id="start-review" type="button">Start live review</button>
+      </div>
+
+      <div class="camera-layout">
+        <div>
+          <div class="camera-ruler" aria-hidden="true">
+            <span>0</span><span>96</span><span>192</span><span>288</span><span>384</span>
+          </div>
+          <div class="native-camera">
+            <canvas id="review-canvas" width="384" height="216" aria-label="Live native Kaki Dance gameplay camera"></canvas>
+            <div class="camera-empty" id="camera-empty">Press “Start live review.” Audio will not autoplay.</div>
+          </div>
+          <p class="camera-caption" id="camera-caption">Candidate art · Candidate Foley · KittyKaki · Flatfoot</p>
+        </div>
+
+        <aside class="switchboard" aria-label="Review switches">
+          <fieldset>
+            <legend>Hero</legend>
+            <div class="segmented">
+              <button type="button" data-hero="kitty" aria-pressed="true">KittyKaki</button>
+              <button type="button" data-hero="soder" aria-pressed="false">Soter</button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Art</legend>
+            <div class="segmented">
+              <button type="button" data-art="candidate" aria-pressed="true">Candidate</button>
+              <button type="button" data-art="rejected" aria-pressed="false">Rejected</button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Foley</legend>
+            <div class="segmented">
+              <button type="button" data-foley="candidate" aria-pressed="true">Candidate</button>
+              <button type="button" data-foley="rejected" aria-pressed="false">Rejected</button>
+            </div>
+          </fieldset>
+          <label class="check-row"><input id="overlay-toggle" type="checkbox"> Skeleton + contacts</label>
+          <label class="check-row"><input id="music-toggle" type="checkbox" checked> Music enabled</label>
+          <label class="check-row"><input id="effects-toggle" type="checkbox" checked> Effects enabled</label>
+        </aside>
+      </div>
+
+      <div class="control-deck" aria-label="Real Frolic controls">
+        <div class="direction-pad" aria-label="Direction">
+          <button type="button" data-key="ArrowUp" aria-label="Forward">↑</button>
+          <button type="button" data-key="ArrowLeft" aria-label="Left">←</button>
+          <button type="button" data-key="ArrowDown" aria-label="Back">↓</button>
+          <button type="button" data-key="ArrowRight" aria-label="Right">→</button>
+        </div>
+        <button class="dance-key step" type="button" data-key="KeyZ"><kbd>Z</kbd><strong>STEP</strong><span>Alternate the foundation foot</span></button>
+        <button class="dance-key brush" type="button" data-key="KeyX"><kbd>X</kbd><strong>BRUSH</strong><span>Use the free foot</span></button>
+        <button class="dance-key drive" type="button" data-key="KeyC"><kbd>C</kbd><strong>DRIVE</strong><span>Chug or transfer weight</span></button>
+        <button class="dance-key lick" type="button" data-key="KeyV"><kbd>V</kbd><strong>LICK</strong><span>Turnaround and recover</span></button>
+      </div>
+
+      <div class="latency-strip" aria-live="polite">
+        <div><span>Input → simulation</span><strong id="latency-simulation">—</strong></div>
+        <div><span>Input → audio schedule</span><strong id="latency-audio">—</strong></div>
+        <div><span>Input → action render</span><strong id="latency-render">—</strong></div>
+        <div><span>AudioContext base / output</span><strong id="latency-context">—</strong></div>
+      </div>
+    </section>
+
+    <section class="foley-bench" aria-labelledby="foley-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">No autoplay · isolated and mixed audition</p>
+          <h2 id="foley-title">Shoe-on-board bench</h2>
+        </div>
+        <div class="speed-switch" aria-label="Movement playback speed">
+          <button type="button" data-speed="1" aria-pressed="true">Normal</button>
+          <button type="button" data-speed="0.5" aria-pressed="false">Half speed</button>
+        </div>
+      </div>
+
+      <div class="foley-grid">
+        <div class="sample-controls">
+          <label>Family
+            <select id="foley-family"></select>
+          </label>
+          <label>Velocity
+            <select id="foley-layer">
+              <option value="soft">Soft</option>
+              <option value="medium" selected>Medium</option>
+              <option value="strong">Strong</option>
+            </select>
+          </label>
+          <div class="audition-actions">
+            <button type="button" id="round-robin">Play round robin</button>
+            <button type="button" id="random-sequence">Play random sequence</button>
+          </div>
+          <div class="sample-buttons" id="sample-buttons"></div>
+          <label class="check-row"><input id="audition-music" type="checkbox"> Foot plus music mix</label>
+        </div>
+
+        <div class="meter-panel">
+          <div class="meter-row">
+            <span>Foot bus</span>
+            <meter id="foot-meter" min="0" max="1" value="0">0</meter>
+          </div>
+          <div class="meter-row">
+            <span>Foot + music</span>
+            <meter id="mix-meter" min="0" max="1" value="0">0</meter>
+          </div>
+          <p id="audition-status">Choose a sample. Nothing plays automatically.</p>
+          <dl>
+            <div><dt>Candidate source</dt><dd>CC0 real shoes on wood/parquet</dd></div>
+            <div><dt>Runtime bus</dt><dd>100 Hz source HPF; 70 Hz bus HPF; gentle transient control</dd></div>
+            <div><dt>Approval</dt><dd>Not inferred from signal QA</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="evidence-rack" aria-labelledby="evidence-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Normal, slow, contact, and A/B evidence</p>
+          <h2 id="evidence-title">Movement rack</h2>
+        </div>
+      </div>
+      <div class="evidence-grid">
+        <figure>
+          <video id="movement-video" controls preload="metadata" src="docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-normal.mp4"></video>
+          <figcaption id="movement-caption">KittyKaki · normal speed</figcaption>
+        </figure>
+        <figure>
+          <img id="diagnostic-image" src="docs/review/frolic-rescue-candidate-1/diagnostics/kitty-contact-diagnostic.png" alt="KittyKaki skeleton and contact diagnostic">
+          <figcaption>Skeleton, center of mass, and exact contacts</figcaption>
+        </figure>
+        <figure class="wide">
+          <img id="comparison-image" src="docs/review/frolic-rescue-candidate-1/comparisons/kitty-rejected-vs-candidate.png" alt="Rejected and candidate KittyKaki gameplay frames side by side">
+          <figcaption>Rejected baseline / candidate 1 — inspect at native scale</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="decision-gate" aria-labelledby="gate-title">
+      <p class="eyebrow">Stop gate</p>
+      <h2 id="gate-title">Automation can reject this candidate. It cannot approve it.</h2>
+      <p>Review anatomy, weight, musicality, shoe timbre, immediate response, and stage contrast. Buck, Clog, broader stage work, and deployment remain stopped.</p>
+      <a href="docs/review/frolic-rescue-candidate-1/source-provenance-manifest.json">Open source and provenance manifest</a>
+    </section>
+  </main>
+
+  <iframe id="game-frame" src="index.html?frolic-rescue-review=1" title="Kaki Dance runtime used by the review camera" tabindex="-1"></iframe>
+  <audio id="audition-music-track" src="assets/audio/frolic/board-and-bow.wav" preload="none" loop></audio>
+  <script type="module" src="frolic-rescue-review.js"></script>
+</body>
+</html>

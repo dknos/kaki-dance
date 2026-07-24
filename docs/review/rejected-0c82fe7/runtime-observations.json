@@ -1,0 +1,140 @@
+[
+  {
+    "hero": "kitty",
+    "style": "flatfoot",
+    "initialMove": "walkingStep",
+    "queuedAt": 5960.899999976158,
+    "transition": {
+      "delayMs": 390.69999998807907,
+      "currentMove": "shuffle",
+      "queuedMove": "",
+      "lastInput": {
+        "kind": "brush",
+        "tick": 54.511,
+        "audioTime": 4.725260770975057,
+        "timingOffsetTicks": 6.511,
+        "moveId": "shuffle",
+        "foot": "right",
+        "articulation": "brush",
+        "device": "keyboard",
+        "queued": true,
+        "rhythmOnly": false
+      }
+    }
+  },
+  {
+    "hero": "kitty",
+    "style": "buck",
+    "initialMove": "walkingStep",
+    "queuedAt": 5724.200000017881,
+    "transition": {
+      "delayMs": 366.69999998807907,
+      "currentMove": "shuffle",
+      "queuedMove": "",
+      "lastInput": {
+        "kind": "brush",
+        "tick": 67.886,
+        "audioTime": 4.794920634920635,
+        "timingOffsetTicks": 19.886,
+        "moveId": "shuffle",
+        "foot": "right",
+        "articulation": "brush",
+        "device": "keyboard",
+        "queued": true,
+        "rhythmOnly": false
+      }
+    }
+  },
+  {
+    "hero": "kitty",
+    "style": "clog",
+    "initialMove": "walkingStep",
+    "queuedAt": 5790.700000017881,
+    "transition": {
+      "delayMs": 377.60000002384186,
+      "currentMove": "shuffle",
+      "queuedMove": "",
+      "lastInput": {
+        "kind": "brush",
+        "tick": 63.427,
+        "audioTime": 4.794920634920635,
+        "timingOffsetTicks": 15.427,
+        "moveId": "shuffle",
+        "foot": "right",
+        "articulation": "brush",
+        "device": "keyboard",
+        "queued": true,
+        "rhythmOnly": false
+      }
+    }
+  },
+  {
+    "hero": "soder",
+    "style": "flatfoot",
+    "initialMove": "walkingStep",
+    "queuedAt": 5861.800000011921,
+    "transition": {
+      "delayMs": 399.89999997615814,
+      "currentMove": "shuffle",
+      "queuedMove": "",
+      "lastInput": {
+        "kind": "brush",
+        "tick": 54.511,
+        "audioTime": 4.725260770975057,
+        "timingOffsetTicks": 6.511,
+        "moveId": "shuffle",
+        "foot": "right",
+        "articulation": "brush",
+        "device": "keyboard",
+        "queued": true,
+        "rhythmOnly": false
+      }
+    }
+  },
+  {
+    "hero": "soder",
+    "style": "buck",
+    "initialMove": "walkingStep",
+    "queuedAt": 5866.700000017881,
+    "transition": {
+      "delayMs": 390.90000000596046,
+      "currentMove": "shuffle",
+      "queuedMove": "",
+      "lastInput": {
+        "kind": "brush",
+        "tick": 54.511,
+        "audioTime": 4.632380952380952,
+        "timingOffsetTicks": 6.511,
+        "moveId": "shuffle",
+        "foot": "right",
+        "articulation": "brush",
+        "device": "keyboard",
+        "queued": true,
+        "rhythmOnly": false
+      }
+    }
+  },
+  {
+    "hero": "soder",
+    "style": "clog",
+    "initialMove": "walkingStep",
+    "queuedAt": 5886.0999999940395,
+    "transition": {
+      "delayMs": 409.2000000178814,
+      "currentMove": "shuffle",
+      "queuedMove": "",
+      "lastInput": {
+        "kind": "brush",
+        "tick": 58.969,
+        "audioTime": 4.702040816326531,
+        "timingOffsetTicks": 10.969,
+        "moveId": "shuffle",
+        "foot": "right",
+        "articulation": "brush",
+        "device": "keyboard",
+        "queued": true,
+        "rhythmOnly": false
+      }
+    }
+  }
+]

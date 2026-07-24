@@ -1,0 +1,26 @@
+{
+  "candidateStatus": "human-review-required",
+  "heroes": {
+    "kitty": {
+      "nativeStill": "docs/review/frolic-rescue-candidate-1/stills/kitty-native-384x216.png",
+      "enlargedStill": "docs/review/frolic-rescue-candidate-1/stills/kitty-4x-1536x864.png",
+      "diagnostic": "docs/review/frolic-rescue-candidate-1/diagnostics/kitty-contact-diagnostic.png",
+      "movementStrip": "docs/review/frolic-rescue-candidate-1/strips/kitty-flatfoot-movement-strip.png",
+      "normalVideo": "docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-normal.mp4",
+      "halfSpeedVideo": "docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-half-speed.mp4",
+      "runtimeWebm": "docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-runtime.webm",
+      "comparison": "docs/review/frolic-rescue-candidate-1/comparisons/kitty-rejected-vs-candidate.png"
+    },
+    "soder": {
+      "nativeStill": "docs/review/frolic-rescue-candidate-1/stills/soder-native-384x216.png",
+      "enlargedStill": "docs/review/frolic-rescue-candidate-1/stills/soder-4x-1536x864.png",
+      "diagnostic": "docs/review/frolic-rescue-candidate-1/diagnostics/soder-contact-diagnostic.png",
+      "movementStrip": "docs/review/frolic-rescue-candidate-1/strips/soder-flatfoot-movement-strip.png",
+      "normalVideo": "docs/review/frolic-rescue-candidate-1/video/soder-flatfoot-normal.mp4",
+      "halfSpeedVideo": "docs/review/frolic-rescue-candidate-1/video/soder-flatfoot-half-speed.mp4",
+      "runtimeWebm": "docs/review/frolic-rescue-candidate-1/video/soder-flatfoot-runtime.webm",
+      "comparison": "docs/review/frolic-rescue-candidate-1/comparisons/soder-rejected-vs-candidate.png"
+    }
+  },
+  "errors": []
+}

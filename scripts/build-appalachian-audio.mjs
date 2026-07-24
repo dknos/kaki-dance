@@ -1,412 +1,207 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import {
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const outputRoot = resolve(root, "assets/audio/frolic");
-const stemRoot = resolve(outputRoot, "stems");
-const feetRoot = resolve(outputRoot, "feet");
-const reportPath = resolve(root, "docs/images/appalachian/frolic-audio-report.json");
-const sampleRate = 22050;
-const bpm = 120;
-const secondsPerBeat = 60 / bpm;
-const countInBars = 2;
-const runBars = 32;
-const countInSeconds = countInBars * 4 * secondsPerBeat;
-const runSeconds = runBars * 4 * secondsPerBeat;
-const durationSeconds = countInSeconds + runSeconds;
-const samples = Math.ceil(durationSeconds * sampleRate);
-
-mkdirSync(stemRoot, { recursive: true });
-mkdirSync(feetRoot, { recursive: true });
-mkdirSync(dirname(reportPath), { recursive: true });
-
-const stems = {
-  fiddle: new Float64Array(samples),
-  banjo: new Float64Array(samples),
-  guitar: new Float64Array(samples),
-  bass: new Float64Array(samples),
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const OUTPUT = join(ROOT, "assets", "audio", "frolic", "feet");
+const SOURCES = {
+  deck: {
+    id: "bigsoundbank-1515",
+    file: "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+    url: "https://bigsoundbank.com/steps-on-a-wooden-floor-1-s1515.html",
+    directUrl: "https://bigsoundbank.com/UPLOAD/bwf-en/1515.wav",
+    author: "Joseph SARDIN",
+    license: "CC0 / public domain equivalent",
+    recording: "Real shoes on a wooden floor/deck; mono 48 kHz, 24-bit",
+  },
+  parquet: {
+    id: "bigsoundbank-0376",
+    file: "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+    url: "https://bigsoundbank.com/footsteps-shoe-on-parquet-s0376.html",
+    directUrl: "https://bigsoundbank.com/UPLOAD/bwf-en/0376.wav",
+    author: "Joseph SARDIN",
+    license: "CC0 / public domain equivalent",
+    recording: "Real shoes on old parquet; mono 48 kHz, 16-bit",
+  },
+  shuffle: {
+    id: "freesound-273380",
+    file: "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+    originalFile: "sources/freesound-273380-trekking-shoe-shuffle-cc0-hq.mp3",
+    url: "https://freesound.org/people/sturmankin/sounds/273380/",
+    directUrl: "https://cdn.freesound.org/previews/273/273380_4181170-hq.mp3",
+    author: "sturmankin",
+    license: "CC0 1.0",
+    recording: "Real trekking shoes shuffling on wood; 48 kHz source, public HQ preview retained and converted to 48 kHz/24-bit PCM",
+  },
 };
 
-const A = [
-  [62, 64, 66, 69, 66, 64, 62, 59],
-  [62, 66, 69, 71, 69, 66, 64, 62],
-  [64, 66, 69, 74, 73, 71, 69, 66],
-  [64, 62, 59, 57, 59, 61, 62, 64],
-  [66, 69, 71, 69, 66, 64, 62, 64],
-  [66, 69, 74, 73, 71, 69, 66, 64],
-  [62, 64, 66, 69, 71, 69, 66, 61],
-  [62, 66, 64, 62, 59, 61, 62, 62],
-];
-
-const B = [
-  [69, 71, 74, 76, 74, 71, 69, 66],
-  [69, 74, 76, 78, 76, 74, 71, 69],
-  [71, 74, 78, 76, 74, 73, 71, 69],
-  [66, 69, 71, 74, 71, 69, 66, 64],
-  [67, 71, 74, 79, 78, 76, 74, 71],
-  [69, 73, 76, 78, 76, 73, 71, 69],
-  [66, 69, 74, 71, 69, 66, 64, 61],
-  [62, 64, 66, 69, 66, 64, 62, 62],
-];
-
-const chords = [
-  [50, 57, 62, 66],
-  [50, 57, 62, 66],
-  [55, 59, 62, 67],
-  [50, 57, 62, 66],
-  [47, 54, 59, 62],
-  [55, 59, 62, 67],
-  [50, 57, 62, 66],
-  [57, 61, 64, 69],
-];
-
-renderCountIn(stems.guitar);
-
-for (let bar = 0; bar < runBars; bar += 1) {
-  const strainIndex = Math.floor(bar / 8);
-  const melody = strainIndex < 2 ? A : B;
-  const barInStrain = bar % 8;
-  const notes = melody[barInStrain];
-  const chord = chords[barInStrain];
-  const barStart = countInSeconds + bar * 4 * secondsPerBeat;
-  const energy = strainIndex === 0 ? 0.78 : strainIndex === 1 ? 0.86 : strainIndex === 2 ? 0.92 : 1;
-  notes.forEach((note, index) => {
-    const noteStart = barStart + index * secondsPerBeat / 2;
-    const turnLift = barInStrain === 7 && index >= 6 ? 1.08 : 1;
-    renderFiddle(stems.fiddle, noteStart, secondsPerBeat * 0.56, midi(note), 0.19 * energy * turnLift, bar * 31 + index);
-  });
-  for (let beat = 0; beat < 4; beat += 1) {
-    const beatStart = barStart + beat * secondsPerBeat;
-    const root = beat % 2 ? chord[1] : chord[0];
-    renderGuitarBass(stems.guitar, beatStart, midi(root - 12), 0.115 * energy, bar * 11 + beat);
-    renderGuitarStrum(stems.guitar, beatStart + 0.018, chord, 0.092 * energy, bar * 19 + beat);
-    renderBass(stems.bass, beatStart, midi(beat % 2 ? chord[1] - 12 : chord[0] - 12), 0.12 * energy, bar * 13 + beat);
-    renderBanjo(stems.banjo, beatStart, chord, energy, bar * 17 + beat);
-  }
-}
-
-// A held open-D ending lets the final foot accent and band resolve together.
-renderFiddle(stems.fiddle, durationSeconds - 0.72, 0.72, midi(62), 0.17, 9991);
-renderGuitarStrum(stems.guitar, durationSeconds - 0.7, [50, 57, 62, 66], 0.12, 9992);
-renderBass(stems.bass, durationSeconds - 0.7, midi(38), 0.13, 9993);
-
-for (const buffer of Object.values(stems)) highPassDc(buffer);
-
-const stemPaths = {};
-for (const [name, data] of Object.entries(stems)) {
-  const path = resolve(stemRoot, `board-and-bow-${name}.wav`);
-  writeWav(path, [normalize(data, 0.78)], sampleRate);
-  stemPaths[name] = path;
-}
-
-const masterLeft = new Float64Array(samples);
-const masterRight = new Float64Array(samples);
-const pans = {
-  fiddle: -0.28,
-  banjo: 0.3,
-  guitar: -0.05,
-  bass: 0,
+const GROUPS = {
+  softSole: group("Soft leather sole", "deck", 0.60, 0.20, [
+    [1.237, 0.043], [2.053, 0.066], [2.982, 0.062],
+    [3.911, 0.037], [4.899, 0.075], [5.774, 0.072],
+  ]),
+  flatContact: group("Flat sole contact", "deck", 0.70, 0.20, [
+    [6.892, 0.036], [7.700, 0.041], [8.655, 0.068],
+    [9.592, 0.047], [10.674, 0.046], [11.627, 0.081],
+  ]),
+  chug: group("Weighted shoe chug", "deck", 0.78, 0.22, [
+    [12.357, 0.054], [13.506, 0.034], [14.180, 0.065],
+    [15.084, 0.067], [16.011, 0.080], [17.900, 0.062],
+  ]),
+  heel: group("Leather shoe heel", "parquet", 0.74, 0.18, [
+    [1.725, 0.461], [2.528, 0.151], [3.312, 0.173],
+    [4.147, 0.186], [4.964, 0.197], [5.809, 0.188],
+  ]),
+  toeBall: group("Leather shoe toe and ball", "parquet", 0.66, 0.16, [
+    [6.633, 0.190], [7.525, 0.165], [8.324, 0.313],
+    [9.192, 0.215], [27.337, 0.095], [10.034, 0.252],
+  ]),
+  tapHeel: group("Hard shoe heel tap", "parquet", 0.70, 0.16, [
+    [10.894, 0.172], [22.097, 0.328], [11.701, 0.234],
+    [24.772, 0.232], [12.711, 0.167], [13.398, 0.157],
+  ]),
+  tapToe: group("Hard shoe toe tap", "parquet", 0.66, 0.15, [
+    [14.357, 0.170], [15.940, 0.186], [16.823, 0.141],
+    [19.429, 0.142], [30.758, 0.153], [20.306, 0.166],
+  ]),
+  brush: group("Shoe brush", "shuffle", 0.52, 0.28, [
+    [0.326, 0.077], [0.939, 0.069], [1.738, 0.158],
+    [3.076, 0.071], [3.583, 0.039], [4.783, 0.216],
+  ], 0.038),
+  scuff: group("Shoe scuff", "shuffle", 0.58, 0.30, [
+    [5.493, 0.044], [6.289, 0.046], [7.941, 0.122],
+    [8.714, 0.083], [9.891, 0.080], [11.332, 0.144],
+  ], 0.042),
+  drag: group("Shoe drag", "shuffle", 0.52, 0.42, [
+    [11.911, 0.079], [12.793, 0.094], [13.552, 0.074],
+    [14.589, 0.101], [15.321, 0.047], [16.495, 0.147],
+  ], 0.055),
+  slide: group("Shoe slide", "shuffle", 0.48, 0.44, [
+    [17.362, 0.076], [18.046, 0.087], [18.888, 0.362],
+    [19.692, 0.491], [21.074, 0.055], [21.857, 0.051],
+  ], 0.060),
 };
-for (const [name, data] of Object.entries(stems)) {
-  const [leftGain, rightGain] = panGains(pans[name]);
-  for (let index = 0; index < samples; index += 1) {
-    masterLeft[index] += data[index] * leftGain;
-    masterRight[index] += data[index] * rightGain;
-  }
-}
-for (let index = 0; index < samples; index += 1) {
-  masterLeft[index] = softClip(masterLeft[index] * 0.82);
-  masterRight[index] = softClip(masterRight[index] * 0.82);
-}
-const peak = Math.max(maxAbs(masterLeft), maxAbs(masterRight), 1e-9);
-const masterGain = 0.88 / peak;
-scaleInPlace(masterLeft, masterGain);
-scaleInPlace(masterRight, masterGain);
-const masterPath = resolve(outputRoot, "board-and-bow.wav");
-writeWav(masterPath, [masterLeft, masterRight], sampleRate);
 
-const footManifest = buildFootSamples();
-const manifestPath = resolve(feetRoot, "manifest.json");
-writeFileSync(manifestPath, `${JSON.stringify(footManifest, null, 2)}\n`);
+function group(label, source, baseGain, duration, events, preRoll = 0.018) {
+  return { label, source, baseGain, duration, events, preRoll };
+}
 
-const reportFiles = [
-  masterPath,
-  ...Object.values(stemPaths),
-  manifestPath,
-  ...Object.values(footManifest.groups).flatMap((group) => group.files.map((file) => resolve(feetRoot, file))),
-];
-const report = {
-  schemaVersion: 1,
-  title: "Board & Bow",
-  provenance: "Original Kaki-Dance composition and deterministic synthesis; no third-party recording or sample.",
-  bpm,
-  meter: [4, 4],
-  form: "AABB",
-  countInBars,
-  runBars,
-  runSeconds,
-  durationSeconds,
-  sampleRate,
-  channels: 2,
-  stems: Object.keys(stems),
-  footSampleGroups: Object.keys(footManifest.groups),
-  files: Object.fromEntries(reportFiles.map((path) => [
-    path.slice(root.length + 1),
-    {
-      bytes: readFileSync(path).byteLength,
-      sha256: createHash("sha256").update(readFileSync(path)).digest("hex"),
-    },
-  ])),
+function renderSample(sourcePath, outputPath, peak, duration, preRoll) {
+  const start = Math.max(0, peak - preRoll);
+  const fadeOutStart = Math.max(0.03, duration - 0.025);
+  const filter = [
+    `atrim=start=${start.toFixed(6)}:duration=${duration.toFixed(6)}`,
+    "asetpts=PTS-STARTPTS",
+    "highpass=f=100",
+    "afade=t=in:st=0:d=0.003",
+    `afade=t=out:st=${fadeOutStart.toFixed(6)}:d=0.025`,
+  ].join(",");
+  execFileSync("ffmpeg", [
+    "-hide_banner", "-loglevel", "error", "-y",
+    "-i", sourcePath,
+    "-af", filter,
+    "-ar", "48000",
+    "-ac", "1",
+    "-c:a", "pcm_s24le",
+    outputPath,
+  ]);
+}
+
+function sha256(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+const manifest = {
+  schemaVersion: 2,
+  candidateStatus: "human-review-required",
+  sampleRate: 48000,
+  roundRobin: 6,
+  velocityLayers: ["soft", "medium", "strong"],
+  provenance: {
+    sourceType: "real Foley-derived shoe recordings",
+    licenseSummary: "CC0 source recordings; URLs and unmodified downloads retained",
+    noSynthesis: true,
+    noPitchDerivedLeftRight: true,
+    sources: {},
+  },
+  groups: {},
+  samples: {},
 };
-writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
-console.log(`MASTER=${masterPath}`);
-console.log(`DURATION=${durationSeconds}s (${countInSeconds}s count-in + ${runSeconds}s AABB)`);
-console.log(`STEMS=${Object.values(stemPaths).length}`);
-console.log(`FOOT_GROUPS=${Object.keys(footManifest.groups).length}`);
-console.log(`REPORT=${reportPath}`);
-
-function renderCountIn(buffer) {
-  for (let beat = 0; beat < countInBars * 4; beat += 1) {
-    const start = beat * secondsPerBeat;
-    renderBodyKnock(buffer, start, beat % 4 === 0 ? 0.15 : 0.09, 701 + beat);
-  }
-}
-
-function renderFiddle(buffer, start, duration, frequency, gain, seed) {
-  const startIndex = Math.floor(start * sampleRate);
-  const length = Math.min(buffer.length - startIndex, Math.floor(duration * sampleRate));
-  const phaseOffsets = [0, 0.37, 0.71, 1.03];
-  for (let index = 0; index < length; index += 1) {
-    const time = index / sampleRate;
-    const attack = Math.min(1, time / 0.018);
-    const release = Math.min(1, (duration - time) / 0.08);
-    const envelope = attack * release;
-    const vibrato = 1 + Math.sin(time * Math.PI * 2 * 5.4 + seed) * 0.0045;
-    const bow = seededNoise(seed + index * 17) * 0.055;
-    let value = bow;
-    [1, 2, 3, 4].forEach((harmonic, harmonicIndex) => {
-      value += Math.sin(time * Math.PI * 2 * frequency * harmonic * vibrato + phaseOffsets[harmonicIndex])
-        * [1, 0.43, 0.2, 0.11][harmonicIndex];
-    });
-    buffer[startIndex + index] += value * envelope * gain;
-  }
-}
-
-function renderBanjo(buffer, start, chord, energy, seed) {
-  const pattern = [
-    [0, chord[2], 0.1],
-    [0.25, chord[1] + 12, 0.065],
-    [0.5, chord[3], 0.09],
-    [0.75, 69, 0.07],
-  ];
-  pattern.forEach(([offsetBeat, note, gain], index) => {
-    renderPluck(
-      buffer,
-      start + offsetBeat * secondsPerBeat,
-      0.32,
-      midi(note),
-      gain * energy,
-      seed * 7 + index,
-      0.012,
-    );
-  });
-}
-
-function renderGuitarBass(buffer, start, frequency, gain, seed) {
-  renderPluck(buffer, start, 0.42, frequency, gain, seed, 0.026);
-}
-
-function renderGuitarStrum(buffer, start, chord, gain, seed) {
-  chord.forEach((note, index) => {
-    renderPluck(buffer, start + index * 0.006, 0.34, midi(note), gain / (1 + index * 0.13), seed + index * 97, 0.032);
-  });
-}
-
-function renderBass(buffer, start, frequency, gain, seed) {
-  const startIndex = Math.floor(start * sampleRate);
-  const duration = 0.46;
-  const length = Math.min(buffer.length - startIndex, Math.floor(duration * sampleRate));
-  for (let index = 0; index < length; index += 1) {
-    const time = index / sampleRate;
-    const envelope = Math.min(1, time / 0.012) * Math.exp(-time * 5.2);
-    const value = Math.sin(time * Math.PI * 2 * frequency)
-      + Math.sin(time * Math.PI * 4 * frequency + 0.3) * 0.24
-      + seededNoise(seed + index) * Math.exp(-time * 45) * 0.08;
-    buffer[startIndex + index] += value * envelope * gain;
-  }
-}
-
-function renderPluck(buffer, start, duration, frequency, gain, seed, decay) {
-  const startIndex = Math.floor(start * sampleRate);
-  const length = Math.min(buffer.length - startIndex, Math.floor(duration * sampleRate));
-  for (let index = 0; index < length; index += 1) {
-    const time = index / sampleRate;
-    const envelope = Math.exp(-time / decay) * 0.45 + Math.exp(-time * 6.5) * 0.55;
-    const pick = seededNoise(seed + index * 23) * Math.exp(-time * 90) * 0.34;
-    const tone = Math.sin(time * Math.PI * 2 * frequency)
-      + Math.sin(time * Math.PI * 4 * frequency + 0.2) * 0.42
-      + Math.sin(time * Math.PI * 6 * frequency + 0.7) * 0.18;
-    buffer[startIndex + index] += (tone + pick) * envelope * gain;
-  }
-}
-
-function renderBodyKnock(buffer, start, gain, seed) {
-  const startIndex = Math.floor(start * sampleRate);
-  const length = Math.floor(0.14 * sampleRate);
-  for (let index = 0; index < length && startIndex + index < buffer.length; index += 1) {
-    const time = index / sampleRate;
-    const value = seededNoise(seed + index * 3) * Math.exp(-time * 42)
-      + Math.sin(time * Math.PI * 2 * 170) * Math.exp(-time * 18);
-    buffer[startIndex + index] += value * gain;
-  }
-}
-
-function buildFootSamples() {
-  const recipes = {
-    softSole: { length: 0.24, noise: 0.48, modes: [[145, 0.55], [238, 0.28]], decay: 18, gain: 0.62 },
-    flatContact: { length: 0.28, noise: 0.58, modes: [[132, 0.66], [226, 0.32], [410, 0.12]], decay: 15, gain: 0.76 },
-    heel: { length: 0.26, noise: 0.54, modes: [[118, 0.78], [278, 0.3]], decay: 16, gain: 0.82 },
-    toeBall: { length: 0.2, noise: 0.5, modes: [[210, 0.55], [430, 0.32], [720, 0.12]], decay: 23, gain: 0.7 },
-    brush: { length: 0.18, noise: 0.88, modes: [[310, 0.18]], decay: 34, gain: 0.46, sweep: 1 },
-    scuff: { length: 0.2, noise: 0.82, modes: [[190, 0.26], [520, 0.16]], decay: 28, gain: 0.58, sweep: 1 },
-    chug: { length: 0.34, noise: 0.58, modes: [[105, 0.76], [182, 0.36]], decay: 12, gain: 0.82 },
-    drag: { length: 0.32, noise: 0.92, modes: [[126, 0.24], [252, 0.13]], decay: 15, gain: 0.52, sweep: 1.5 },
-    slide: { length: 0.38, noise: 0.86, modes: [[154, 0.22]], decay: 11, gain: 0.44, sweep: 2 },
-    tapHeel: { length: 0.3, noise: 0.38, modes: [[165, 0.42], [1240, 0.5], [2180, 0.24]], decay: 19, gain: 0.76 },
-    tapToe: { length: 0.24, noise: 0.36, modes: [[240, 0.32], [1620, 0.55], [2620, 0.2]], decay: 24, gain: 0.72 },
-    heavyAccent: { length: 0.46, noise: 0.65, modes: [[92, 0.84], [171, 0.46], [338, 0.22]], decay: 9, gain: 0.94 },
-    rivalBoard: { length: 0.3, noise: 0.5, modes: [[155, 0.6], [312, 0.3], [590, 0.15]], decay: 14, gain: 0.68 },
+for (const source of Object.values(SOURCES)) {
+  const sourcePath = join(OUTPUT, source.file);
+  manifest.provenance.sources[source.id] = {
+    ...source,
+    file: source.file,
+    sha256: sha256(sourcePath),
+    ...(source.originalFile
+      ? { originalFileSha256: sha256(join(OUTPUT, source.originalFile)) }
+      : {}),
   };
-  const groups = {};
-  for (const [id, recipe] of Object.entries(recipes)) {
-    const files = [];
-    for (let variant = 0; variant < 3; variant += 1) {
-      const buffer = synthFoot(recipe, id.length * 131 + variant * 977);
-      const filename = `${id}-${variant + 1}.wav`;
-      writeWav(resolve(feetRoot, filename), [buffer], sampleRate);
-      files.push(filename);
-    }
-    groups[id] = {
-      files,
-      baseGain: recipe.gain,
+}
+
+for (const [groupId, definition] of Object.entries(GROUPS)) {
+  const source = SOURCES[definition.source];
+  const sourcePath = join(OUTPUT, source.file);
+  const ordered = definition.events
+    .map(([peak, energy], sourceIndex) => ({ peak, energy, sourceIndex }))
+    .sort((a, b) => a.energy - b.energy);
+  const layerBySourceIndex = new Map();
+  ordered.forEach((entry, index) => {
+    layerBySourceIndex.set(entry.sourceIndex, index < 2 ? "soft" : index < 4 ? "medium" : "strong");
+  });
+  const layers = { soft: [], medium: [], strong: [] };
+  const files = [];
+  definition.events.forEach(([peak, sourcePeakEnvelope], index) => {
+    const layer = layerBySourceIndex.get(index);
+    const layerIndex = layers[layer].length + 1;
+    const filename = `${groupId}-${layer}-${layerIndex}.wav`;
+    const outputPath = join(OUTPUT, filename);
+    renderSample(sourcePath, outputPath, peak, definition.duration, definition.preRoll);
+    layers[layer].push(filename);
+    files.push(filename);
+    manifest.samples[filename] = {
+      group: groupId,
+      velocityLayer: layer,
+      sourceId: source.id,
+      sourceFile: source.file,
+      sourcePeakSeconds: peak,
+      sourcePeakEnvelope,
+      preRollSeconds: definition.preRoll,
+      durationSeconds: definition.duration,
+      processing: "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      sha256: sha256(outputPath),
     };
-  }
-  return {
-    schemaVersion: 1,
-    sampleRate,
-    roundRobin: 3,
-    provenance: "Deterministic original synthesis with wooden-board resonance.",
-    groups,
+  });
+  manifest.groups[groupId] = {
+    label: definition.label,
+    files,
+    layers,
+    baseGain: definition.baseGain,
+    polyphony: ["brush", "scuff", "drag", "slide"].includes(groupId) ? 3 : 5,
   };
 }
 
-function synthFoot(recipe, seed) {
-  const length = Math.floor(recipe.length * sampleRate);
-  const buffer = new Float64Array(length);
-  for (let index = 0; index < length; index += 1) {
-    const time = index / sampleRate;
-    const attack = Math.min(1, time / 0.0025);
-    const sweepEnvelope = recipe.sweep
-      ? Math.exp(-time * (recipe.decay * 0.45)) * (0.55 + Math.sin(time * Math.PI * 2 * (70 + time * 900)) * 0.12)
-      : Math.exp(-time * recipe.decay);
-    let value = seededNoise(seed + index * 47) * recipe.noise * sweepEnvelope;
-    for (const [frequency, amount] of recipe.modes) {
-      const variantFrequency = frequency * (1 + (seed % 17 - 8) * 0.0015);
-      value += Math.sin(time * Math.PI * 2 * variantFrequency)
-        * amount
-        * Math.exp(-time * recipe.decay * (0.55 + frequency / 3800));
-    }
-    buffer[index] = value * attack * recipe.gain;
-  }
-  return normalize(buffer, 0.86);
-}
+// Rival call-and-response uses the same real flat-contact family instead of a
+// synthetic special drum voice.
+manifest.groups.rivalBoard = {
+  label: "Rival shoe on board",
+  aliasOf: "flatContact",
+  files: [...manifest.groups.flatContact.files],
+  layers: structuredClone(manifest.groups.flatContact.layers),
+  baseGain: 0.62,
+  polyphony: 4,
+};
 
-function midi(note) {
-  return 440 * 2 ** ((note - 69) / 12);
-}
-
-function panGains(pan) {
-  const angle = (clamp(pan, -1, 1) + 1) * Math.PI / 4;
-  return [Math.cos(angle), Math.sin(angle)];
-}
-
-function highPassDc(buffer) {
-  let previousInput = 0;
-  let previousOutput = 0;
-  for (let index = 0; index < buffer.length; index += 1) {
-    const input = buffer[index];
-    const output = input - previousInput + 0.995 * previousOutput;
-    buffer[index] = output;
-    previousInput = input;
-    previousOutput = output;
-  }
-}
-
-function normalize(buffer, target) {
-  const result = new Float64Array(buffer);
-  const peak = maxAbs(result);
-  if (peak > 0) scaleInPlace(result, target / peak);
-  return result;
-}
-
-function maxAbs(buffer) {
-  let peak = 0;
-  for (const value of buffer) peak = Math.max(peak, Math.abs(value));
-  return peak;
-}
-
-function scaleInPlace(buffer, gain) {
-  for (let index = 0; index < buffer.length; index += 1) buffer[index] *= gain;
-}
-
-function softClip(value) {
-  return Math.tanh(value * 1.08) / Math.tanh(1.08);
-}
-
-function seededNoise(seed) {
-  let value = (seed | 0) + 0x6d2b79f5;
-  value = Math.imul(value ^ value >>> 15, value | 1);
-  value ^= value + Math.imul(value ^ value >>> 7, value | 61);
-  return ((value ^ value >>> 14) >>> 0) / 0xffffffff * 2 - 1;
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function writeWav(path, channels, rate) {
-  const channelCount = channels.length;
-  const length = channels[0].length;
-  const bytesPerSample = 2;
-  const dataSize = length * channelCount * bytesPerSample;
-  const buffer = Buffer.alloc(44 + dataSize);
-  buffer.write("RIFF", 0);
-  buffer.writeUInt32LE(36 + dataSize, 4);
-  buffer.write("WAVE", 8);
-  buffer.write("fmt ", 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(channelCount, 22);
-  buffer.writeUInt32LE(rate, 24);
-  buffer.writeUInt32LE(rate * channelCount * bytesPerSample, 28);
-  buffer.writeUInt16LE(channelCount * bytesPerSample, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write("data", 36);
-  buffer.writeUInt32LE(dataSize, 40);
-  let offset = 44;
-  for (let index = 0; index < length; index += 1) {
-    for (const channel of channels) {
-      const value = Math.round(clamp(channel[index] ?? 0, -1, 1) * 32767);
-      buffer.writeInt16LE(value, offset);
-      offset += 2;
-    }
-  }
-  writeFileSync(path, buffer);
-}
+writeFileSync(join(OUTPUT, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+console.log(JSON.stringify({
+  output: relative(ROOT, OUTPUT),
+  sourceCount: Object.keys(manifest.provenance.sources).length,
+  familyCount: Object.keys(manifest.groups).length,
+  renderedSamples: Object.keys(manifest.samples).length,
+  sampleRate: manifest.sampleRate,
+  roundRobin: manifest.roundRobin,
+  candidateStatus: manifest.candidateStatus,
+}, null, 2));

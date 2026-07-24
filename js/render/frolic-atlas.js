@@ -11,6 +11,7 @@ export class FrolicAtlasLibrary {
     this.fetchImpl = fetchImpl;
     this.imageFactory = imageFactory;
     this.records = new Map();
+    this.reviewVariant = "candidate";
   }
 
   key(character, style) {
@@ -20,7 +21,21 @@ export class FrolicAtlasLibrary {
   url(character, style) {
     const id = normalizeCharacter(character);
     const profile = normalizeFrolicStyle(style);
+    if (this.reviewVariant === "rejected") {
+      return new URL(
+        `../../docs/review/rejected-0c82fe7/assets/heroes/${id}-frolic/${profile}/atlas.json`,
+        import.meta.url,
+      );
+    }
     return new URL(`../../assets/heroes/${id}/frolic/${profile}/atlas.json`, import.meta.url);
+  }
+
+  setReviewVariant(value) {
+    const variant = value === "rejected" ? "rejected" : "candidate";
+    if (variant === this.reviewVariant) return false;
+    this.reviewVariant = variant;
+    this.releaseAll();
+    return true;
   }
 
   preload(character, style) {
@@ -103,6 +118,10 @@ export class FrolicAtlasRenderer {
     this.library.releaseAll();
   }
 
+  setReviewVariant(value) {
+    return this.library.setReviewVariant(value);
+  }
+
   select(dancer, character, style, phaseOverride = null) {
     const record = this.library.get(character, style);
     if (!record) {
@@ -148,9 +167,8 @@ export class FrolicAtlasRenderer {
     const page = record.pages[frame.page];
     if (!page) return null;
     const mirror = Boolean(dancer?.mirror && clip.mirroringSafe);
-    const micro = clamp(Number(dancer?.microResponse) || 0, 0, 1);
-    const scaleX = scale * (1 + micro * 0.018);
-    const scaleY = scale * (1 - micro * 0.014);
+    const scaleX = scale;
+    const scaleY = scale;
     const drawX = Math.round(x - frame.pivot[0] * scaleX);
     const drawY = Math.round(floorY - frame.pivot[1] * scaleY);
     const drawWidth = Math.round(frame.w * scaleX);
@@ -176,6 +194,12 @@ export class FrolicAtlasRenderer {
       frameIndex: selection.frameIndex,
       frame,
       mirror,
+      bounds: Object.freeze({
+        x: drawX,
+        y: drawY,
+        width: drawWidth,
+        height: drawHeight,
+      }),
     });
   }
 

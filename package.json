@@ -9,6 +9,7 @@
     "audio:build": "node scripts/build-breakbeat.mjs",
     "audio:frolic:build": "node scripts/build-appalachian-audio.mjs",
     "art:frolic:build": "python3 tools/art/build_appalachian_atlases.py",
+    "art:frolic:candidate": "python3 tools/art/build_frolic_blender_atlases.py",
     "rig:frolic:build": "blender --background --factory-startup --python tools/blender/build_appalachian_frolic_rig.py",
     "check": "node tests/syntax-check.mjs",
     "test": "node --test tests/*.test.js",
@@ -19,6 +20,13 @@
     "qa:frolic": "node scripts/appalachian-browser-smoke.mjs",
     "qa:frolic:chorus": "node scripts/frolic-full-chorus-smoke.mjs",
     "qa:frolic:capture": "node scripts/capture-appalachian.mjs",
+    "qa:frolic:candidate:capture": "node scripts/capture-frolic-rescue-candidate.mjs",
+    "qa:frolic:review": "node scripts/frolic-review-smoke.mjs",
+    "qa:frolic:latency": "node scripts/frolic-latency-qa.mjs",
+    "qa:frolic:motion": "node scripts/frolic-motion-qa.mjs",
+    "qa:frolic:foley": "node scripts/frolic-foley-qa.mjs",
+    "qa:frolic:manifest": "node scripts/build-frolic-review-manifest.mjs",
+    "qa:frolic:candidate": "npm run check && npm test && npm run qa:frolic:motion && npm run qa:frolic:foley && npm run qa:frolic && npm run qa:frolic:latency && npm run qa:frolic:review && npm run qa:frolic:manifest",
     "verify": "npm run check && npm test"
   },
   "devDependencies": {

@@ -1,0 +1,80 @@
+{
+  "candidateStatus": "human-review-required",
+  "productionSource": "tools\\blender\\kaki-appalachian-frolic.blend",
+  "sourceHash": "4662b8251d05a246c948868c9ab4183538598919b7e53a8d0280538bddc55178",
+  "sourceFPS": 30,
+  "renderedFrameCount": 362,
+  "heroReports": {
+    "kitty": {
+      "frameCount": 181,
+      "plantedFootMaxDriftSourcePixels": 5.998,
+      "plantedFootMaxDriftLogicalPixels": 1.5,
+      "plantedFootWorstCase": "kitty/turnaround/left/14-31",
+      "centerOfMassMaxDistanceFromSupportHeelSourcePixels": 54.662,
+      "centerOfMassWorstCase": "walkingStep:20:right",
+      "minimumFootSeparationLogicalPixels": 10.178,
+      "handAttachmentDistanceLogicalPixels": {
+        "minimum": 4.304,
+        "maximum": 5.002
+      },
+      "maximumConsecutiveSegmentLengthChangeSourcePixels": 7.574,
+      "firstLastCompatibilityMaxSourcePixels": 0
+    },
+    "soder": {
+      "frameCount": 181,
+      "plantedFootMaxDriftSourcePixels": 5.998,
+      "plantedFootMaxDriftLogicalPixels": 1.5,
+      "plantedFootWorstCase": "soder/turnaround/left/14-31",
+      "centerOfMassMaxDistanceFromSupportHeelSourcePixels": 54.662,
+      "centerOfMassWorstCase": "walkingStep:20:right",
+      "minimumFootSeparationLogicalPixels": 10.178,
+      "handAttachmentDistanceLogicalPixels": {
+        "minimum": 4.304,
+        "maximum": 5.002
+      },
+      "maximumConsecutiveSegmentLengthChangeSourcePixels": 7.574,
+      "firstLastCompatibilityMaxSourcePixels": 0
+    }
+  },
+  "checks": {
+    "heelToePivot": {
+      "pass": true,
+      "measurements": {
+        "leftNeutral": 15.897,
+        "leftHeel": 33.062,
+        "leftToe": 4.734,
+        "rightNeutral": -2.18,
+        "rightHeel": 13.961,
+        "rightToe": -8.678
+      },
+      "note": "Heel keys increase toe-vs-heel projection; toe keys reverse it. This is a geometric regression check, not an aesthetic approval."
+    },
+    "leftRightDepthContinuity": {
+      "pass": true,
+      "frameCount": 362,
+      "note": "Near and far limb depth signs remain stable on every packed frame."
+    },
+    "outfitVolumeConsistency": {
+      "pass": true,
+      "areaRatioSoterToKitty": {
+        "minimum": 0.992,
+        "maximum": 1.139
+      },
+      "note": "The costume remains an over-body volume without collapsing or ballooning relative to the shared biped."
+    },
+    "metadataCoverage": {
+      "pass": true,
+      "requiredPerFrame": [
+        "support",
+        "contact",
+        "freeFoot",
+        "centerOfMass",
+        "semantic anchors"
+      ]
+    },
+    "automatedApproval": {
+      "pass": false,
+      "note": "These checks catch regressions; they do not approve anatomy, musicality, silhouette appeal, or aesthetics."
+    }
+  }
+}

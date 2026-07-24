@@ -20,6 +20,8 @@ export class KakiDanceRenderer {
     this.heroes = new AtlasHeroRenderer();
     this.frolicHeroes = new FrolicAtlasRenderer();
     this.lastSnapshot = null;
+    this.lastFrolicVisual = null;
+    this.frolicQaMode = false;
     this.debug = null;
   }
 
@@ -29,6 +31,30 @@ export class KakiDanceRenderer {
 
   setDebug(debug) {
     this.debug = debug;
+  }
+
+  setFrolicQaMode(enabled) {
+    this.frolicQaMode = Boolean(enabled);
+    this.effects.reset();
+  }
+
+  async setFrolicReviewVariant(value, character, style = "flatfoot") {
+    this.frolicHeroes.setReviewVariant(value);
+    return this.frolicHeroes.preload(character, style);
+  }
+
+  setFrolicDebugOverlay(enabled) {
+    this.debug = enabled
+      ? {
+          ...(this.debug ?? {}),
+          frolic: {
+            skeleton: true,
+            contacts: true,
+            centerOfMass: true,
+            pivot: true,
+          },
+        }
+      : null;
   }
 
   preloadCharacter(character) {
@@ -56,6 +82,7 @@ export class KakiDanceRenderer {
   }
 
   onEvent(event, snapshot) {
+    if (this.frolicQaMode && snapshot?.frolic) return;
     const visual = snapshot?.frolic
       ? this.frolicHeroes.select(
         snapshot?.dancer,
@@ -104,16 +131,16 @@ export class KakiDanceRenderer {
   }
 
   renderFrolic(ctx, snapshot) {
-    this.effects.drawBehind(ctx);
+    if (!this.frolicQaMode) this.effects.drawBehind(ctx);
     const visualLatency = Number(this.settings.visualLatencyMs) || 0;
-    this.frolicHeroes.draw(ctx, snapshot.dancer, snapshot.character, snapshot.frolic.style, {
+    this.lastFrolicVisual = this.frolicHeroes.draw(ctx, snapshot.dancer, snapshot.character, snapshot.frolic.style, {
       x: 192 + (snapshot.dancer.rootX ?? 0),
       floorY: 178,
-      scale: 1.25,
+      scale: 1.05,
       phase: heroPhase(snapshot, snapshot.dancer, visualLatency),
       debug: this.debug?.frolic ?? null,
     });
-    this.effects.drawFront(ctx);
+    if (!this.frolicQaMode) this.effects.drawFront(ctx);
     drawHud(ctx, snapshot, this.settings);
   }
 

@@ -8,7 +8,6 @@ import {
 } from "./footwork-catalog.js";
 import { AppalachianAnimationController } from "./animation-controller.js";
 import { AppalachianPhraseJudge } from "./phrase-judge.js";
-import { FootworkTransitionGraph } from "./transition-graph.js";
 import {
   APPALACHIAN_TUNE_MAP,
   FROLIC_PPQ,
@@ -22,7 +21,6 @@ import {
   strainAtTick,
 } from "./tune-map.js";
 
-const INPUT_KINDS = Object.freeze(["step", "brush", "drive", "lick"]);
 const TURNAROUND_BARS = new Set([8, 16, 24, 32]);
 const PRACTICE_LESSONS = Object.freeze([
   Object.freeze({
@@ -62,27 +60,6 @@ const PRACTICE_LESSONS = Object.freeze([
   }),
 ]);
 
-const PROFILE_CHOICES = Object.freeze({
-  flatfoot: Object.freeze({
-    step: ["walkingStep", "slidingWalk"],
-    brush: ["shuffle", "heelToeChange", "dragSlide"],
-    drive: ["backstep", "chug", "rockStep"],
-    lick: ["crisscross", "turnaround"],
-  }),
-  buck: Object.freeze({
-    step: ["walkingStep", "slidingWalk"],
-    brush: ["shuffle", "doubleShuffle", "heelToeChange"],
-    drive: ["backstep", "chug", "doubleStep", "tripleStep", "rockStep"],
-    lick: ["crisscross", "turnaround"],
-  }),
-  clog: Object.freeze({
-    step: ["walkingStep"],
-    brush: ["shuffle", "doubleShuffle", "heelToeChange"],
-    drive: ["doubleStep", "tripleStep", "chug", "backstep", "rockStep"],
-    lick: ["crisscross", "turnaround"],
-  }),
-});
-
 export class AppalachianJamSimulation {
   constructor({
     mode = "frolic",
@@ -100,8 +77,7 @@ export class AppalachianJamSimulation {
     this.difficulty = tuneMap.difficultyLayers[difficulty] ? difficulty : "standard";
     this.reducedMotion = reducedMotion;
     this.seed = seed >>> 0;
-    this.graph = new FootworkTransitionGraph({ style: this.style });
-    this.animation = new AppalachianAnimationController({ style: this.style, graph: this.graph });
+    this.animation = new AppalachianAnimationController({ style: this.style });
     this.judge = new AppalachianPhraseJudge({
       tuneMap,
       style: this.style,
@@ -116,13 +92,10 @@ export class AppalachianJamSimulation {
     this.lastTick = -Infinity;
     this.lastState = FROLIC_STATES.COUNT_IN;
     this.inputDevice = "keyboard";
-    this.inputCounters = Object.fromEntries(INPUT_KINDS.map((kind) => [kind, 0]));
     this.foundationFoot = "left";
     this.callCursor = new Set();
     this.callout = "";
     this.calloutAge = 0;
-    this.microResponse = 0;
-    this.microFoot = "both";
     this.lastInput = null;
     this.liveScore = null;
     this.crowdHeat = 16;
@@ -144,12 +117,9 @@ export class AppalachianJamSimulation {
     this.events.length = 0;
     this.replay.length = 0;
     this.callCursor.clear();
-    this.inputCounters = Object.fromEntries(INPUT_KINDS.map((kind) => [kind, 0]));
     this.foundationFoot = "left";
     this.callout = "";
     this.calloutAge = 0;
-    this.microResponse = 0;
-    this.microFoot = "both";
     this.lastInput = null;
     this.liveScore = null;
     this.crowdHeat = 16;
@@ -158,8 +128,7 @@ export class AppalachianJamSimulation {
     this.practiceProgress = 0;
     this.practiceAnchorHits.clear();
     this.lastBar = Math.floor(Math.max(0, tick) / FROLIC_TICKS_PER_BAR) + 1;
-    this.graph = new FootworkTransitionGraph({ style: this.style });
-    this.animation = new AppalachianAnimationController({ style: this.style, graph: this.graph });
+    this.animation = new AppalachianAnimationController({ style: this.style });
     this.animation.reset(Math.max(0, tick));
     this.judge = new AppalachianPhraseJudge({
       tuneMap: this.tuneMap,
@@ -180,7 +149,6 @@ export class AppalachianJamSimulation {
     const tick = beatToTick(beatSnapshot.beat);
     this.calloutAge += dt;
     if (this.calloutAge > 1.25) this.callout = "";
-    this.microResponse = Math.max(0, this.microResponse - dt * 7.5);
     this.handleStateChange(tick);
     this.emitTradeCalls(this.lastTick, tick);
     this.animation.update(Math.max(0, tick));
@@ -191,6 +159,16 @@ export class AppalachianJamSimulation {
     this.lastSnapshot = beatSnapshot;
     this.lastTick = tick;
     if (this.mode === "frolic" && tick >= FROLIC_RUN_TICKS) this.finish();
+  }
+
+  handleImmediateInput(input, beatSnapshot) {
+    if (!this.started || this.complete || !input) return false;
+    const tick = beatToTick(beatSnapshot?.beat);
+    if (tick < 0) return false;
+    if (input.device) this.inputDevice = input.device;
+    this.handleInput(input, tick, beatSnapshot);
+    this.recordReplay(input, tick);
+    return true;
   }
 
   handleStateChange(tick) {
@@ -210,57 +188,42 @@ export class AppalachianJamSimulation {
   handleInput(input, tick, beatSnapshot) {
     if (!input || tick < 0) return;
     const requests = [
-      ["step", input.actionPressed],
-      ["brush", input.stylePressed],
-      ["drive", input.powerPressed],
-      ["lick", input.freezePressed],
+      ["step", input.actionPressed, input.actionEvent],
+      ["brush", input.stylePressed, input.styleEvent],
+      ["drive", input.powerPressed, input.powerEvent],
+      ["lick", input.freezePressed, input.freezeEvent],
     ];
-    for (const [kind, pressed] of requests) {
+    for (const [kind, pressed, edge] of requests) {
       if (!pressed) continue;
-      this.requestMovement(kind, input, tick, beatSnapshot);
+      this.requestMovement(kind, input, tick, beatSnapshot, edge);
     }
   }
 
-  requestMovement(kind, input, tick, beatSnapshot) {
+  requestMovement(kind, input, tick, beatSnapshot, edge = null) {
+    const simulationReceiptTimestamp = now();
     const state = frolicStateAtTick(tick);
     const direction = inputDirection(input, kind);
-    const candidates = this.candidatesFor(kind, tick, direction);
+    const moveId = moveForInput(kind, direction);
+    const move = getFootwork(moveId);
     const currentId = this.animation.current?.move.id ?? null;
-    const landingTick = Math.ceil(tick / 24) * 24;
-    const legal = this.graph.chooseLegal({
-      fromId: currentId,
-      candidates,
-      entryFoot: this.animation.current?.entryFoot ?? this.foundationFoot,
-      direction,
-      landingTick,
-    });
-    if (!legal?.move) {
-      this.setCallout("SHIFT YOUR WEIGHT");
-      this.emit("frolicInputRejected", {
-        inputKind: kind,
-        reason: "no-legal-successor",
-        tick,
-      });
-      return;
-    }
-    const request = this.animation.request(legal.move.id, { tick, direction });
-    const rhythmOnly = !request.ok && request.reason === "queue-full";
-    if (!request.ok && !rhythmOnly) {
-      this.setCallout("SHIFT YOUR WEIGHT");
-      this.emit("frolicInputRejected", {
-        inputKind: kind,
-        reason: request.reason,
-        tick,
-      });
-      return;
-    }
-    const move = legal.move;
-    // The full body keeps one authored successor buffered, but a second valid
-    // rhythmic input still sounds and produces a knee/board micro-response.
-    // STEP continues alternating its musical contact foot while the body waits.
-    const entryFoot = rhythmOnly && kind === "step"
+    const entryFoot = kind === "step"
       ? this.foundationFoot
-      : request.request?.entryFoot ?? legal.entryFoot;
+      : this.animation.base?.freeFoot ?? this.foundationFoot;
+    const request = this.animation.request(moveId, {
+      tick,
+      direction,
+      entryFoot,
+      inputTimestamp: edge?.rawTimeStamp,
+      simulationReceiptTimestamp,
+    });
+    if (!move || !request.ok) {
+      this.emit("frolicInputRejected", {
+        inputKind: kind,
+        reason: request.reason ?? "unknown-move",
+        tick,
+      });
+      return;
+    }
     const contacts = resolvedContacts(move, entryFoot);
     const firstContact = contacts[0] ?? {
       foot: entryFoot,
@@ -270,21 +233,27 @@ export class AppalachianJamSimulation {
     };
     const nearest = nearestPulseTick(tick, FROLIC_PPQ / 2);
     const timingOffsetTicks = tick - nearest;
-    this.inputCounters[kind] += 1;
-    if (kind === "step") this.foundationFoot = request.request?.exitFoot ?? legal.exitFoot;
-    this.microResponse = 1;
-    this.microFoot = firstContact.foot;
+    if (kind === "step") this.foundationFoot = oppositeFoot(entryFoot);
+    const rawInputTimestamp = finiteOrNull(edge?.rawTimeStamp);
+    const inputAudioTime = Number.isFinite(Number(edge?.audioTime))
+      ? Number(edge.audioTime)
+      : beatSnapshot.audioTime;
+    const contactId = `${request.request.id}:0:${firstContact.tick}`;
     this.lastInput = Object.freeze({
       kind,
       tick: round(tick),
-      audioTime: beatSnapshot.audioTime,
+      audioTime: inputAudioTime,
+      rawInputTimestamp,
+      simulationReceiptTimestamp,
       timingOffsetTicks: round(timingOffsetTicks),
       moveId: move.id,
       foot: firstContact.foot,
       articulation: firstContact.articulation,
       device: input.device ?? "unknown",
-      queued: request.status === "queued" || rhythmOnly,
-      rhythmOnly,
+      actionId: request.request.id,
+      response: request.status,
+      queued: false,
+      rhythmOnly: false,
     });
     const judged = this.judge.recordInput({
       tick,
@@ -323,35 +292,27 @@ export class AppalachianJamSimulation {
       inputKind: kind,
       device: input.device ?? "unknown",
       immediate: true,
-      inputAudioTime: beatSnapshot.audioTime,
+      contactId,
+      actionId: request.request.id,
+      rawInputTimestamp,
+      simulationReceiptTimestamp,
+      inputAudioTime,
       timingOffsetTicks,
       message: "",
     });
     this.emit("frolicInput", {
       ...judged,
-      queued: request.status === "queued" || rhythmOnly,
-      rhythmOnly,
+      queued: false,
+      rhythmOnly: false,
+      actionId: request.request.id,
+      rawInputTimestamp,
+      simulationReceiptTimestamp,
       state,
       validTurnaround,
     });
     if (Math.abs(timingOffsetTicks) <= 10) this.setCallout(kind === "lick" && validTurnaround ? "CLEAN TURN!" : "IN THE TUNE");
-    if (kind === "lick" && !validTurnaround) this.setCallout("SAVE THE LICK");
+    if (kind === "lick" && !validTurnaround) this.setCallout("TURN AND RECOVER");
     this.advancePractice(kind, tick);
-  }
-
-  candidatesFor(kind, tick, direction) {
-    if (kind === "lick") {
-      const bar = Math.floor(tick / FROLIC_TICKS_PER_BAR) + 1;
-      if (bar === 32) return ["controlledEnding"];
-      if (isTurnaroundWindow(tick)) return ["turnaround", "crisscross"];
-    }
-    if (kind === "step" && ["forward", "back"].includes(direction) && this.style !== "clog") {
-      return ["slidingWalk", "walkingStep"];
-    }
-    if (kind === "step") return ["walkingStep"];
-    const choices = PROFILE_CHOICES[this.style][kind];
-    const offset = this.inputCounters[kind] % choices.length;
-    return [...choices.slice(offset), ...choices.slice(0, offset)];
   }
 
   emitTradeCalls(previousTick, currentTick) {
@@ -502,7 +463,7 @@ export class AppalachianJamSimulation {
     const localTick = localTickInBar(displayTick);
     const strain = strainAtTick(displayTick, this.tuneMap);
     const activeCall = callAtTick(displayTick, this.tuneMap);
-    const dancer = this.animation.getSnapshot(displayTick, this.microResponse, this.microFoot);
+    const dancer = this.animation.getSnapshot(displayTick);
     const liveScore = this.liveScore ?? this.judge.getResult();
     const lesson = PRACTICE_LESSONS[this.practiceLesson] ?? null;
     const countInBeat = tick < 0 ? Math.floor((tick + this.tuneMap.countInBars * 4 * FROLIC_PPQ) / FROLIC_PPQ) + 1 : 0;
@@ -612,6 +573,30 @@ function inputDirection(input, kind) {
   if (input.y < -0.28) return "forward";
   if (input.y > 0.28) return "back";
   return "neutral";
+}
+
+function moveForInput(kind, direction) {
+  if (kind === "step") return "walkingStep";
+  if (kind === "brush") {
+    return ["left", "right", "cross"].includes(direction)
+      ? "heelToeChange"
+      : "shuffle";
+  }
+  if (kind === "drive") return direction === "back" ? "backstep" : "chug";
+  return "turnaround";
+}
+
+function oppositeFoot(foot) {
+  return foot === "right" ? "left" : "right";
+}
+
+function now() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
+function finiteOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function isTurnaroundWindow(tick) {

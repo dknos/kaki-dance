@@ -1,0 +1,145 @@
+{
+  "capturedAt": "2026-07-24T19:25:30.434Z",
+  "url": "http://127.0.0.1:4177",
+  "immediate": {
+    "mode": "frolic",
+    "style": "flatfoot",
+    "input": {
+      "kind": "step",
+      "tick": 1.012,
+      "audioTime": 4.2132217687194045,
+      "rawInputTimestamp": 4947.0999999940395,
+      "simulationReceiptTimestamp": 4948.399999976158,
+      "timingOffsetTicks": 1.012,
+      "moveId": "walkingStep",
+      "foot": "left",
+      "articulation": "flat",
+      "device": "keyboard",
+      "actionId": 1,
+      "response": "started",
+      "queued": false,
+      "rhythmOnly": false
+    },
+    "topology": "biped",
+    "practice": null
+  },
+  "selectedPackResources": {
+    "metadata": [
+      "/assets/heroes/kitty/frolic/flatfoot/atlas.json"
+    ],
+    "pages": [
+      "/assets/heroes/kitty/frolic/flatfoot/atlas-1.png",
+      "/assets/heroes/kitty/frolic/flatfoot/atlas-0.png"
+    ]
+  },
+  "frameProfile": {
+    "samples": 116,
+    "averageMs": 16.66551724137931,
+    "p95Ms": 16.700000000000728,
+    "maxMs": 16.800000000000182
+  },
+  "lab": {
+    "state": {
+      "hero": "soder",
+      "style": "flatfoot",
+      "moveId": "turnaround",
+      "entryFoot": "left",
+      "fromMoveId": "walkingStep",
+      "phase": 0.29640000000000005,
+      "speed": 1,
+      "lastTime": 662.7,
+      "lastBeat": -1,
+      "activePacks": [
+        "soder:flatfoot"
+      ],
+      "transition": {
+        "ok": true,
+        "entryFoot": "right",
+        "exitFoot": "right",
+        "transitionClip": "weightShift",
+        "transitionTicks": 24
+      }
+    },
+    "nativeSize": [
+      384,
+      216
+    ],
+    "neutralSize": [
+      384,
+      216
+    ],
+    "imageRendering": "pixelated",
+    "readout": "PACK       soder:flatfoot\nCLIP       turnaround\nFRAME      9 / 30\nTOPOLOGY   biped\nSUPPORT    right\nLEFT FOOT  local 53.3, 114.6 · world 198.7, 226.3\nRIGHT FOOT local 24, 113.1 · world 162, 224.4\nCENTER     40.2, 67.6\nCONTACTS   0:left:flat | 48:right:toe | 96:left:heel | 144:right:flat\nENTRY/EXIT left → left\nSUCCESSORS walkingStep, shuffle, chug, rockStep, controlledEnding\nACTIVE     soder:flatfoot",
+    "atlas": 1024,
+    "renderProfile": {
+      "samples": 600,
+      "elapsedMs": 113.19999998807907,
+      "averageMs": 0.18866666664679846
+    }
+  },
+  "soder": {
+    "topology": "biped",
+    "style": "flatfoot"
+  },
+  "touch": {
+    "mode": "frolic",
+    "buttons": [
+      {
+        "label": "BRUSH",
+        "control": "style",
+        "width": 66,
+        "height": 40,
+        "left": 768,
+        "right": 834
+      },
+      {
+        "label": "DRIVE",
+        "control": "power",
+        "width": 66,
+        "height": 40,
+        "left": 696,
+        "right": 762
+      },
+      {
+        "label": "LICK",
+        "control": "freeze",
+        "width": 66,
+        "height": 40,
+        "left": 768,
+        "right": 834
+      },
+      {
+        "label": "STEP",
+        "control": "action",
+        "width": 66,
+        "height": 40,
+        "left": 696,
+        "right": 762
+      }
+    ],
+    "canvas": {
+      "left": 0,
+      "width": 844
+    }
+  },
+  "touchInput": {
+    "lastInput": {
+      "kind": "step",
+      "tick": 9.929,
+      "audioTime": 4.27138163263518,
+      "rawInputTimestamp": 4971.0999999940395,
+      "simulationReceiptTimestamp": 4983.9000000059605,
+      "timingOffsetTicks": 9.929,
+      "moveId": "walkingStep",
+      "foot": "left",
+      "articulation": "flat",
+      "device": "touch",
+      "actionId": 1,
+      "response": "started",
+      "queued": false,
+      "rhythmOnly": false
+    }
+  },
+  "errors": [],
+  "failedRequests": []
+}

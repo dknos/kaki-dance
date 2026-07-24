@@ -1,0 +1,24 @@
+{
+  "candidateStatus": "human-review-required",
+  "url": "http://127.0.0.1:4177/frolic-rescue-review.html",
+  "nativeCamera": [
+    384,
+    216
+  ],
+  "candidateRejectedArtChangedPixels": true,
+  "heroSwitch": true,
+  "realControlDispatch": true,
+  "latencyReadout": true,
+  "oldNewFoley": true,
+  "normalHalfSpeed": true,
+  "skeletonContactOverlay": true,
+  "musicEffectsToggles": true,
+  "sampleIsolation": true,
+  "errors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "expectedMediaAborts": [
+    "http://127.0.0.1:4177/docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-normal.mp4: net::ERR_ABORTED"
+  ],
+  "screenshot": "docs/review/frolic-rescue-candidate-1/review-page.png"
+}

@@ -1,11 +1,15 @@
 import { clamp } from "../core/math.js";
 
 const MANIFEST_URL = new URL("../../assets/audio/frolic/feet/manifest.json", import.meta.url);
+const REJECTED_MANIFEST_URL = new URL(
+  "../../docs/review/rejected-0c82fe7/assets/audio/frolic/feet/manifest.json",
+  import.meta.url,
+);
 
 const CLOG_SAMPLE_MAP = Object.freeze({
   heel: "tapHeel",
   toeBall: "tapToe",
-  flatContact: "heavyAccent",
+  flatContact: "tapHeel",
 });
 
 export class FootPercussionPlayer {
@@ -21,12 +25,29 @@ export class FootPercussionPlayer {
     this.buffers = new Map();
     this.cursors = new Map();
     this.active = new Set();
+    this.activeByGroup = new Map();
     this.loadPromise = null;
     this.audioLatencyMs = 0;
+    this.lastSchedule = null;
+    this.footBus = null;
+    this.reviewVariant = "candidate";
   }
 
   setLatency(milliseconds) {
     this.audioLatencyMs = clamp(Number(milliseconds) || 0, -200, 200);
+  }
+
+  async setReviewVariant(value) {
+    const variant = value === "rejected" ? "rejected" : "candidate";
+    if (variant === this.reviewVariant && this.manifest) return true;
+    this.stopAll();
+    this.reviewVariant = variant;
+    this.manifestUrl = variant === "rejected" ? REJECTED_MANIFEST_URL : MANIFEST_URL;
+    this.manifest = null;
+    this.buffers.clear();
+    this.cursors.clear();
+    this.loadPromise = null;
+    return this.preload();
   }
 
   async preload() {
@@ -39,18 +60,20 @@ export class FootPercussionPlayer {
         if (!response.ok) throw new Error(`Foot percussion manifest failed: ${response.status}`);
         const manifest = await response.json();
         const entries = Object.entries(manifest.groups ?? {});
-        const decoded = await Promise.all(entries.flatMap(([group, definition]) => (
-          definition.files.map(async (filename, index) => {
+        const filenames = [...new Set(entries.flatMap(([, definition]) => definition.files))];
+        const decoded = await Promise.all(filenames.map(async (filename) => {
             const sampleResponse = await this.fetchImpl(new URL(filename, this.manifestUrl));
             if (!sampleResponse.ok) throw new Error(`Foot sample failed: ${sampleResponse.status}`);
             const bytes = await sampleResponse.arrayBuffer();
             const buffer = await context.decodeAudioData(bytes);
-            return [group, index, buffer];
-          })
-        )));
+            return [filename, buffer];
+        }));
         this.manifest = Object.freeze(manifest);
-        for (const [group] of entries) this.buffers.set(group, []);
-        for (const [group, index, buffer] of decoded) this.buffers.get(group)[index] = buffer;
+        const byFilename = new Map(decoded);
+        for (const [group, definition] of entries) {
+          this.buffers.set(group, definition.files.map((filename) => byFilename.get(filename)));
+        }
+        this.ensureFootBus();
         return true;
       } catch {
         this.manifest = null;
@@ -75,19 +98,26 @@ export class FootPercussionPlayer {
       void this.preload();
       return false;
     }
-    const cursor = this.cursors.get(group) ?? 0;
-    const buffer = variants[cursor % variants.length];
-    this.cursors.set(group, cursor + 1);
+    const definition = this.manifest?.groups?.[group] ?? {};
+    const layer = velocityLayer(event.intensity);
+    const layerFiles = definition.layers?.[layer] ?? definition.files ?? [];
+    const cursorKey = `${group}:${layer}`;
+    const cursor = this.cursors.get(cursorKey) ?? 0;
+    const filename = layerFiles[cursor % Math.max(1, layerFiles.length)];
+    const fileIndex = definition.files?.indexOf(filename) ?? -1;
+    const buffer = fileIndex >= 0
+      ? variants[fileIndex]
+      : variants[cursor % variants.length];
+    this.cursors.set(cursorKey, cursor + 1);
     if (!buffer) return false;
 
     const source = context.createBufferSource();
     source.buffer = buffer;
     const gain = context.createGain();
-    const baseGain = this.manifest?.groups?.[group]?.baseGain ?? 0.7;
+    const baseGain = definition.baseGain ?? 0.7;
     const intensity = clamp(Number(event.intensity) || 0.55, 0.12, 1);
-    const variation = 0.96 + ((cursor % 3) - 1) * 0.025;
-    gain.gain.value = clamp(baseGain * (0.5 + intensity * 0.62) * variation, 0, 1.25);
-    source.playbackRate.value = event.foot === "right" ? 1.012 : 0.992;
+    gain.gain.value = clamp(baseGain * (0.5 + intensity * 0.62), 0, 1.15);
+    source.playbackRate.value = 1;
     source.connect(gain);
 
     let tail = gain;
@@ -97,17 +127,78 @@ export class FootPercussionPlayer {
       gain.connect(panner);
       tail = panner;
     }
-    tail.connect(destination);
+    tail.connect(this.ensureFootBus() ?? destination);
 
     const inputTime = Number(event.inputAudioTime);
     const baseTime = event.immediate && Number.isFinite(inputTime)
       ? Math.max(context.currentTime, inputTime)
       : context.currentTime;
     const scheduled = Math.max(context.currentTime, baseTime + this.audioLatencyMs / 1000);
+    this.lastSchedule = Object.freeze({
+      contactId: event.contactId ?? "",
+      actionId: event.actionId ?? 0,
+      rawInputTimestamp: Number.isFinite(Number(event.rawInputTimestamp))
+        ? Number(event.rawInputTimestamp)
+        : null,
+      schedulingCallTimestamp: now(),
+      scheduledAudioTime: scheduled,
+      contextCurrentTime: context.currentTime,
+      baseLatency: Number(context.baseLatency) || 0,
+      outputLatency: Number(context.outputLatency) || 0,
+    });
     source.start(scheduled);
     this.active.add(source);
-    source.addEventListener?.("ended", () => this.active.delete(source), { once: true });
+    const groupActive = this.activeByGroup.get(group) ?? [];
+    const polyphony = Math.max(1, Number(definition.polyphony) || 5);
+    while (groupActive.length >= polyphony) {
+      const oldest = groupActive.shift();
+      try {
+        oldest?.stop();
+      } catch {
+        // It may have ended between the polyphony check and stop.
+      }
+      this.active.delete(oldest);
+    }
+    groupActive.push(source);
+    this.activeByGroup.set(group, groupActive);
+    source.addEventListener?.("ended", () => {
+      this.active.delete(source);
+      const active = this.activeByGroup.get(group);
+      const index = active?.indexOf(source) ?? -1;
+      if (index >= 0) active.splice(index, 1);
+    }, { once: true });
     return true;
+  }
+
+  ensureFootBus() {
+    if (this.footBus) return this.footBus;
+    const context = this.transport?.context;
+    const destination = this.transport?.effectsGain;
+    if (!context || !destination) return destination ?? null;
+    const input = context.createGain();
+    input.gain.value = 1;
+    let tail = input;
+    if (context.createBiquadFilter) {
+      const highpass = context.createBiquadFilter();
+      highpass.type = "highpass";
+      highpass.frequency.value = 70;
+      highpass.Q.value = 0.7;
+      tail.connect(highpass);
+      tail = highpass;
+    }
+    if (context.createDynamicsCompressor) {
+      const compressor = context.createDynamicsCompressor();
+      compressor.threshold.value = -12;
+      compressor.knee.value = 8;
+      compressor.ratio.value = 2;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.06;
+      tail.connect(compressor);
+      tail = compressor;
+    }
+    tail.connect(destination);
+    this.footBus = input;
+    return this.footBus;
   }
 
   stopAll() {
@@ -124,5 +215,17 @@ export class FootPercussionPlayer {
       }
     }
     this.active.clear();
+    this.activeByGroup.clear();
   }
+}
+
+function now() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
+function velocityLayer(intensity) {
+  const value = clamp(Number(intensity) || 0.55, 0, 1);
+  if (value < 0.45) return "soft";
+  if (value < 0.73) return "medium";
+  return "strong";
 }

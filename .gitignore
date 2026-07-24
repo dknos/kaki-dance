@@ -7,3 +7,4 @@ playwright-report/
 *.blend[0-9]
 __pycache__/
 *.pyc
+build/

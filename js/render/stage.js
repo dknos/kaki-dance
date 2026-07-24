@@ -26,40 +26,55 @@ export function drawAppalachianStage(ctx, snapshot, presentation = {}) {
   const strainEnding = (snapshot?.frolic?.bar ?? 1) % 8 === 0;
   const response = strainEnding ? Math.max(0, 1 - phase * 2.8) : 0;
   const palette = {
-    pine: "#101c1a",
-    pine2: "#182923",
+    pine: "#151a18",
+    pine2: "#2b2a23",
     cedar: "#6a3527",
-    cedarLight: "#9c5736",
+    cedarLight: "#ad6842",
     amber: "#f2bd65",
-    chalk: "#e8d9b9",
-    indigo: "#26314d",
+    chalk: "#f1dfbf",
+    indigo: "#35405a",
     fiddle: "#b64d32",
-    board: "#b36b3e",
-    boardLight: "#d69254",
+    board: "#b97443",
+    boardLight: "#e0a167",
   };
 
   pixelRect(ctx, 0, 0, 384, 216, palette.pine);
-  pixelRect(ctx, 0, 18, 384, 104, palette.pine2);
-  // Hall rafters and clapboards frame the gathering without crowding the feet.
-  for (let y = 24; y < 122; y += 12) pixelRect(ctx, 0, y, 384, 1, "#294034");
-  polygon(ctx, [{ x: 0, y: 0 }, { x: 76, y: 0 }, { x: 144, y: 87 }, { x: 131, y: 87 }], "#0a1514");
-  polygon(ctx, [{ x: 384, y: 0 }, { x: 308, y: 0 }, { x: 240, y: 87 }, { x: 253, y: 87 }], "#0a1514");
-  pixelRect(ctx, 187, 0, 10, 72, "#0a1514");
+  pixelRect(ctx, 0, 17, 384, 105, palette.pine2);
+  // Warm clapboard hall with dark structural framing and a quiet center field.
+  for (let y = 25; y < 122; y += 11) {
+    pixelRect(ctx, 0, y, 384, 1, y % 22 ? "#3c392e" : "#1e211d");
+  }
+  pixelRect(ctx, 0, 116, 384, 6, "#171817");
+  polygon(ctx, [{ x: 0, y: 0 }, { x: 67, y: 0 }, { x: 134, y: 91 }, { x: 123, y: 91 }], "#0d1211");
+  polygon(ctx, [{ x: 384, y: 0 }, { x: 317, y: 0 }, { x: 250, y: 91 }, { x: 261, y: 91 }], "#0d1211");
+  pixelRect(ctx, 188, 0, 8, 72, "#0d1211");
+  drawSideQuilts(ctx, palette);
   drawHallLights(ctx, beat, palette);
   drawFrolicSign(ctx, palette);
   drawStringBand(ctx, beat, response, heat, palette);
   drawHallAudience(ctx, beat, response, heat, palette);
 
   // Floorboards recede toward the purpose-built resonant board.
-  pixelRect(ctx, 0, 122, 384, 94, "#4a2b24");
-  for (let y = 126; y < 216; y += 11) pixelRect(ctx, 0, y, 384, 1, "#241b1a");
-  for (let x = -120; x < 500; x += 32) {
-    pixelLine(ctx, { x: 192 + (x - 192) * 0.43, y: 122 }, { x, y: 216 }, 1, "#33201d");
+  pixelRect(ctx, 0, 122, 384, 94, "#57352b");
+  for (let y = 126; y < 216; y += 11) {
+    pixelRect(ctx, 0, y, 384, 1, "#2b211e");
+    const stagger = Math.floor((y - 126) / 11) % 2 ? 17 : 0;
+    for (let x = stagger; x < 384; x += 48) {
+      pixelRect(ctx, x, y + 1, 1, 10, "#3d2924");
+      if ((x + y) % 3 === 0) pixelEllipse(ctx, x + 19, y + 6, 2, 1, "#6d4434");
+    }
   }
-  pixelEllipse(ctx, 192, 181, 92, 19, "#221916");
-  const boardFlex = snapshot?.dancer?.microResponse > 0.35
-    ? Math.round((snapshot.dancer.microResponse ?? 0) * (presentation.reducedMotion ? 0 : 1))
-    : 0;
+  for (let x = -120; x < 500; x += 36) {
+    pixelLine(ctx, { x: 192 + (x - 192) * 0.43, y: 122 }, { x, y: 216 }, 1, "#392622");
+  }
+  pixelEllipse(ctx, 192, 184, 96, 18, "#201817");
+  const boardFlex = 0;
+  polygon(ctx, [
+    { x: 107, y: FROLIC_STAGE.boardBottom },
+    { x: 277, y: FROLIC_STAGE.boardBottom },
+    { x: 270, y: FROLIC_STAGE.boardBottom + 6 },
+    { x: 114, y: FROLIC_STAGE.boardBottom + 6 },
+  ], "#5a3024");
   polygon(ctx, [
     { x: FROLIC_STAGE.boardLeft, y: FROLIC_STAGE.boardTop + boardFlex },
     { x: FROLIC_STAGE.boardRight, y: FROLIC_STAGE.boardTop + boardFlex },
@@ -67,23 +82,14 @@ export function drawAppalachianStage(ctx, snapshot, presentation = {}) {
     { x: 107, y: FROLIC_STAGE.boardBottom },
   ], palette.board);
   pixelLine(ctx, { x: 118, y: 151 + boardFlex }, { x: 266, y: 151 + boardFlex }, 2, palette.boardLight);
-  for (let x = 126; x < 270; x += 17) {
-    pixelLine(ctx, { x, y: 153 + boardFlex }, { x: x + (x < 192 ? -5 : 5), y: 185 }, 1, "#6e3f2d");
+  for (let y = 157; y < 185; y += 7) {
+    const inset = Math.round((y - 151) * 0.26);
+    pixelLine(ctx, { x: 118 - inset, y }, { x: 266 + inset, y }, 1, y % 2 ? "#8f5335" : "#ca8150");
   }
-  const activeFoot = snapshot?.dancer?.microFoot;
-  if (snapshot?.dancer?.microResponse > 0.05) {
-    const footX = activeFoot === "left" ? 173 : activeFoot === "right" ? 211 : 192;
-    const glow = palette.amber;
-    withAlpha(ctx, 0.18 + snapshot.dancer.microResponse * 0.25, () => {
-      pixelEllipse(ctx, footX, 178, 15, 3, glow);
-    });
+  for (let x = 132; x < 266; x += 22) {
+    pixelLine(ctx, { x, y: 153 }, { x: x + (x < 192 ? -5 : 5), y: 185 }, 1, "#6e3f2d");
   }
-  pixelRect(ctx, 158, 190, 68, 10, "#2b1c1a");
-  drawPixelText(ctx, "THE FEET JOIN THE BAND", 192, 193, {
-    align: "center",
-    color: palette.chalk,
-    scale: 1,
-  });
+  pixelLine(ctx, { x: 114, y: 190 }, { x: 270, y: 190 }, 1, "#ca8150");
 }
 
 function drawHallLights(ctx, beat, palette) {
@@ -117,25 +123,40 @@ function drawStringBand(ctx, beat, response, heat, palette) {
 function drawBandPlayer(ctx, x, y, instrument, beat, response, palette) {
   const bow = Math.round(Math.sin(beat * Math.PI * (instrument === "fiddle" ? 2 : 1)) * (instrument === "fiddle" ? 3 : 1));
   const nod = (Math.floor(beat * 2) % 2 ? 1 : 0) - Math.round(response);
-  pixelEllipse(ctx, x, y - 17 + nod, 5, 6, "#c7946d");
-  pixelRect(ctx, x - 6, y - 11 + nod, 12, 17, instrument === "bass" ? "#314a40" : palette.indigo);
-  pixelLine(ctx, { x: x - 4, y: y - 6 }, { x: x - 10, y: y + 5 + bow }, 3, "#c7946d");
-  pixelLine(ctx, { x: x + 4, y: y - 6 }, { x: x + 10, y: y + 3 - bow }, 3, "#c7946d");
+  const skin = instrument === "banjo" ? "#8f624d" : "#c7946d";
+  pixelEllipse(ctx, x, y - 19 + nod, 6, 7, "#171615");
+  pixelEllipse(ctx, x, y - 18 + nod, 5, 6, skin);
+  polygon(ctx, [
+    { x: x - 7, y: y - 12 + nod }, { x: x + 7, y: y - 12 + nod },
+    { x: x + 9, y: y + 7 }, { x: x - 8, y: y + 7 },
+  ], instrument === "bass" ? "#415b4d" : palette.indigo);
+  pixelLine(ctx, { x: x - 5, y: y - 7 }, { x: x - 11, y: y + 4 + bow }, 4, skin);
+  pixelLine(ctx, { x: x + 5, y: y - 7 }, { x: x + 11, y: y + 2 - bow }, 4, skin);
   if (instrument === "fiddle") {
-    pixelEllipse(ctx, x + 3, y - 5, 8, 3, palette.fiddle);
-    pixelLine(ctx, { x: x - 10, y: y - 7 + bow }, { x: x + 13, y: y - 1 - bow }, 1, palette.chalk);
+    pixelEllipse(ctx, x + 3, y - 5, 8, 4, "#6b2c22");
+    pixelEllipse(ctx, x + 3, y - 5, 6, 3, palette.fiddle);
+    pixelLine(ctx, { x: x + 8, y: y - 6 }, { x: x + 15, y: y - 10 }, 2, "#6b3524");
+    pixelLine(ctx, { x: x - 11, y: y - 8 + bow }, { x: x + 14, y: y - 1 - bow }, 1, palette.chalk);
   } else if (instrument === "banjo") {
-    pixelEllipse(ctx, x + 2, y - 2, 7, 7, palette.chalk);
+    pixelEllipse(ctx, x + 2, y - 2, 8, 8, "#51362a");
+    pixelEllipse(ctx, x + 2, y - 2, 6, 6, palette.chalk);
+    pixelEllipse(ctx, x + 2, y - 2, 2, 2, "#5f4939");
     pixelLine(ctx, { x: x + 7, y: y - 4 }, { x: x + 15, y: y - 10 }, 2, "#9c5736");
   } else if (instrument === "guitar") {
-    pixelEllipse(ctx, x + 1, y - 1, 9, 7, palette.fiddle);
+    pixelEllipse(ctx, x - 2, y, 6, 7, "#743022");
+    pixelEllipse(ctx, x + 4, y - 2, 7, 8, palette.fiddle);
+    pixelEllipse(ctx, x + 2, y - 1, 2, 2, "#2b211e");
     pixelLine(ctx, { x: x + 7, y: y - 5 }, { x: x + 15, y: y - 12 }, 3, "#8c4b32");
   } else {
-    pixelEllipse(ctx, x + 6, y - 1, 8, 14, palette.fiddle);
+    pixelEllipse(ctx, x + 6, y - 1, 9, 15, "#6d2d22");
+    pixelEllipse(ctx, x + 6, y - 1, 7, 13, palette.fiddle);
+    pixelEllipse(ctx, x + 6, y - 3, 2, 3, "#2b211e");
     pixelLine(ctx, { x: x + 6, y: y - 12 }, { x: x + 7, y: y - 31 }, 2, "#8c4b32");
   }
-  pixelLine(ctx, { x: x - 3, y: y + 6 }, { x: x - 4, y: y + 18 }, 3, "#1b1817");
-  pixelLine(ctx, { x: x + 3, y: y + 6 }, { x: x + 4, y: y + 18 }, 3, "#1b1817");
+  pixelLine(ctx, { x: x - 4, y: y + 6 }, { x: x - 6, y: y + 18 }, 4, "#1b1817");
+  pixelLine(ctx, { x: x + 4, y: y + 6 }, { x: x + 6, y: y + 18 }, 4, "#1b1817");
+  pixelRect(ctx, x - 9, y + 17, 7, 2, "#0d1010");
+  pixelRect(ctx, x + 3, y + 17, 7, 2, "#0d1010");
 }
 
 function drawHallAudience(ctx, beat, response, heat, palette) {
@@ -146,16 +167,51 @@ function drawHallAudience(ctx, beat, response, heat, palette) {
   const energy = response + heat / 180;
   for (const [index, [x, y, shirt]] of people.entries()) {
     const nod = Math.sin(beat * Math.PI + index * 0.7) > 0.25 ? -Math.round(energy) : 0;
-    pixelEllipse(ctx, x, y - 15 + nod, 5, 6, index % 3 === 0 ? "#9a6f57" : "#c18c68");
-    pixelRect(ctx, x - 6, y - 9 + nod, 12, 18, shirt);
-    if (response > 0.45 && (index === 1 || index === 6)) {
-      pixelLine(ctx, { x: x - 4, y: y - 5 }, { x: x - 8, y: y - 18 }, 2, "#c18c68");
-    }
+    drawAudienceFigure(ctx, x, y + nod, shirt, index, response);
   }
-  // A quilt strip gives the room a handmade focal band.
-  for (let x = 8; x < 376; x += 12) {
-    const color = (x / 12) % 3 === 0 ? palette.fiddle : (x / 12) % 2 ? palette.amber : palette.indigo;
-    polygon(ctx, [{ x, y: 55 }, { x: x + 6, y: 50 }, { x: x + 12, y: 55 }, { x: x + 6, y: 60 }], color);
+}
+
+function drawAudienceFigure(ctx, x, y, shirt, index, response) {
+  const skin = index % 3 === 0 ? "#95664e" : index % 3 === 1 ? "#c18c68" : "#ddad83";
+  const seated = index % 2 === 0;
+  pixelEllipse(ctx, x, y - 17, 6, 7, "#161717");
+  pixelEllipse(ctx, x, y - 16, 5, 6, skin);
+  if (index % 3 === 0) pixelRect(ctx, x - 5, y - 22, 10, 3, "#3a2822");
+  polygon(ctx, [
+    { x: x - 7, y: y - 10 }, { x: x + 7, y: y - 10 },
+    { x: x + 6, y: y + 6 }, { x: x - 6, y: y + 6 },
+  ], shirt);
+  if (response > 0.45 && (index === 1 || index === 6)) {
+    pixelLine(ctx, { x: x - 5, y: y - 7 }, { x: x - 10, y: y - 21 }, 3, skin);
+  } else {
+    pixelLine(ctx, { x: x - 5, y: y - 7 }, { x: x - 9, y: y + 2 }, 3, skin);
+  }
+  pixelLine(ctx, { x: x + 5, y: y - 7 }, { x: x + 9, y: y + 1 }, 3, skin);
+  if (seated) {
+    pixelLine(ctx, { x: x - 4, y: y + 5 }, { x: x - 9, y: y + 10 }, 4, "#242521");
+    pixelLine(ctx, { x: x + 4, y: y + 5 }, { x: x + 9, y: y + 10 }, 4, "#242521");
+  } else {
+    pixelLine(ctx, { x: x - 3, y: y + 5 }, { x: x - 4, y: y + 13 }, 4, "#242521");
+    pixelLine(ctx, { x: x + 3, y: y + 5 }, { x: x + 4, y: y + 13 }, 4, "#242521");
+  }
+}
+
+function drawSideQuilts(ctx, palette) {
+  for (const startX of [8, 344]) {
+    pixelRect(ctx, startX, 48, 32, 32, "#171817");
+    pixelRect(ctx, startX + 2, 50, 28, 28, "#d7c28e");
+    for (let row = 0; row < 2; row += 1) {
+      for (let column = 0; column < 2; column += 1) {
+        const x = startX + 3 + column * 14;
+        const y = 51 + row * 14;
+        const color = (row + column) % 2 ? palette.fiddle : palette.indigo;
+        polygon(ctx, [
+          { x: x + 7, y }, { x: x + 13, y: y + 7 },
+          { x: x + 7, y: y + 13 }, { x, y: y + 7 },
+        ], color);
+        pixelEllipse(ctx, x + 7, y + 7, 2, 2, palette.amber);
+      }
+    }
   }
 }
 

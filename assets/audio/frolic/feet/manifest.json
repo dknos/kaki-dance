@@ -1,112 +1,1172 @@
 {
-  "schemaVersion": 1,
-  "sampleRate": 22050,
-  "roundRobin": 3,
-  "provenance": "Deterministic original synthesis with wooden-board resonance.",
+  "schemaVersion": 2,
+  "candidateStatus": "human-review-required",
+  "sampleRate": 48000,
+  "roundRobin": 6,
+  "velocityLayers": [
+    "soft",
+    "medium",
+    "strong"
+  ],
+  "provenance": {
+    "sourceType": "real Foley-derived shoe recordings",
+    "licenseSummary": "CC0 source recordings; URLs and unmodified downloads retained",
+    "noSynthesis": true,
+    "noPitchDerivedLeftRight": true,
+    "sources": {
+      "bigsoundbank-1515": {
+        "id": "bigsoundbank-1515",
+        "file": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+        "url": "https://bigsoundbank.com/steps-on-a-wooden-floor-1-s1515.html",
+        "directUrl": "https://bigsoundbank.com/UPLOAD/bwf-en/1515.wav",
+        "author": "Joseph SARDIN",
+        "license": "CC0 / public domain equivalent",
+        "recording": "Real shoes on a wooden floor/deck; mono 48 kHz, 24-bit",
+        "sha256": "6eb1d02a41ab76a53a883c2ac4497bafd0b8bfc8e66a4615d373818c7adf5127"
+      },
+      "bigsoundbank-0376": {
+        "id": "bigsoundbank-0376",
+        "file": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+        "url": "https://bigsoundbank.com/footsteps-shoe-on-parquet-s0376.html",
+        "directUrl": "https://bigsoundbank.com/UPLOAD/bwf-en/0376.wav",
+        "author": "Joseph SARDIN",
+        "license": "CC0 / public domain equivalent",
+        "recording": "Real shoes on old parquet; mono 48 kHz, 16-bit",
+        "sha256": "4e30c3314cb18d7825dab7396f563c9ad9d58b9b9ad0cdbf202e6664ff5f2ee3"
+      },
+      "freesound-273380": {
+        "id": "freesound-273380",
+        "file": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+        "originalFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-hq.mp3",
+        "url": "https://freesound.org/people/sturmankin/sounds/273380/",
+        "directUrl": "https://cdn.freesound.org/previews/273/273380_4181170-hq.mp3",
+        "author": "sturmankin",
+        "license": "CC0 1.0",
+        "recording": "Real trekking shoes shuffling on wood; 48 kHz source, public HQ preview retained and converted to 48 kHz/24-bit PCM",
+        "sha256": "da0bff350395d971dcffc501b3a77cca14efab2a298156330b9505cd6cc696f1",
+        "originalFileSha256": "a9132434a7e9e7adf8b8ac4f2ca145361586ade8d5c4b20f9d00cd896b7c4e37"
+      }
+    }
+  },
   "groups": {
     "softSole": {
+      "label": "Soft leather sole",
       "files": [
-        "softSole-1.wav",
-        "softSole-2.wav",
-        "softSole-3.wav"
+        "softSole-soft-1.wav",
+        "softSole-medium-1.wav",
+        "softSole-medium-2.wav",
+        "softSole-soft-2.wav",
+        "softSole-strong-1.wav",
+        "softSole-strong-2.wav"
       ],
-      "baseGain": 0.62
+      "layers": {
+        "soft": [
+          "softSole-soft-1.wav",
+          "softSole-soft-2.wav"
+        ],
+        "medium": [
+          "softSole-medium-1.wav",
+          "softSole-medium-2.wav"
+        ],
+        "strong": [
+          "softSole-strong-1.wav",
+          "softSole-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.6,
+      "polyphony": 5
     },
     "flatContact": {
+      "label": "Flat sole contact",
       "files": [
-        "flatContact-1.wav",
-        "flatContact-2.wav",
-        "flatContact-3.wav"
+        "flatContact-soft-1.wav",
+        "flatContact-soft-2.wav",
+        "flatContact-strong-1.wav",
+        "flatContact-medium-1.wav",
+        "flatContact-medium-2.wav",
+        "flatContact-strong-2.wav"
       ],
-      "baseGain": 0.76
-    },
-    "heel": {
-      "files": [
-        "heel-1.wav",
-        "heel-2.wav",
-        "heel-3.wav"
-      ],
-      "baseGain": 0.82
-    },
-    "toeBall": {
-      "files": [
-        "toeBall-1.wav",
-        "toeBall-2.wav",
-        "toeBall-3.wav"
-      ],
-      "baseGain": 0.7
-    },
-    "brush": {
-      "files": [
-        "brush-1.wav",
-        "brush-2.wav",
-        "brush-3.wav"
-      ],
-      "baseGain": 0.46
-    },
-    "scuff": {
-      "files": [
-        "scuff-1.wav",
-        "scuff-2.wav",
-        "scuff-3.wav"
-      ],
-      "baseGain": 0.58
+      "layers": {
+        "soft": [
+          "flatContact-soft-1.wav",
+          "flatContact-soft-2.wav"
+        ],
+        "medium": [
+          "flatContact-medium-1.wav",
+          "flatContact-medium-2.wav"
+        ],
+        "strong": [
+          "flatContact-strong-1.wav",
+          "flatContact-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.7,
+      "polyphony": 5
     },
     "chug": {
+      "label": "Weighted shoe chug",
       "files": [
-        "chug-1.wav",
-        "chug-2.wav",
-        "chug-3.wav"
+        "chug-soft-1.wav",
+        "chug-soft-2.wav",
+        "chug-medium-1.wav",
+        "chug-strong-1.wav",
+        "chug-strong-2.wav",
+        "chug-medium-2.wav"
       ],
-      "baseGain": 0.82
+      "layers": {
+        "soft": [
+          "chug-soft-1.wav",
+          "chug-soft-2.wav"
+        ],
+        "medium": [
+          "chug-medium-1.wav",
+          "chug-medium-2.wav"
+        ],
+        "strong": [
+          "chug-strong-1.wav",
+          "chug-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.78,
+      "polyphony": 5
     },
-    "drag": {
+    "heel": {
+      "label": "Leather shoe heel",
       "files": [
-        "drag-1.wav",
-        "drag-2.wav",
-        "drag-3.wav"
+        "heel-strong-1.wav",
+        "heel-soft-1.wav",
+        "heel-soft-2.wav",
+        "heel-medium-1.wav",
+        "heel-strong-2.wav",
+        "heel-medium-2.wav"
       ],
-      "baseGain": 0.52
+      "layers": {
+        "soft": [
+          "heel-soft-1.wav",
+          "heel-soft-2.wav"
+        ],
+        "medium": [
+          "heel-medium-1.wav",
+          "heel-medium-2.wav"
+        ],
+        "strong": [
+          "heel-strong-1.wav",
+          "heel-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.74,
+      "polyphony": 5
     },
-    "slide": {
+    "toeBall": {
+      "label": "Leather shoe toe and ball",
       "files": [
-        "slide-1.wav",
-        "slide-2.wav",
-        "slide-3.wav"
+        "toeBall-medium-1.wav",
+        "toeBall-soft-1.wav",
+        "toeBall-strong-1.wav",
+        "toeBall-medium-2.wav",
+        "toeBall-soft-2.wav",
+        "toeBall-strong-2.wav"
       ],
-      "baseGain": 0.44
+      "layers": {
+        "soft": [
+          "toeBall-soft-1.wav",
+          "toeBall-soft-2.wav"
+        ],
+        "medium": [
+          "toeBall-medium-1.wav",
+          "toeBall-medium-2.wav"
+        ],
+        "strong": [
+          "toeBall-strong-1.wav",
+          "toeBall-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.66,
+      "polyphony": 5
     },
     "tapHeel": {
+      "label": "Hard shoe heel tap",
       "files": [
-        "tapHeel-1.wav",
-        "tapHeel-2.wav",
-        "tapHeel-3.wav"
+        "tapHeel-medium-1.wav",
+        "tapHeel-strong-1.wav",
+        "tapHeel-strong-2.wav",
+        "tapHeel-medium-2.wav",
+        "tapHeel-soft-1.wav",
+        "tapHeel-soft-2.wav"
       ],
-      "baseGain": 0.76
+      "layers": {
+        "soft": [
+          "tapHeel-soft-1.wav",
+          "tapHeel-soft-2.wav"
+        ],
+        "medium": [
+          "tapHeel-medium-1.wav",
+          "tapHeel-medium-2.wav"
+        ],
+        "strong": [
+          "tapHeel-strong-1.wav",
+          "tapHeel-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.7,
+      "polyphony": 5
     },
     "tapToe": {
+      "label": "Hard shoe toe tap",
       "files": [
-        "tapToe-1.wav",
-        "tapToe-2.wav",
-        "tapToe-3.wav"
+        "tapToe-strong-1.wav",
+        "tapToe-strong-2.wav",
+        "tapToe-soft-1.wav",
+        "tapToe-soft-2.wav",
+        "tapToe-medium-1.wav",
+        "tapToe-medium-2.wav"
       ],
-      "baseGain": 0.72
+      "layers": {
+        "soft": [
+          "tapToe-soft-1.wav",
+          "tapToe-soft-2.wav"
+        ],
+        "medium": [
+          "tapToe-medium-1.wav",
+          "tapToe-medium-2.wav"
+        ],
+        "strong": [
+          "tapToe-strong-1.wav",
+          "tapToe-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.66,
+      "polyphony": 5
     },
-    "heavyAccent": {
+    "brush": {
+      "label": "Shoe brush",
       "files": [
-        "heavyAccent-1.wav",
-        "heavyAccent-2.wav",
-        "heavyAccent-3.wav"
+        "brush-medium-1.wav",
+        "brush-soft-1.wav",
+        "brush-strong-1.wav",
+        "brush-medium-2.wav",
+        "brush-soft-2.wav",
+        "brush-strong-2.wav"
       ],
-      "baseGain": 0.94
+      "layers": {
+        "soft": [
+          "brush-soft-1.wav",
+          "brush-soft-2.wav"
+        ],
+        "medium": [
+          "brush-medium-1.wav",
+          "brush-medium-2.wav"
+        ],
+        "strong": [
+          "brush-strong-1.wav",
+          "brush-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.52,
+      "polyphony": 3
+    },
+    "scuff": {
+      "label": "Shoe scuff",
+      "files": [
+        "scuff-soft-1.wav",
+        "scuff-soft-2.wav",
+        "scuff-strong-1.wav",
+        "scuff-medium-1.wav",
+        "scuff-medium-2.wav",
+        "scuff-strong-2.wav"
+      ],
+      "layers": {
+        "soft": [
+          "scuff-soft-1.wav",
+          "scuff-soft-2.wav"
+        ],
+        "medium": [
+          "scuff-medium-1.wav",
+          "scuff-medium-2.wav"
+        ],
+        "strong": [
+          "scuff-strong-1.wav",
+          "scuff-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.58,
+      "polyphony": 3
+    },
+    "drag": {
+      "label": "Shoe drag",
+      "files": [
+        "drag-medium-1.wav",
+        "drag-medium-2.wav",
+        "drag-soft-1.wav",
+        "drag-strong-1.wav",
+        "drag-soft-2.wav",
+        "drag-strong-2.wav"
+      ],
+      "layers": {
+        "soft": [
+          "drag-soft-1.wav",
+          "drag-soft-2.wav"
+        ],
+        "medium": [
+          "drag-medium-1.wav",
+          "drag-medium-2.wav"
+        ],
+        "strong": [
+          "drag-strong-1.wav",
+          "drag-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.52,
+      "polyphony": 3
+    },
+    "slide": {
+      "label": "Shoe slide",
+      "files": [
+        "slide-medium-1.wav",
+        "slide-medium-2.wav",
+        "slide-strong-1.wav",
+        "slide-strong-2.wav",
+        "slide-soft-1.wav",
+        "slide-soft-2.wav"
+      ],
+      "layers": {
+        "soft": [
+          "slide-soft-1.wav",
+          "slide-soft-2.wav"
+        ],
+        "medium": [
+          "slide-medium-1.wav",
+          "slide-medium-2.wav"
+        ],
+        "strong": [
+          "slide-strong-1.wav",
+          "slide-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.48,
+      "polyphony": 3
     },
     "rivalBoard": {
+      "label": "Rival shoe on board",
+      "aliasOf": "flatContact",
       "files": [
-        "rivalBoard-1.wav",
-        "rivalBoard-2.wav",
-        "rivalBoard-3.wav"
+        "flatContact-soft-1.wav",
+        "flatContact-soft-2.wav",
+        "flatContact-strong-1.wav",
+        "flatContact-medium-1.wav",
+        "flatContact-medium-2.wav",
+        "flatContact-strong-2.wav"
       ],
-      "baseGain": 0.68
+      "layers": {
+        "soft": [
+          "flatContact-soft-1.wav",
+          "flatContact-soft-2.wav"
+        ],
+        "medium": [
+          "flatContact-medium-1.wav",
+          "flatContact-medium-2.wav"
+        ],
+        "strong": [
+          "flatContact-strong-1.wav",
+          "flatContact-strong-2.wav"
+        ]
+      },
+      "baseGain": 0.62,
+      "polyphony": 4
+    }
+  },
+  "samples": {
+    "softSole-soft-1.wav": {
+      "group": "softSole",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 1.237,
+      "sourcePeakEnvelope": 0.043,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "73049ea80f312356efd8e0261c411fa18ccdd696ae534ab67cd8c1aa731aa39b"
+    },
+    "softSole-medium-1.wav": {
+      "group": "softSole",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 2.053,
+      "sourcePeakEnvelope": 0.066,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "39cf7175882b67c25e0eab53bfe466b868e55ce0beacaf8936f3cfc859b82519"
+    },
+    "softSole-medium-2.wav": {
+      "group": "softSole",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 2.982,
+      "sourcePeakEnvelope": 0.062,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "0ae6c6d75eb8afca42bb2c0d9eacc61b1414d4045aa8e20e6d942565e98ad4c9"
+    },
+    "softSole-soft-2.wav": {
+      "group": "softSole",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 3.911,
+      "sourcePeakEnvelope": 0.037,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "560cf68a8e68c9162892b661da288feef869dd36e15928a0d0c68814bf300a08"
+    },
+    "softSole-strong-1.wav": {
+      "group": "softSole",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 4.899,
+      "sourcePeakEnvelope": 0.075,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "6d054d3bc6d9d8896e17aadeec8a15ce6462405fba779c8f0eb2af04ebadd119"
+    },
+    "softSole-strong-2.wav": {
+      "group": "softSole",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 5.774,
+      "sourcePeakEnvelope": 0.072,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "d50b7850c548af4c0a8e139db324b97dc0f414c0a12e54b3fe92ea7bd575716b"
+    },
+    "flatContact-soft-1.wav": {
+      "group": "flatContact",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 6.892,
+      "sourcePeakEnvelope": 0.036,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "fecb55b5aa85b5623f7d71f194ef681e30ac861811d6f6ecb37683cdae20f1eb"
+    },
+    "flatContact-soft-2.wav": {
+      "group": "flatContact",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 7.7,
+      "sourcePeakEnvelope": 0.041,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "e64c247cea9774ec55933c01ddf7230a83f36498c254e7a2c8d521bcc73ad26a"
+    },
+    "flatContact-strong-1.wav": {
+      "group": "flatContact",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 8.655,
+      "sourcePeakEnvelope": 0.068,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "af000a372276e283b055402d29357f57e61204b4421c818f07edc22e101fe10d"
+    },
+    "flatContact-medium-1.wav": {
+      "group": "flatContact",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 9.592,
+      "sourcePeakEnvelope": 0.047,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "9910eff03bda6b2095e7291c78cb7dbae01615a0a0122414926b02bd5006d1dc"
+    },
+    "flatContact-medium-2.wav": {
+      "group": "flatContact",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 10.674,
+      "sourcePeakEnvelope": 0.046,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "f6baac87d5453da33d77a43f2854e7159d0a861ca81a538124f836ec1fe6a9fd"
+    },
+    "flatContact-strong-2.wav": {
+      "group": "flatContact",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 11.627,
+      "sourcePeakEnvelope": 0.081,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.2,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "a1f3265d842112b8138f5e5ddd09dd9b4044f16ccff835d89a8622e4e93e950a"
+    },
+    "chug-soft-1.wav": {
+      "group": "chug",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 12.357,
+      "sourcePeakEnvelope": 0.054,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.22,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "0ccc75191994fa10b7543115e5a895bb17256d2768e9670fc5854fb4da6f9002"
+    },
+    "chug-soft-2.wav": {
+      "group": "chug",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 13.506,
+      "sourcePeakEnvelope": 0.034,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.22,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "ed55ee062b4284e3bf015d480799aed21a98edf9520daba29713540d904b88e2"
+    },
+    "chug-medium-1.wav": {
+      "group": "chug",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 14.18,
+      "sourcePeakEnvelope": 0.065,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.22,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "a24cb75814e3a4b2ac3795fb7f8420a1a350b1bc6a3a866519a609bc89da56b3"
+    },
+    "chug-strong-1.wav": {
+      "group": "chug",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 15.084,
+      "sourcePeakEnvelope": 0.067,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.22,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "2dfd090827e966c022634a38e8c26d33448d3d497b56987a10260d0e2bf56e64"
+    },
+    "chug-strong-2.wav": {
+      "group": "chug",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 16.011,
+      "sourcePeakEnvelope": 0.08,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.22,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "d2c95c052a96d75b2a5332cc1d4c65d86506596648be3da6903f1780f5d777a9"
+    },
+    "chug-medium-2.wav": {
+      "group": "chug",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-1515",
+      "sourceFile": "sources/bigsoundbank-1515-shoes-on-wood-cc0.wav",
+      "sourcePeakSeconds": 17.9,
+      "sourcePeakEnvelope": 0.062,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.22,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "0edf3590f41a29bce89eb316f0566c77fbf8eebaf47a7f83e45d518941aa4ff7"
+    },
+    "heel-strong-1.wav": {
+      "group": "heel",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 1.725,
+      "sourcePeakEnvelope": 0.461,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.18,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "66e153e3fbad45c0d7053f79a5847b7b2996bc35381777bf5547248ac99e07b0"
+    },
+    "heel-soft-1.wav": {
+      "group": "heel",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 2.528,
+      "sourcePeakEnvelope": 0.151,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.18,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "9a5b4abcca6596503d101670605b5eee21526d2f28fc065ef5c2a9dbda606ec5"
+    },
+    "heel-soft-2.wav": {
+      "group": "heel",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 3.312,
+      "sourcePeakEnvelope": 0.173,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.18,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "2c8a3385b4e18e06068a7204914e74186b1322bf4adf0451954f3be89e3e0e13"
+    },
+    "heel-medium-1.wav": {
+      "group": "heel",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 4.147,
+      "sourcePeakEnvelope": 0.186,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.18,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "0e5b6c9f0a7a244681b07bacca0eb3f68d18630d51c559444f6ba5d27ce86051"
+    },
+    "heel-strong-2.wav": {
+      "group": "heel",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 4.964,
+      "sourcePeakEnvelope": 0.197,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.18,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "be3a485c67a1d1cf420396a2b1f890039a31bd8d8085bfdf97aa9b946d995223"
+    },
+    "heel-medium-2.wav": {
+      "group": "heel",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 5.809,
+      "sourcePeakEnvelope": 0.188,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.18,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "0e6abd1133e37cab1f4d978beeca0707d93072eef7e5864faf31a671411501e3"
+    },
+    "toeBall-medium-1.wav": {
+      "group": "toeBall",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 6.633,
+      "sourcePeakEnvelope": 0.19,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "5d434959dbc3365d38a320b46b985d14f34fd4f5cd2f6b961d862d000ab5d980"
+    },
+    "toeBall-soft-1.wav": {
+      "group": "toeBall",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 7.525,
+      "sourcePeakEnvelope": 0.165,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "1c98c1534fca37696e72cc1e78e06d7195f657d029a59ca28f6be66cd7af4149"
+    },
+    "toeBall-strong-1.wav": {
+      "group": "toeBall",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 8.324,
+      "sourcePeakEnvelope": 0.313,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "8c6afabc7010c838dc3419956e3c490b73deb9cd22804253c5c0b29c07ed4a4b"
+    },
+    "toeBall-medium-2.wav": {
+      "group": "toeBall",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 9.192,
+      "sourcePeakEnvelope": 0.215,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "64511cc6474d2a714f25215ef9a04778e110e1dd0a0050b15eb91e5a9b1830ba"
+    },
+    "toeBall-soft-2.wav": {
+      "group": "toeBall",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 27.337,
+      "sourcePeakEnvelope": 0.095,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "d6d3898bf41f09e51402902fd83f2bddc34692aa6d3967c81966bd4d5002aace"
+    },
+    "toeBall-strong-2.wav": {
+      "group": "toeBall",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 10.034,
+      "sourcePeakEnvelope": 0.252,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "208131d4d64601bd02b4b7761850d00386cf0f5b04bed1cd085b4ede8c6e752d"
+    },
+    "tapHeel-medium-1.wav": {
+      "group": "tapHeel",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 10.894,
+      "sourcePeakEnvelope": 0.172,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "67fa02246dd9aa31f30b80ca3aab556aaf94793f4c9b8aac5b20d2e40a25621a"
+    },
+    "tapHeel-strong-1.wav": {
+      "group": "tapHeel",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 22.097,
+      "sourcePeakEnvelope": 0.328,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "9dcc4cf8ea1e3cfad4a16e9899073042889d15263aa6a1c97dd9aa9b338b2d47"
+    },
+    "tapHeel-strong-2.wav": {
+      "group": "tapHeel",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 11.701,
+      "sourcePeakEnvelope": 0.234,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "33a7d22cb30eac2e3d4fe90fbeabb1c63dcde061c201d508516205b605205f09"
+    },
+    "tapHeel-medium-2.wav": {
+      "group": "tapHeel",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 24.772,
+      "sourcePeakEnvelope": 0.232,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "136862155cf1afdb1a8676641236c13a3ed5b12934842396e3bcf1208793f1c4"
+    },
+    "tapHeel-soft-1.wav": {
+      "group": "tapHeel",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 12.711,
+      "sourcePeakEnvelope": 0.167,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "6e0a17aa0c1c414a6cacf6a8d1128cfa62348c540ddeb60f0d9aad1ffb7c507a"
+    },
+    "tapHeel-soft-2.wav": {
+      "group": "tapHeel",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 13.398,
+      "sourcePeakEnvelope": 0.157,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.16,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "fb13bf6f8373c7031fd0a1ec575fafd82e63d77f7cfc3bcbf9f5edabc38792b0"
+    },
+    "tapToe-strong-1.wav": {
+      "group": "tapToe",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 14.357,
+      "sourcePeakEnvelope": 0.17,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.15,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "052aaa3094b36c038bdc2421f1c9b1c193e3a1019d1b9b7f4e5756873b6668f9"
+    },
+    "tapToe-strong-2.wav": {
+      "group": "tapToe",
+      "velocityLayer": "strong",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 15.94,
+      "sourcePeakEnvelope": 0.186,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.15,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "0e04fca10bd731e6c050bd93fcd883191ce96046be7366063975059b3511f38d"
+    },
+    "tapToe-soft-1.wav": {
+      "group": "tapToe",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 16.823,
+      "sourcePeakEnvelope": 0.141,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.15,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "8941dc87b4fed7f403e799db505c1f884b6edaf9fb90c0b01f201b1f844267a3"
+    },
+    "tapToe-soft-2.wav": {
+      "group": "tapToe",
+      "velocityLayer": "soft",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 19.429,
+      "sourcePeakEnvelope": 0.142,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.15,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "1f47b907e39d76d09a052690008a91db07c1aabf5201bab107fbfec1f3e527c9"
+    },
+    "tapToe-medium-1.wav": {
+      "group": "tapToe",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 30.758,
+      "sourcePeakEnvelope": 0.153,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.15,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "6cdf70c85e109b2d28a586b70d0f43edef3326dbff5c2b91a6cdac6ff7d06b8b"
+    },
+    "tapToe-medium-2.wav": {
+      "group": "tapToe",
+      "velocityLayer": "medium",
+      "sourceId": "bigsoundbank-0376",
+      "sourceFile": "sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav",
+      "sourcePeakSeconds": 20.306,
+      "sourcePeakEnvelope": 0.166,
+      "preRollSeconds": 0.018,
+      "durationSeconds": 0.15,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "d555d6fc5c74d142d02d05aef32c76f0f7dcd876ba5fda3598cd92acbbc3ac16"
+    },
+    "brush-medium-1.wav": {
+      "group": "brush",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 0.326,
+      "sourcePeakEnvelope": 0.077,
+      "preRollSeconds": 0.038,
+      "durationSeconds": 0.28,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "1e1582b3e8c89987d3353bc94cde8c8dbe48263e676d9b99dd34ef5a8ffad77d"
+    },
+    "brush-soft-1.wav": {
+      "group": "brush",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 0.939,
+      "sourcePeakEnvelope": 0.069,
+      "preRollSeconds": 0.038,
+      "durationSeconds": 0.28,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "604d659ffc68913f79806bbfc6a8c0de7b96b1567cd9f107c7c9f6b2d5c01368"
+    },
+    "brush-strong-1.wav": {
+      "group": "brush",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 1.738,
+      "sourcePeakEnvelope": 0.158,
+      "preRollSeconds": 0.038,
+      "durationSeconds": 0.28,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "3117b7e4a1823d93a2a51a5d3dc0fe06269002f376a06afb0ab935b72efa4904"
+    },
+    "brush-medium-2.wav": {
+      "group": "brush",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 3.076,
+      "sourcePeakEnvelope": 0.071,
+      "preRollSeconds": 0.038,
+      "durationSeconds": 0.28,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "35556d879e0a5d56757bf0316d2876d15992970e542db0bf8513329f40ab5afa"
+    },
+    "brush-soft-2.wav": {
+      "group": "brush",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 3.583,
+      "sourcePeakEnvelope": 0.039,
+      "preRollSeconds": 0.038,
+      "durationSeconds": 0.28,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "26f7655baf022eabb80c98d6478ddeb1dccbca83e00d712b4401c7841a229a0c"
+    },
+    "brush-strong-2.wav": {
+      "group": "brush",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 4.783,
+      "sourcePeakEnvelope": 0.216,
+      "preRollSeconds": 0.038,
+      "durationSeconds": 0.28,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "a3b06ca0bab82a0c4db37ce3f4c08ac5f641061fa90f657c9f316bd32c797772"
+    },
+    "scuff-soft-1.wav": {
+      "group": "scuff",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 5.493,
+      "sourcePeakEnvelope": 0.044,
+      "preRollSeconds": 0.042,
+      "durationSeconds": 0.3,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "5bb1a331b123e2c583dfce6a624ea09edf61e5bef97cc8752cd092feca6a52db"
+    },
+    "scuff-soft-2.wav": {
+      "group": "scuff",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 6.289,
+      "sourcePeakEnvelope": 0.046,
+      "preRollSeconds": 0.042,
+      "durationSeconds": 0.3,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "ff1f885bb97061c417769f15e064a8275c7516d3e05cc56edc41d3c2fc2713d4"
+    },
+    "scuff-strong-1.wav": {
+      "group": "scuff",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 7.941,
+      "sourcePeakEnvelope": 0.122,
+      "preRollSeconds": 0.042,
+      "durationSeconds": 0.3,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "b1852c4fb41a087f5a2055383da44f382e9f77f736907dc66bde86ec78aa4e47"
+    },
+    "scuff-medium-1.wav": {
+      "group": "scuff",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 8.714,
+      "sourcePeakEnvelope": 0.083,
+      "preRollSeconds": 0.042,
+      "durationSeconds": 0.3,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "d64ca6fe4b70a9d7b623b7208f208d42c35030b961d2c9ec1831e5d23de1c2f3"
+    },
+    "scuff-medium-2.wav": {
+      "group": "scuff",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 9.891,
+      "sourcePeakEnvelope": 0.08,
+      "preRollSeconds": 0.042,
+      "durationSeconds": 0.3,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "e1751bc58baba5d07a0c792f824095dd7ef3cad30f4e4311b2012b27e469a1dc"
+    },
+    "scuff-strong-2.wav": {
+      "group": "scuff",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 11.332,
+      "sourcePeakEnvelope": 0.144,
+      "preRollSeconds": 0.042,
+      "durationSeconds": 0.3,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "7a9466b23514a369ea9623d497c05e5482bbb01a2a58c8d9a29e99513e66783a"
+    },
+    "drag-medium-1.wav": {
+      "group": "drag",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 11.911,
+      "sourcePeakEnvelope": 0.079,
+      "preRollSeconds": 0.055,
+      "durationSeconds": 0.42,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "2b42682725f1e73cf9a6e60bbceea4ee8f82f8ce108ddd418d5eb773bb3fd954"
+    },
+    "drag-medium-2.wav": {
+      "group": "drag",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 12.793,
+      "sourcePeakEnvelope": 0.094,
+      "preRollSeconds": 0.055,
+      "durationSeconds": 0.42,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "625911993ee00aac24411029c708aad2ed9a4adf6d5858cb3485c81b8defc3d0"
+    },
+    "drag-soft-1.wav": {
+      "group": "drag",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 13.552,
+      "sourcePeakEnvelope": 0.074,
+      "preRollSeconds": 0.055,
+      "durationSeconds": 0.42,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "2e2ee459859be39a6a934eeac90b9697d04a223566c56e95cbdd99f9c21822a4"
+    },
+    "drag-strong-1.wav": {
+      "group": "drag",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 14.589,
+      "sourcePeakEnvelope": 0.101,
+      "preRollSeconds": 0.055,
+      "durationSeconds": 0.42,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "8b9ae47ca4ed403f71f629fff44bd6aa311bebd14a30bb9371104c2d79f2fd2c"
+    },
+    "drag-soft-2.wav": {
+      "group": "drag",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 15.321,
+      "sourcePeakEnvelope": 0.047,
+      "preRollSeconds": 0.055,
+      "durationSeconds": 0.42,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "ed7d81f0b32566e2f78d6afedd39da1f8196b81696d92f0a9d5a37cf3ac85ad3"
+    },
+    "drag-strong-2.wav": {
+      "group": "drag",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 16.495,
+      "sourcePeakEnvelope": 0.147,
+      "preRollSeconds": 0.055,
+      "durationSeconds": 0.42,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "89048b29eb91a149b554241d30d00c84c4c6e2165c8ca299e749cf926c96c55a"
+    },
+    "slide-medium-1.wav": {
+      "group": "slide",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 17.362,
+      "sourcePeakEnvelope": 0.076,
+      "preRollSeconds": 0.06,
+      "durationSeconds": 0.44,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "6c280c04c7a8936a8fed789ca476676f13d87138de434d18c7ee4f330654aee1"
+    },
+    "slide-medium-2.wav": {
+      "group": "slide",
+      "velocityLayer": "medium",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 18.046,
+      "sourcePeakEnvelope": 0.087,
+      "preRollSeconds": 0.06,
+      "durationSeconds": 0.44,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "474ae6bbffab1b51068d7b924d65f65f982912f53a22866354ce54db2073496a"
+    },
+    "slide-strong-1.wav": {
+      "group": "slide",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 18.888,
+      "sourcePeakEnvelope": 0.362,
+      "preRollSeconds": 0.06,
+      "durationSeconds": 0.44,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "b0ebffc24d3479c1c911e7c7bfb537ecca29698578c9b6bfa46fc17da3c4e7ac"
+    },
+    "slide-strong-2.wav": {
+      "group": "slide",
+      "velocityLayer": "strong",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 19.692,
+      "sourcePeakEnvelope": 0.491,
+      "preRollSeconds": 0.06,
+      "durationSeconds": 0.44,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "2a1a4d8f31c96b137e575ed55cbc1ffa56dd660a10d4ae7a6c0dc331cf205f5b"
+    },
+    "slide-soft-1.wav": {
+      "group": "slide",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 21.074,
+      "sourcePeakEnvelope": 0.055,
+      "preRollSeconds": 0.06,
+      "durationSeconds": 0.44,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "e931498b81b2604fb9faf1e1c8ff5456be06c42210ecb33cf7c15540f9e5f405"
+    },
+    "slide-soft-2.wav": {
+      "group": "slide",
+      "velocityLayer": "soft",
+      "sourceId": "freesound-273380",
+      "sourceFile": "sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav",
+      "sourcePeakSeconds": 21.857,
+      "sourcePeakEnvelope": 0.051,
+      "preRollSeconds": 0.06,
+      "durationSeconds": 0.44,
+      "processing": "trim, transient align, 100 Hz high-pass, 3 ms fade-in, 25 ms fade-out; no normalization or pitch shift",
+      "sha256": "e30d382b5c4edf907f1af77cf4091d36d5368f18b108f05160f2046c16c26e18"
     }
   }
 }
