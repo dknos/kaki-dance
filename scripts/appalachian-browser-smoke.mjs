@@ -105,6 +105,9 @@ await page.selectOption("#frolic-hero", "soder");
 await page.selectOption("#frolic-style", "flatfoot");
 await page.selectOption("#frolic-move", "turnaround");
 await page.waitForFunction(() => globalThis.frolicLab?.getState?.().activePacks?.[0] === "soder:flatfoot");
+await page.waitForFunction(
+  () => /TOPOLOGY\s+biped/.test(document.getElementById("frolic-data")?.textContent ?? ""),
+);
 const lab = await page.evaluate(() => ({
   state: globalThis.frolicLab.getState(),
   nativeSize: [globalThis.frolicLab.canvas.width, globalThis.frolicLab.canvas.height],
