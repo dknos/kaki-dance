@@ -204,7 +204,7 @@ export function scoreAppalachianRoutine(events, {
   const bankQuality = clamp((Number(performance.bankedLines) || 0) / 2, 0, 1);
 
   const time = score100(timingQuality * 0.9 + restraint * 0.1);
-  const tune = score100((callQuality * 0.5 + accentMusicality * 0.32 + turnaroundQuality * 0.18) * restraint);
+  const phraseFit = score100((callQuality * 0.5 + accentMusicality * 0.32 + turnaroundQuality * 0.18) * restraint);
   const flow = score100((
     legalFlow * 0.46
     + timingQuality * 0.16
@@ -214,17 +214,40 @@ export function scoreAppalachianRoutine(events, {
     + landingQuality * 0.04
     + bankQuality * 0.04
   ) * (0.75 + restraint * 0.25));
-  const footwork = score100((articulationVariety * 0.4 + styleFit * 0.35 + timingQuality * 0.25) * (0.72 + restraint * 0.28));
-  const spirit = score100((
+  const footClarity = score100((
+    articulationVariety * 0.42
+    + styleFit * 0.33
+    + timingQuality * 0.25
+  ) * (0.72 + restraint * 0.28));
+  const useOfSpace = score100((
+    travelQuality * 0.44
+    + directionQuality * 0.24
+    + boardLineQuality * 0.24
+    + bankQuality * 0.08
+  ) * (0.78 + restraint * 0.22));
+  const personalStyle = score100((
     moveVariety * 0.27
-    + motif * 0.16
-    + turnaroundQuality * 0.14
-    + callQuality * 0.12
-    + armIntent * 0.13
-    + travelQuality * 0.09
-    + boardLineQuality * 0.09
+    + articulationVariety * 0.16
+    + motif * 0.19
+    + callQuality * 0.14
+    + armIntent * 0.16
+    + styleFit * 0.08
   ) * restraint);
-  const total = Math.round((time + tune + flow + footwork + spirit) / 5);
+  const landingResolution = score100(
+    landingQuality * 0.42
+    + turnaroundQuality * 0.28
+    + bankQuality * 0.16
+    + legalFlow * 0.14,
+  );
+  const total = Math.round((
+    time
+    + phraseFit
+    + footClarity
+    + flow
+    + useOfSpace
+    + personalStyle
+    + landingResolution
+  ) / 7);
   const reasons = [];
   if (restraint < 0.62) reasons.push("Too many dense or repeated accents crowded the tune.");
   else if (motif >= 0.55) reasons.push("A returning motif made the repeated strain feel intentional.");
@@ -236,10 +259,16 @@ export function scoreAppalachianRoutine(events, {
   if (!reasons.length) reasons.push("Leave space, vary the feet, and answer the phrase ending.");
   return deepFreeze({
     time,
-    tune,
+    phraseFit,
+    footClarity,
     flow,
-    footwork,
-    spirit,
+    useOfSpace,
+    personalStyle,
+    landingResolution,
+    // Compatibility aliases for retained Gate 1 result artifacts.
+    tune: phraseFit,
+    footwork: footClarity,
+    spirit: personalStyle,
     restraint,
     total,
     callResponses: callResults,

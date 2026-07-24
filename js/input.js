@@ -25,14 +25,18 @@ const DEFAULT_BINDINGS = Object.freeze({
 const ACTIONS = Object.freeze([
   "action", "style", "power", "freeze", "toprock", "footwork", "jump", "handAccent",
 ]);
+export const APPALACHIAN_ACTIONS = Object.freeze([
+  "leftFoot", "rightFoot", "basic", "brush", "articulation", "drive", "turn",
+]);
 const SIMULATOR_HELD_CONTROLS = Object.freeze([
   "leftArmModifier", "rightArmModifier", "bodyModifier", "commitModifier",
 ]);
 const SIMULATOR_KEYS = new Set([
   "KeyW", "KeyA", "KeyS", "KeyD",
   "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-  "KeyQ", "KeyE", "ControlLeft", "ControlRight",
+  "KeyQ", "KeyE", "KeyF", "KeyT", "ControlLeft", "ControlRight",
   "ShiftLeft", "ShiftRight", "Space", "KeyZ", "KeyX", "KeyC", "KeyR",
+  "Escape", "KeyP",
 ]);
 const REQUIRED_ALIASES = Object.freeze({
   action: Object.freeze(["KeyZ", "Space"]),
@@ -49,6 +53,8 @@ export function createInputStep() {
     travelY: 0,
     armX: 0,
     armY: 0,
+    armActive: false,
+    armInputMode: "rate",
     leftArmModifier: false,
     rightArmModifier: false,
     bodyModifier: false,
@@ -57,10 +63,16 @@ export function createInputStep() {
     turnDirection: 0,
     paletteDirection: 0,
     pausePressed: false,
+    performanceEdges: Object.freeze([]),
     device: "keyboard",
     profile: "legacy",
   };
   for (const action of ACTIONS) {
+    step[action] = false;
+    step[`${action}Pressed`] = false;
+    step[`${action}Released`] = false;
+  }
+  for (const action of APPALACHIAN_ACTIONS) {
     step[action] = false;
     step[`${action}Pressed`] = false;
     step[`${action}Released`] = false;
@@ -88,6 +100,10 @@ export class InputManager {
     this.buffers = bufferRecord(ACTIONS);
     this.releaseBuffers = bufferRecord(ACTIONS);
     this.edgeMetadata = Object.fromEntries(ACTIONS.map((action) => [action, null]));
+    this.performanceEdges = [];
+    this.performanceReleaseEdges = [];
+    this.performancePrevious = booleanRecord(APPALACHIAN_ACTIONS);
+    this.gamepadPerformancePrevious = booleanRecord(APPALACHIAN_ACTIONS);
     this.directHeld = new Set();
     this.onActionEdge = onActionEdge;
     this.pauseBuffer = 0;
@@ -123,6 +139,7 @@ export class InputManager {
           receivedTimeStamp: now(),
           device: "keyboard",
           code: event.code,
+          ...this.modifierSnapshot(event),
         });
       }
       this.lastDevice = "keyboard";
@@ -138,6 +155,7 @@ export class InputManager {
           receivedTimeStamp: now(),
           device: "keyboard",
           code: event.code,
+          ...this.modifierSnapshot(event),
         });
       }
     }, options);
@@ -148,7 +166,7 @@ export class InputManager {
     const options = { signal: this.abort.signal };
     for (const button of root.querySelectorAll?.("[data-control]") ?? []) {
       const control = button.dataset.control;
-      if (![...ACTIONS, ...SIMULATOR_HELD_CONTROLS, "pause"].includes(control)) continue;
+      if (![...ACTIONS, ...APPALACHIAN_ACTIONS, ...SIMULATOR_HELD_CONTROLS, "pause"].includes(control)) continue;
       const release = (event) => {
         if (this.touchPointers.get(event.pointerId)?.button !== button) return;
         this.touchPointers.delete(event.pointerId);
@@ -245,7 +263,7 @@ export class InputManager {
     const keyboardY = simulator
       ? Number(this.keys.has("KeyS")) - Number(this.keys.has("KeyW"))
       : Number(this.keyHeld("down")) - Number(this.keyHeld("up"));
-    const keyboardArmX = Number(this.keys.has("ArrowRight")) - Number(this.keys.has("ArrowLeft"));
+    const keyboardArmX = 0;
     const keyboardArmY = Number(this.keys.has("ArrowUp")) - Number(this.keys.has("ArrowDown"));
     const gamepadActive = this.gamepad.active;
     const touchActive = this.touchSticks.travel.pointerId !== null;
@@ -281,6 +299,7 @@ export class InputManager {
       }
       this.previous[action] = held[action];
     }
+    if (simulator) this.updateAppalachianGamepadEdges();
     const pauseHeld = this.actionHeld("pause") || this.gamepad.pause;
     if (pauseHeld && !this.previous.pause) this.pauseBuffer = INPUT_BUFFER_SECONDS;
     this.previous.pause = pauseHeld;
@@ -295,23 +314,35 @@ export class InputManager {
     this.step.travelY = this.step.y;
     this.step.armX = simulator ? clamp(armX, -1, 1) : 0;
     this.step.armY = simulator ? clamp(armY, -1, 1) : 0;
+    this.step.armActive = simulator && (
+      armTouchActive
+      || gamepadArmActive
+      || this.keys.has("ArrowUp")
+      || this.keys.has("ArrowDown")
+    );
+    this.step.armInputMode = armTouchActive || gamepadArmActive ? "absolute" : "rate";
     this.step.leftArmModifier = simulator && (
-      this.keys.has("KeyQ")
+      ((this.keys.has("ShiftLeft") || this.keys.has("ShiftRight"))
+        && (this.keys.has("ArrowUp") || this.keys.has("ArrowDown")))
       || this.touchButtons.has("leftArmModifier")
       || this.gamepad.leftArmModifier
     );
     this.step.rightArmModifier = simulator && (
-      this.keys.has("KeyE")
+      ((this.keys.has("ControlLeft") || this.keys.has("ControlRight"))
+        && (this.keys.has("ArrowUp") || this.keys.has("ArrowDown")))
       || this.touchButtons.has("rightArmModifier")
       || this.gamepad.rightArmModifier
     );
     this.step.bodyModifier = simulator && (
+      this.touchButtons.has("bodyModifier")
+      || this.gamepad.bodyModifier
+    );
+    this.step.groundModifier = simulator && (
       this.keys.has("ControlLeft")
       || this.keys.has("ControlRight")
       || this.touchButtons.has("bodyModifier")
       || this.gamepad.bodyModifier
     );
-    this.step.groundModifier = this.step.bodyModifier;
     this.step.commitModifier = simulator && (
       this.keys.has("ShiftLeft")
       || this.keys.has("ShiftRight")
@@ -319,7 +350,8 @@ export class InputManager {
       || this.gamepad.commitModifier
     );
     this.step.turnDirection = simulator
-      ? Number(this.gamepad.dpadRight || this.keys.has("KeyD")) - Number(this.gamepad.dpadLeft || this.keys.has("KeyA"))
+      ? Number(this.keys.has("KeyD")) - Number(this.keys.has("KeyA"))
+        || (this.gamepad.turn ? Math.sign(this.gamepad.x) : 0)
       : 0;
     this.step.paletteDirection = simulator
       ? Number(this.gamepad.dpadUp) - Number(this.gamepad.dpadDown)
@@ -341,6 +373,15 @@ export class InputManager {
         this.edgeMetadata[action] = null;
       }
       if (result[`${action}Released`]) this.releaseBuffers[action] = 0;
+    }
+    const performanceEdges = this.performanceEdges.splice(0);
+    const performanceReleases = this.performanceReleaseEdges.splice(0);
+    result.performanceEdges = Object.freeze(performanceEdges);
+    for (const action of APPALACHIAN_ACTIONS) {
+      result[action] = this.performancePrevious[action];
+      result[`${action}Pressed`] = performanceEdges.some((edge) => edge.action === action);
+      result[`${action}Released`] = performanceReleases.some((edge) => edge.action === action);
+      result[`${action}Event`] = performanceEdges.findLast((edge) => edge.action === action) ?? null;
     }
     addSimulatorAliases(result);
     result.pausePressed = this.pauseBuffer > 0;
@@ -375,6 +416,15 @@ export class InputManager {
   inputStepForEdge(edge) {
     const result = createInputStep();
     const action = edge?.action;
+    if (APPALACHIAN_ACTIONS.includes(action)) {
+      copyContinuousFields(result, this.step);
+      result.device = edge.device ?? this.lastDevice;
+      result[action] = true;
+      result[`${action}Pressed`] = true;
+      result[`${action}Event`] = Object.freeze({ ...edge });
+      result.performanceEdges = Object.freeze([Object.freeze({ ...edge })]);
+      return result;
+    }
     if (!ACTIONS.includes(action)) return result;
     copyContinuousFields(result, this.step);
     result.device = edge.device ?? this.lastDevice;
@@ -391,6 +441,10 @@ export class InputManager {
       this.releaseBuffers[action] = 0;
       this.previous[action] = false;
     }
+    this.performanceEdges.length = 0;
+    this.performanceReleaseEdges.length = 0;
+    for (const action of APPALACHIAN_ACTIONS) this.performancePrevious[action] = false;
+    for (const action of APPALACHIAN_ACTIONS) this.gamepadPerformancePrevious[action] = false;
     this.pauseBuffer = 0;
     this.previous.pause = false;
   }
@@ -423,9 +477,9 @@ export class InputManager {
   keyHeld(action) {
     if (this.profile === "appalachian") {
       const direct = {
-        action: ["KeyZ"],
-        style: ["KeyX"],
-        power: ["KeyC"],
+        action: [],
+        style: [],
+        power: [],
         freeze: [],
         toprock: [],
         footwork: [],
@@ -458,9 +512,9 @@ export class InputManager {
   gamepadActionHeld(action) {
     if (this.profile !== "appalachian") return Boolean(this.gamepad[action]);
     return Boolean({
-      action: this.gamepad.step,
-      style: this.gamepad.brush,
-      power: this.gamepad.drive,
+      action: false,
+      style: false,
+      power: false,
       freeze: false,
       toprock: false,
       footwork: false,
@@ -475,12 +529,47 @@ export class InputManager {
   }
 
   bufferCode(code, pressedEdge, metadata = {}) {
+    if (this.profile === "appalachian") {
+      const action = appalachianActionForCode(code);
+      if (action) {
+        this.bufferAction(action, pressedEdge, metadata);
+        return;
+      }
+    }
     for (const action of this.actionsForCode(code)) this.bufferAction(action, pressedEdge, metadata);
   }
 
   bufferAction(action, pressedEdge, metadata = {}) {
     if (action === "pause") {
       if (pressedEdge) this.pauseBuffer = INPUT_BUFFER_SECONDS;
+      return;
+    }
+    if (this.profile === "appalachian" && APPALACHIAN_ACTIONS.includes(action)) {
+      const edge = Object.freeze({
+        action,
+        rawTimeStamp: finiteTimestamp(metadata.rawTimeStamp),
+        receivedTimeStamp: finiteTimestamp(metadata.receivedTimeStamp),
+        device: metadata.device ?? this.lastDevice,
+        code: metadata.code ?? "",
+        pointerType: metadata.pointerType ?? "",
+        grounded: metadata.grounded === undefined
+          ? Boolean(this.step.groundModifier
+            || this.keys.has("ControlLeft")
+            || this.keys.has("ControlRight"))
+          : Boolean(metadata.grounded),
+        committed: metadata.committed === undefined
+          ? Boolean(this.step.commitModifier
+            || this.keys.has("ShiftLeft")
+            || this.keys.has("ShiftRight"))
+          : Boolean(metadata.committed),
+      });
+      this.performancePrevious[action] = pressedEdge;
+      if (pressedEdge) {
+        const handled = this.onActionEdge?.(edge) === true;
+        if (!handled) this.performanceEdges.push(edge);
+      } else {
+        this.performanceReleaseEdges.push(edge);
+      }
       return;
     }
     if (!ACTIONS.includes(action)) return;
@@ -540,6 +629,40 @@ export class InputManager {
       return actions.filter((action) => !["toprock", "footwork"].includes(action));
     }
     return actions;
+  }
+
+  modifierSnapshot(event = {}) {
+    return {
+      grounded: Boolean(
+        event.ctrlKey || this.keys.has("ControlLeft") || this.keys.has("ControlRight")
+      ),
+      committed: Boolean(
+        event.shiftKey || this.keys.has("ShiftLeft") || this.keys.has("ShiftRight")
+      ),
+    };
+  }
+
+  updateAppalachianGamepadEdges() {
+    const held = {
+      leftFoot: this.gamepad.leftFoot,
+      rightFoot: this.gamepad.rightFoot,
+      brush: this.gamepad.brush,
+      articulation: this.gamepad.articulation,
+      drive: this.gamepad.drive,
+      turn: this.gamepad.turn,
+    };
+    for (const [action, value] of Object.entries(held)) {
+      if (value === this.gamepadPerformancePrevious[action]) continue;
+      this.gamepadPerformancePrevious[action] = value;
+      this.bufferAction(action, value, {
+        rawTimeStamp: now(),
+        receivedTimeStamp: now(),
+        device: "gamepad",
+        code: gamepadCodeForAction(action),
+        grounded: this.gamepad.bodyModifier,
+        committed: this.gamepad.commitModifier,
+      });
+    }
   }
 }
 
@@ -601,9 +724,13 @@ export function pollGamepad(getGamepads) {
       toprock: pressed(pad, 4),
       footwork: pressed(pad, 5),
       jump: pressed(pad, 0),
-      step: pressed(pad, 2),
-      brush: pressed(pad, 3),
+      step: false,
+      leftFoot: pressed(pad, 14),
+      rightFoot: pressed(pad, 15),
+      brush: pressed(pad, 2),
+      articulation: pressed(pad, 3),
       drive: pressed(pad, 1),
+      turn: pressed(pad, 11),
       leftArmModifier: pressed(pad, 4),
       rightArmModifier: pressed(pad, 5),
       bodyModifier: pressed(pad, 6),
@@ -672,7 +799,8 @@ function disconnectedGamepad() {
     active: false, x: 0, y: 0, armX: 0, armY: 0,
     action: false, style: false, power: false, freeze: false,
     toprock: false, footwork: false, jump: false, step: false,
-    brush: false, drive: false, leftArmModifier: false,
+    leftFoot: false, rightFoot: false, brush: false, articulation: false,
+    drive: false, turn: false, leftArmModifier: false,
     rightArmModifier: false, bodyModifier: false, commitModifier: false,
     handAccent: false, dpadUp: false, dpadDown: false,
     dpadLeft: false, dpadRight: false, pause: false,
@@ -681,7 +809,7 @@ function disconnectedGamepad() {
 
 function copyContinuousFields(target, source) {
   for (const key of [
-    "x", "y", "travelX", "travelY", "armX", "armY",
+    "x", "y", "travelX", "travelY", "armX", "armY", "armActive", "armInputMode",
     "leftArmModifier", "rightArmModifier", "bodyModifier",
     "groundModifier", "commitModifier", "turnDirection",
     "paletteDirection", "profile", "device",
@@ -698,6 +826,33 @@ function addSimulatorAliases(result) {
     result[`${alias}Released`] = Boolean(result[`${action}Released`]);
     result[`${alias}Event`] = result[`${action}Event`] ?? null;
   }
+}
+
+function appalachianActionForCode(code) {
+  return {
+    ArrowLeft: "leftFoot",
+    ArrowRight: "rightFoot",
+    KeyQ: "brush",
+    KeyE: "articulation",
+    KeyF: "drive",
+    KeyT: "turn",
+    // Compatibility bindings remain secondary and are deliberately absent
+    // from the Appalachian HUD/tutorial.
+    KeyZ: "basic",
+    KeyX: "brush",
+    KeyC: "drive",
+  }[code] ?? "";
+}
+
+function gamepadCodeForAction(action) {
+  return {
+    leftFoot: "DPadLeft",
+    rightFoot: "DPadRight",
+    brush: "ButtonX",
+    articulation: "ButtonY",
+    drive: "ButtonB",
+    turn: "ButtonR3",
+  }[action] ?? "";
 }
 
 function isTextControl(target) {

@@ -270,7 +270,14 @@ test("Step Shed exposes and completes ten learn-by-doing simulator lessons", () 
   update(frolicInput("brush"));
   for (let index = 0; index < 100; index += 1) update(frolicInput());
   tick = Math.ceil(tick / 384) * 384 + 288;
-  update({ ...frolicInput("drive"), turnDirection: 1 });
+  update({
+    ...frolicInput(),
+    turnDirection: 1,
+    performanceEdges: [
+      { action: "leftFoot", rawTimeStamp: tick, receivedTimeStamp: tick },
+      { action: "turn", rawTimeStamp: tick, receivedTimeStamp: tick },
+    ],
+  });
   for (let index = 0; index < 5; index += 1) update(frolicInput());
   assert.equal(PRACTICE_LESSONS.length, 10);
   assert.equal(simulation.complete, true);

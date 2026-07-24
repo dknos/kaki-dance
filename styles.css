@@ -902,18 +902,18 @@ kbd,
   #app[data-mode="stepShed"] .touch-buttons {
     right: max(10px, env(safe-area-inset-right));
     bottom: max(10px, env(safe-area-inset-bottom));
-    width: 138px;
+    width: 286px;
     height: 86px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 6px;
   }
 
   #app[data-mode="frolic"] .touch-stick--arms,
   #app[data-mode="stepShed"] .touch-stick--arms {
     display: block;
-    left: auto;
-    right: max(164px, calc(env(safe-area-inset-right) + 154px));
+    left: max(108px, calc(env(safe-area-inset-left) + 100px));
+    right: auto;
     border-radius: 18px;
     border-color: rgba(111, 216, 207, 0.56);
   }
@@ -923,8 +923,8 @@ kbd,
     background: rgba(79, 193, 180, 0.72);
   }
 
-  #app[data-mode="frolic"] .touch-legacy-lick,
-  #app[data-mode="stepShed"] .touch-legacy-lick {
+  #app[data-mode="frolic"] .touch-measure-action,
+  #app[data-mode="stepShed"] .touch-measure-action {
     display: none;
   }
 
@@ -946,30 +946,14 @@ kbd,
     font-size: 0.54rem;
   }
 
-  #app[data-mode="frolic"] .touch-buttons .touch-action,
-  #app[data-mode="stepShed"] .touch-buttons .touch-action {
-    grid-column: 1;
-    grid-row: 1;
+  #app[data-mode="frolic"] .touch-buttons .touch-foot,
+  #app[data-mode="stepShed"] .touch-buttons .touch-foot {
     color: #0a1514;
     background: rgba(242,189,101,0.92);
   }
 
-  #app[data-mode="frolic"] .touch-buttons button[data-control="style"],
-  #app[data-mode="stepShed"] .touch-buttons button[data-control="style"] {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  #app[data-mode="frolic"] .touch-buttons button[data-control="power"],
-  #app[data-mode="stepShed"] .touch-buttons button[data-control="power"] {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
   #app[data-mode="frolic"] .touch-buttons button[data-control="jump"],
   #app[data-mode="stepShed"] .touch-buttons button[data-control="jump"] {
-    grid-column: 2;
-    grid-row: 2;
     color: #081618;
     background: rgba(111, 216, 207, 0.92);
   }
@@ -977,9 +961,9 @@ kbd,
   #app[data-mode="frolic"] .touch-modifiers,
   #app[data-mode="stepShed"] .touch-modifiers {
     position: absolute;
-    left: 112px;
-    right: 254px;
-    bottom: max(7px, env(safe-area-inset-bottom));
+    left: 198px;
+    right: 300px;
+    bottom: max(101px, calc(env(safe-area-inset-bottom) + 94px));
     display: flex;
     justify-content: center;
     gap: 5px;

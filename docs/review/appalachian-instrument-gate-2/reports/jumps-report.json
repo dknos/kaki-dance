@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "mode": "jumps",
+  "generatedAt": "2026-07-24T23:27:43.038Z",
+  "anticipationStepMilliseconds": 8.333,
+  "styles": {
+    "flatfoot": {
+      "clip": "flatfootHop",
+      "chargeCapMilliseconds": 340,
+      "peakHeightMeters": 0.32,
+      "followUp": "brush-detail",
+      "landingContact": "flatContact",
+      "authoredContactCount": 2
+    },
+    "buck": {
+      "clip": "buckSpringHop",
+      "chargeCapMilliseconds": 360,
+      "peakHeightMeters": 0.72,
+      "followUp": "scissor",
+      "landingContact": "toeBall",
+      "authoredContactCount": 2
+    },
+    "clog": {
+      "clip": "clogJumpPullback",
+      "chargeCapMilliseconds": 380,
+      "peakHeightMeters": 0.937,
+      "followUp": "air-pullback",
+      "landingContact": "tapHeel",
+      "authoredContactCount": 2
+    }
+  },
+  "genericSharedJump": false,
+  "elapsedMilliseconds": 3.826
+}

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -7,7 +7,7 @@ import { chromium } from "playwright";
 const MODE = process.argv[2] ?? "smoke";
 const BASE_URL = process.env.KAKI_DANCE_URL ?? "http://127.0.0.1:4177";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const REVIEW_ROOT = resolve(ROOT, "docs/review/appalachian-simulator-gate-1");
+const REVIEW_ROOT = resolve(ROOT, "docs/review/appalachian-instrument-gate-2");
 const REPORT_ROOT = resolve(REVIEW_ROOT, "reports");
 const CAPTURE_ROOT = resolve(REVIEW_ROOT, "captures");
 const executablePath = process.env.CHROMIUM_PATH || undefined;
@@ -64,8 +64,10 @@ async function smoke() {
   );
   await gamePage.keyboard.down("ArrowUp");
   await gamePage.keyboard.down("KeyD");
-  await gamePage.keyboard.press("KeyZ");
-  await gamePage.waitForTimeout(80);
+  await gamePage.keyboard.down("ArrowLeft");
+  await gamePage.keyboard.press("KeyQ");
+  await gamePage.keyboard.up("ArrowLeft");
+  await gamePage.waitForTimeout(120);
   const integrated = await gamePage.evaluate(() => ({
     style: kakiDance.getSnapshot().frolicStyle,
     action: kakiDance.getSnapshot().simulation?.dancer?.actionId,
@@ -86,9 +88,17 @@ async function smoke() {
   assert.equal(forced.backend.actual, "webgl2");
   assert.equal(forced.backend.forced, true);
   assert.equal(forced.skinnedMeshCount, 88);
-  assert.equal(forced.actionCount, 13);
+  assert.equal(forced.actionCount, 23);
+  assert.equal(forced.footLayerActionCount, 20);
   assert.equal(forced.tailSupportEligible, false);
   assert.deepEqual(forced.internalSize, [192, 108]);
+  const exportedFootBasis = await page.evaluate(
+    () => appalachianSimulatorReview.renderer.appalachian3d.validateExportedFootBasis(),
+  );
+  assert.equal(exportedFootBasis.ok, true);
+  assert.equal(Object.keys(exportedFootBasis.actions).length, 23);
+  assert.ok(exportedFootBasis.minimumDot >= exportedFootBasis.minimumAllowed);
+  assert.equal(exportedFootBasis.sampledVectors, 1696);
 
   await page.click("[data-demo='figureEight']");
   const drifts = [];
@@ -166,6 +176,8 @@ async function smoke() {
       skinnedMeshes: forced.skinnedMeshCount,
       bones: forced.boneCount,
       actions: forced.actionCount,
+      independentFootLayers: forced.footLayerActionCount,
+      exportedFootBasis,
     },
     atlasFallback: true,
     bothHeroes: true,
@@ -181,7 +193,7 @@ async function latency() {
   const jumps = [];
   for (let index = 0; index < 12; index += 1) {
     arms.push(await keyboardLatency(page, index % 2 ? "ArrowDown" : "ArrowUp", "arms"));
-    feet.push(await keyboardLatency(page, "KeyZ", "feet"));
+    feet.push(await keyboardLatency(page, index % 2 ? "ArrowRight" : "ArrowLeft", "feet"));
     if (index < 8) {
       jumps.push(await keyboardLatency(page, "Space", "jump"));
       await page.waitForFunction(
@@ -196,11 +208,11 @@ async function latency() {
     arms: summarize(arms),
     feet: summarize(feet),
     jumps: summarize(jumps),
-    targetsMilliseconds: { arms: 33, feet: 50, jumps: 33, transitions: 140 },
+    targetsMilliseconds: { arms: 33, feet: 33, jumps: 33, transitions: 140 },
     fixedStepHz: 120,
   };
   assert.ok(result.arms.p95Milliseconds <= 33);
-  assert.ok(result.feet.p95Milliseconds <= 50);
+  assert.ok(result.feet.p95Milliseconds <= 33);
   assert.ok(result.jumps.p95Milliseconds <= 33);
   await page.close();
   return result;
@@ -209,6 +221,47 @@ async function latency() {
 async function capture() {
   const page = await reviewPage("?renderer=webgl2", { width: 1440, height: 1000 });
   const captures = [];
+  for (const [source, name] of [
+    ["/tmp/kaki-baseline-front.png", "before-foot-basis-repair.png"],
+    ["/tmp/kaki-footfix-front.png", "after-foot-basis-repair.png"],
+  ]) {
+    if (!existsSync(source)) continue;
+    const target = resolve(CAPTURE_ROOT, name);
+    copyFileSync(source, target);
+    captures.push(relative(target));
+  }
+  await page.check("[data-debug='footBasis']");
+  await page.check("[data-debug='contacts']");
+  await capturePoseAngles(page, captures, "neutral", async () => {
+    await page.evaluate(async () => {
+      appalachianSimulatorReview.demo = "";
+      await appalachianSimulatorReview.resetPerformer();
+    });
+    await page.waitForTimeout(100);
+  });
+  await capturePoseAngles(page, captures, "walking", async () => {
+    await page.click("[data-demo='figureEight']");
+    await page.waitForTimeout(420);
+  });
+  for (const [name, familyCode] of [
+    ["brush-return", "KeyQ"],
+    ["heel-toe", "KeyE"],
+    ["backstep-chug", "KeyF"],
+    ["low-turn", "KeyT"],
+  ]) {
+    await capturePoseAngles(page, captures, name, async () => {
+      await page.evaluate(async () => {
+        appalachianSimulatorReview.demo = "";
+        await appalachianSimulatorReview.resetPerformer();
+      });
+      await chord(page, "ArrowLeft", familyCode);
+      await page.waitForTimeout(180);
+    });
+  }
+  await capturePoseAngles(page, captures, "landing", async () => {
+    await page.click("[data-demo='styleHop']");
+    await page.waitForTimeout(720);
+  });
   await takeDemo(page, captures, "figure-eight-travel", "figureEight", 900);
   await takeDemo(page, captures, "right-stick-arm-circle", "armCircle", 650);
   await takeDemo(page, captures, "independent-left-right-arms", "independentArms", 750);
@@ -228,6 +281,7 @@ async function capture() {
     "[data-debug='contacts']",
     "[data-debug='centerOfMass']",
     "[data-debug='rootTrail']",
+    "[data-debug='footBasis']",
   ]) await page.check(selector);
   await takeDemo(page, captures, "contact-skeleton-diagnostics", "figureEight", 900);
 
@@ -237,7 +291,9 @@ async function capture() {
   });
   await page.keyboard.down("ArrowUp");
   await page.keyboard.down("KeyD");
-  await page.keyboard.press("KeyZ");
+  await page.keyboard.down("ArrowLeft");
+  await page.keyboard.press("KeyQ");
+  await page.keyboard.up("ArrowLeft");
   await page.waitForTimeout(250);
   await shot(page, captures, "keyboard-play");
   await page.keyboard.up("ArrowUp");
@@ -246,6 +302,7 @@ async function capture() {
   await page.evaluate(() => {
     const buttons = Array.from({ length: 16 }, () => ({ pressed: false, value: 0 }));
     buttons[2] = { pressed: true, value: 1 };
+    buttons[14] = { pressed: true, value: 1 };
     buttons[5] = { pressed: true, value: 1 };
     appalachianSimulatorReview.input.getGamepads = () => [{
       axes: [0.66, -0.42, -0.7, -0.72],
@@ -266,7 +323,8 @@ async function capture() {
   watch(touch);
   await touch.goto(`${BASE_URL}/appalachian-simulator-review.html?renderer=webgl2`, { waitUntil: "networkidle" });
   await touch.waitForFunction(() => appalachianSimulatorReview?.renderer?.getAppalachianDiagnostics?.().ready);
-  await touch.locator("[data-control='action']").tap();
+  await touch.locator("[data-control='leftFoot']").tap();
+  await touch.locator("[data-control='brush']").tap();
   await touch.locator("[data-control='jump']").tap();
   await touch.waitForTimeout(250);
   const touchPath = resolve(CAPTURE_ROOT, "touch-play.png");
@@ -311,7 +369,12 @@ async function keyboardLatency(page, code, kind) {
     const before = kind === "arms"
       ? { ...app.lastSnapshot.dancer.upperBody.coordinated }
       : kind === "feet"
-        ? app.lastSnapshot.dancer.actionId
+        ? {
+            leftStage: app.lastSnapshot.dancer.feet.left.stage,
+            leftPhase: app.lastSnapshot.dancer.feet.left.phase,
+            rightStage: app.lastSnapshot.dancer.feet.right.stage,
+            rightPhase: app.lastSnapshot.dancer.feet.right.phase,
+          }
         : app.lastSnapshot.dancer.jump.actionId;
     const started = performance.now();
     window.dispatchEvent(new KeyboardEvent("keydown", { code, bubbles: true }));
@@ -325,7 +388,10 @@ async function keyboardLatency(page, code, kind) {
               dancer.upperBody.coordinated.y - before.y,
             ) > 0.004
           : kind === "feet"
-            ? dancer.actionId !== before
+            ? dancer.feet.left.stage !== before.leftStage
+              || dancer.feet.right.stage !== before.rightStage
+              || Math.abs(dancer.feet.left.phase - before.leftPhase) > 0.002
+              || Math.abs(dancer.feet.right.phase - before.rightPhase) > 0.002
             : dancer.jump.actionId !== before && dancer.jump.state === "compression";
         if (changed) resolveElapsed(performance.now() - started);
         else if (performance.now() > timeout) reject(new Error(`${kind} latency timed out`));
@@ -336,6 +402,21 @@ async function keyboardLatency(page, code, kind) {
     window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true }));
     return elapsed;
   }, { code, kind });
+}
+
+async function capturePoseAngles(page, captures, name, setup) {
+  await setup();
+  for (const camera of ["front", "side", "gameplay"]) {
+    await page.click(`[data-camera='${camera}']`);
+    await page.waitForTimeout(34);
+    await shot(page, captures, `${name}-${camera}`);
+  }
+}
+
+async function chord(page, footCode, familyCode) {
+  await page.keyboard.down(footCode);
+  await page.keyboard.press(familyCode);
+  await page.keyboard.up(footCode);
 }
 
 async function takeDemo(page, captures, name, demo, wait) {

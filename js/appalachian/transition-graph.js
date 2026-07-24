@@ -52,9 +52,9 @@ const authoredSuccessors = Object.freeze({
   slidingWalk: ["walkingStep", "shuffle", "backstep", "heelToeChange", "dragSlide", "rockStep", "crisscross", "turnaround"],
   shuffle: ["walkingStep", "shuffle", "doubleShuffle", "backstep", "chug", "heelToeChange", "rockStep", "doubleStep", "crisscross", "turnaround"],
   doubleShuffle: ["walkingStep", "shuffle", "backstep", "chug", "rockStep", "doubleStep", "tripleStep", "crisscross", "turnaround"],
-  backstep: ["walkingStep", "slidingWalk", "shuffle", "chug", "rockStep", "doubleStep", "crisscross", "turnaround"],
+  backstep: ["walkingStep", "slidingWalk", "shuffle", "backstep", "chug", "rockStep", "doubleStep", "crisscross", "turnaround"],
   chug: ["walkingStep", "shuffle", "backstep", "heelToeChange", "rockStep", "doubleStep", "tripleStep", "turnaround"],
-  heelToeChange: ["walkingStep", "slidingWalk", "shuffle", "backstep", "dragSlide", "rockStep", "doubleStep", "crisscross", "turnaround"],
+  heelToeChange: ["walkingStep", "slidingWalk", "shuffle", "backstep", "chug", "heelToeChange", "dragSlide", "rockStep", "doubleStep", "crisscross", "turnaround"],
   dragSlide: ["walkingStep", "slidingWalk", "shuffle", "backstep", "heelToeChange", "rockStep", "crisscross", "turnaround"],
   rockStep: ["walkingStep", "slidingWalk", "shuffle", "backstep", "chug", "heelToeChange", "doubleStep", "crisscross", "turnaround"],
   doubleStep: ["walkingStep", "shuffle", "doubleShuffle", "backstep", "chug", "rockStep", "tripleStep", "crisscross", "turnaround"],
@@ -157,9 +157,9 @@ export class FootworkTransitionGraph {
       if (!to?.styles.includes(this.style)) continue;
       if (from && !(this.edges.get(fromId) ?? []).includes(toId)) continue;
       if (!directionCompatible(to, direction)) continue;
-      const fromExitFoot = from ? resolveExitFoot(from, entryFoot) : entryFoot;
-      const targetFoot = to.entryFoot === "either" ? fromExitFoot : to.entryFoot;
-      if (targetFoot !== fromExitFoot) continue;
+      const requestedFoot = entryFoot === "right" ? "right" : "left";
+      const fromExitFoot = from ? resolveExitFoot(from, requestedFoot) : requestedFoot;
+      const targetFoot = to.entryFoot === "either" ? requestedFoot : to.entryFoot;
       const entryFrames = to.entryFrames?.length ? to.entryFrames : [0, 0.08, 0.16, 0.24];
       for (const entryPhase of entryFrames) {
         const scoreParts = candidateScore({

@@ -25,6 +25,8 @@ class AppalachianSimulatorReview {
     this.lastInput = createInputStep();
     this.contactIndex = 0;
     this.debug = {};
+    this.eventLog = [];
+    this.contactTimeline = [];
     this.renderer = new KakiDanceRenderer(canvas, {
       settings: {
         reducedMotion: false,
@@ -112,6 +114,16 @@ class AppalachianSimulatorReview {
     if (event.type === "footContact" && this.soundEnabled && this.foleyEnabled) {
       playReviewFoley(event, this.contactIndex++);
     }
+    if (["footAnticipation", "frolicInput", "frolicInputRejected"].includes(event.type)) {
+      this.eventLog.unshift(`${event.type} · ${event.foot ?? "—"} · ${event.inputKind ?? ""}`);
+      this.eventLog.splice(8);
+    }
+    if (event.type === "footContact") {
+      this.contactTimeline.unshift(
+        `T${Math.round(event.tick)} ${event.foot} ${event.articulation} → ${event.sampleGroup}`,
+      );
+      this.contactTimeline.splice(8);
+    }
   }
 
   bind() {
@@ -186,6 +198,13 @@ class AppalachianSimulatorReview {
         selectButtons("[data-renderer]", button);
       });
     }
+    for (const button of document.querySelectorAll("[data-camera]")) {
+      button.addEventListener("click", () => {
+        this.renderer.setAppalachianCameraPreset(button.dataset.camera);
+        selectButtons("[data-camera]", button);
+        this.render(0);
+      });
+    }
     for (const button of document.querySelectorAll("[data-demo]")) {
       button.addEventListener("click", () => {
         this.demo = button.dataset.demo;
@@ -223,6 +242,7 @@ class AppalachianSimulatorReview {
       `arms    ${fixed(this.lastInput.armX)}, ${fixed(this.lastInput.armY)}`,
       `mods    ${modifierText(this.lastInput)}`,
       `buttons ${buttonText(this.lastInput)}`,
+      `edges   ${(this.lastInput.performanceEdges ?? []).map((edge) => edge.action).join(" + ") || "—"}`,
     ].join("\n");
     document.getElementById("air-data").textContent = [
       `state   ${dancer.jump.state}`,
@@ -231,6 +251,18 @@ class AppalachianSimulatorReview {
       `variant ${dancer.jump.variation || "—"}`,
       `landing ${Math.round(dancer.jump.landingQuality * 100)}%`,
       `contact ${dancer.contactIK.lockedFoot} · ${fixed(diagnostics.plantedFootDriftMeters * 100)} cm`,
+    ].join("\n");
+    document.getElementById("feet-data").textContent = [
+      `L  ${dancer.feet.left.stage} · ${dancer.feet.left.contact}/${dancer.feet.left.articulation} · q${dancer.feet.left.queueDepth}`,
+      `R  ${dancer.feet.right.stage} · ${dancer.feet.right.contact}/${dancer.feet.right.articulation} · q${dancer.feet.right.queueDepth}`,
+      `weight ${Math.round(dancer.weightDistribution.left * 100)} / ${Math.round(dancer.weightDistribution.right * 100)}`,
+      `buffer ${frolic.inputBuffers.left.length}L ${frolic.inputBuffers.right.length}R ${frolic.inputBuffers.families.length} family`,
+      `chord  ${frolic.modifierChord
+        ? `${frolic.modifierChord.foot} ${frolic.modifierChord.family} ${frolic.modifierChord.variant}`
+        : "—"}`,
+      `facing ${Math.round((dancer.facing || 0) * 180 / Math.PI)}°`,
+      `root fwd ${fixed(diagnostics.footBasis?.intendedForward?.[0])}, ${fixed(diagnostics.footBasis?.intendedForward?.[2])}`,
+      `toe dot ${fixed(diagnostics.footBasis?.left?.dot)} / ${fixed(diagnostics.footBasis?.right?.dot)}`,
     ].join("\n");
     document.getElementById("layer-bars").replaceChildren(...Object.entries(dancer.layers).map(([name, weight]) => {
       const row = document.createElement("div");
@@ -251,9 +283,12 @@ class AppalachianSimulatorReview {
       `skins   ${diagnostics.skinnedMeshCount}`,
       `bones   ${diagnostics.boneCount}`,
       `actions ${diagnostics.actionCount}`,
+      `foot layers ${diagnostics.footLayerActionCount}`,
       `render  ${fixed(diagnostics.renderP95Milliseconds)} ms p95`,
       `tail support ${diagnostics.tailSupportEligible}`,
     ].join("\n");
+    document.getElementById("event-log").textContent = this.eventLog.join("\n") || "waiting for foot edges…";
+    document.getElementById("contact-timeline").textContent = this.contactTimeline.join("\n") || "waiting for authored contact…";
   }
 }
 
@@ -270,10 +305,14 @@ function demoInput(name, time, style) {
   if (name === "armCircle") {
     input.armX = Math.cos(time * 1.7);
     input.armY = Math.sin(time * 1.7);
+    input.armActive = true;
+    input.armInputMode = "absolute";
   }
   if (name === "independentArms") {
     input.armX = Math.sin(time * 1.8);
     input.armY = Math.cos(time * 1.3);
+    input.armActive = true;
+    input.armInputMode = "absolute";
     input.leftArmModifier = Math.floor(time / 2) % 2 === 0;
     input.rightArmModifier = !input.leftArmModifier;
   }
@@ -283,7 +322,7 @@ function demoInput(name, time, style) {
     input.jumpPressed = phase < 0.05;
     input.jumpReleased = phase >= 0.4 && phase < 0.47;
     input.commitModifier = style !== "flatfoot";
-    input.stylePressed = phase > 0.62 && phase < 0.7;
+    input.brushPressed = phase > 0.62 && phase < 0.7;
   }
   if (name === "danceLine") {
     input.travelX = Math.sin(time * 0.75) * 0.82;
@@ -292,14 +331,18 @@ function demoInput(name, time, style) {
     input.y = input.travelY;
     input.armX = Math.sin(time * 0.88);
     input.armY = Math.cos(time * 0.66) * 0.78;
+    input.armActive = true;
+    input.armInputMode = "absolute";
     const index = Math.floor(time / 0.72) % 8;
     const edge = time % 0.72 < 1 / 120;
-    input.actionPressed = edge && [0, 3, 6].includes(index);
-    input.stylePressed = edge && [1, 4].includes(index);
-    input.powerPressed = edge && [2, 5, 7].includes(index);
-    input.stepPressed = input.actionPressed;
-    input.brushPressed = input.stylePressed;
-    input.drivePressed = input.powerPressed;
+    if (edge) {
+      const footAction = index % 2 ? "rightFoot" : "leftFoot";
+      const family = ["basic", "brush", "articulation", "drive", "brush", "drive", "turn", "basic"][index];
+      input.performanceEdges = Object.freeze([
+        reviewEdge(footAction, time),
+        ...(family === "basic" ? [] : [reviewEdge(family, time)]),
+      ]);
+    }
     const hopPhase = time % 5.76;
     input.jump = hopPhase > 2.6 && hopPhase < 3;
     input.jumpPressed = hopPhase > 2.6 && hopPhase < 2.66;
@@ -362,20 +405,35 @@ function selectButtons(selector, selected) {
 
 function modifierText(input) {
   return [
-    input.leftArmModifier ? "LB/Q" : "",
-    input.rightArmModifier ? "RB/E" : "",
-    input.bodyModifier ? "LT/Ctrl" : "",
-    input.commitModifier ? "RT/Shift" : "",
+    input.leftArmModifier ? "LB/Shift arm" : "",
+    input.rightArmModifier ? "RB/Ctrl arm" : "",
+    input.groundModifier ? "LT/Ctrl move" : "",
+    input.commitModifier ? "RT/Shift move" : "",
   ].filter(Boolean).join(" ") || "—";
 }
 
 function buttonText(input) {
   return [
-    input.action ? "STEP" : "",
-    input.style ? "BRUSH" : "",
-    input.power ? "DRIVE" : "",
+    input.leftFoot ? "L FOOT" : "",
+    input.rightFoot ? "R FOOT" : "",
+    input.brush ? "BRUSH" : "",
+    input.articulation ? "HEEL·TOE" : "",
+    input.drive ? "DRIVE" : "",
+    input.turn ? "TURN" : "",
     input.jump ? "JUMP" : "",
   ].filter(Boolean).join(" ") || "—";
+}
+
+function reviewEdge(action, time) {
+  return Object.freeze({
+    action,
+    rawTimeStamp: time * 1000,
+    receivedTimeStamp: time * 1000,
+    device: "review:danceLine",
+    code: "",
+    grounded: false,
+    committed: false,
+  });
 }
 
 function fixed(value) {
@@ -387,7 +445,7 @@ globalThis.appalachianSimulatorReview = app;
 fetch(manifestUrl).then((response) => response.json()).then((manifest) => {
   document.getElementById("source-data").textContent = [
     `${manifest.sharedSkeleton}`,
-    `${manifest.gateCounts.groundedMovements} grounded · ${manifest.gateCounts.jumpPrototypes} jumps`,
+    `${manifest.gateCounts.actions} actions · ${manifest.gateCounts.goldenPairedGestures} paired golden gestures`,
     `${manifest.gateCounts.armPoseSamples} arm-field poses`,
     manifest.candidateStatus,
   ].join("\n");

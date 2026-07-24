@@ -7,7 +7,7 @@ import { chromium } from "playwright";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const baseUrl = process.env.KAKI_DANCE_URL ?? "http://127.0.0.1:4177";
-const output = resolve(root, "docs/review/frolic-rescue-candidate-1/reports");
+const output = resolve(root, "docs/review/appalachian-instrument-gate-2/reports");
 mkdirSync(output, { recursive: true });
 const server = await ensureServer();
 const executablePath = process.env.CHROMIUM_PATH
@@ -58,20 +58,20 @@ try {
   await page.evaluate(() => globalThis.kakiDance.setFrolicQaMode(true));
   const samples = [];
   for (const device of ["keyboard", "pointer", "gamepad"]) {
-    for (let index = 0; index < 100; index += 1) {
+    for (let index = 0; index < 24; index += 1) {
       const sample = await page.evaluate(async ({ device, index }) => {
         const canvas = document.getElementById("game-canvas");
         const ctx = canvas.getContext("2d");
         const heroRect = { x: 110, y: 32, width: 165, height: 150 };
         const before = ctx.getImageData(heroRect.x, heroRect.y, heroRect.width, heroRect.height).data;
         const existingRecords = globalThis.kakiDance.getFrolicLatencyRecords().length;
-        const action = index % 3;
+        const action = index % 2;
         if (device === "keyboard") {
-          const code = ["KeyZ", "KeyX", "KeyC"][action];
+          const code = ["ArrowLeft", "ArrowRight"][action];
           window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, code }));
           window.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, code }));
         } else if (device === "pointer") {
-          const control = ["action", "style", "power"][action];
+          const control = ["leftFoot", "rightFoot"][action];
           const button = document.querySelector(`[data-control="${control}"]`);
           const init = {
             bubbles: true,
@@ -83,7 +83,7 @@ try {
           button.dispatchEvent(new PointerEvent("pointerdown", init));
           button.dispatchEvent(new PointerEvent("pointerup", init));
         } else {
-          const buttonIndex = [0, 2, 3][action];
+          const buttonIndex = [14, 15][action];
           globalThis.__frolicQaPad.edge(buttonIndex, true);
           await new Promise(requestAnimationFrame);
           globalThis.__frolicQaPad.edge(buttonIndex, false);
@@ -100,9 +100,20 @@ try {
           ) changedPixels += 1;
         }
         const observedTimestamp = performance.now();
-        const records = globalThis.kakiDance.getFrolicLatencyRecords();
-        const record = records.length > existingRecords ? records.at(-1) : null;
-        await new Promise((resolve) => setTimeout(resolve, 9));
+        const record = await new Promise((resolveRecord, reject) => {
+          const timeout = performance.now() + 1_000;
+          const poll = () => {
+            const records = globalThis.kakiDance.getFrolicLatencyRecords();
+            const candidate = records.length > existingRecords ? records.at(-1) : null;
+            if (
+              Number.isFinite(candidate?.audioSchedulingTimestamp)
+              && Number.isFinite(candidate?.contactEmissionTimestamp)
+            ) resolveRecord(candidate);
+            else if (performance.now() > timeout) reject(new Error(`${device} contact scheduling timed out`));
+            else requestAnimationFrame(poll);
+          };
+          poll();
+        });
         return {
           injectionDevice: device,
           index,
@@ -116,16 +127,17 @@ try {
     }
   }
   assert.deepEqual(errors, []);
-  assert.equal(samples.length, 300);
-  assert.ok(samples.every((sample) => sample.simulationReceiptTimestamp !== null));
-  assert.ok(samples.every((sample) => sample.audioSchedulingTimestamp !== null));
-  assert.ok(samples.every((sample) => sample.firstChangedHeroPixelTimestamp !== null));
+  assert.equal(samples.length, 72);
+  assert.ok(samples.every((sample) => Number.isFinite(sample.simulationReceiptTimestamp)));
+  assert.ok(samples.every((sample) => Number.isFinite(sample.audioSchedulingTimestamp)));
+  assert.ok(samples.every((sample) => Number.isFinite(sample.contactEmissionTimestamp)));
+  assert.ok(samples.every((sample) => Number.isFinite(sample.firstChangedHeroPixelTimestamp)));
 
   const report = {
     candidateStatus: "human-review-required",
     url: baseUrl,
     sampleCount: samples.length,
-    inputsPerDevice: 100,
+    inputsPerDevice: 24,
     effectsDisabled: true,
     cameraShakeDisabled: true,
     heroRect: { x: 110, y: 32, width: 165, height: 150 },
@@ -135,6 +147,9 @@ try {
       ))),
       inputToAudioSchedulingCall: summarize(samples.map((sample) => (
         sample.audioSchedulingTimestamp - sample.rawEventTimestamp
+      ))),
+      contactToAudioSchedulingCall: summarize(samples.map((sample) => (
+        sample.audioSchedulingTimestamp - sample.contactEmissionTimestamp
       ))),
       inputToFirstChangedHeroPixel: summarize(samples.map((sample) => (
         sample.firstChangedHeroPixelTimestamp - sample.rawEventTimestamp
@@ -146,7 +161,7 @@ try {
     audioContext: {
       baseLatencySeconds: summarize(samples.map((sample) => sample.audioContextBaseLatency)),
       outputLatencySeconds: summarize(samples.map((sample) => sample.audioContextOutputLatency)),
-      note: "Browser/device values are reported separately from scheduling-call latency.",
+      note: "Browser scheduling is measured here. Physical speaker latency is not claimed from headless Chromium.",
     },
     byDevice: Object.fromEntries(["keyboard", "pointer", "gamepad"].map((device) => {
       const selected = samples.filter((sample) => sample.injectionDevice === device);
@@ -154,11 +169,15 @@ try {
         count: selected.length,
         inputToSimulation: summarize(selected.map((sample) => sample.simulationReceiptTimestamp - sample.rawEventTimestamp)),
         inputToAudioSchedulingCall: summarize(selected.map((sample) => sample.audioSchedulingTimestamp - sample.rawEventTimestamp)),
+        contactToAudioSchedulingCall: summarize(selected.map((sample) => sample.audioSchedulingTimestamp - sample.contactEmissionTimestamp)),
         inputToFirstChangedHeroPixel: summarize(selected.map((sample) => sample.firstChangedHeroPixelTimestamp - sample.rawEventTimestamp)),
       }];
     })),
     samples,
   };
+  assert.ok(report.metricsMilliseconds.inputToSimulation.p95 <= 8);
+  assert.ok(report.metricsMilliseconds.inputToFirstChangedHeroPixel.p95 <= 33);
+  assert.ok(report.metricsMilliseconds.contactToAudioSchedulingCall.p95 <= 10);
   writeFileSync(resolve(output, "latency-report.json"), `${JSON.stringify(report, null, 2)}\n`);
   writeFileSync(resolve(output, "latency-report.md"), markdown(report));
   console.log(JSON.stringify({

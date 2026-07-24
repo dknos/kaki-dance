@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "mode": "motion",
+  "generatedAt": "2026-07-24T23:27:42.855Z",
+  "fixedStepHz": 120,
+  "boardBounds": {
+    "minX": -4.25,
+    "maxX": 4.25,
+    "minZ": -2.65,
+    "maxZ": 2.65
+  },
+  "travelDistanceMeters": 24.799,
+  "maximumSpeedMetersPerSecond": 1.55,
+  "directionChanges": 7,
+  "figureEightCandidate": true,
+  "transitionRecipes": 24,
+  "goldenFootFamilies": [
+    "basic",
+    "brush",
+    "articulation",
+    "drive",
+    "turn"
+  ],
+  "pairedGoldenGestureActions": 10,
+  "handoffMilliseconds": {
+    "minimum": 92,
+    "maximum": 138
+  },
+  "elapsedMilliseconds": 17.65
+}

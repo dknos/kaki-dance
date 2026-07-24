@@ -2,43 +2,43 @@
 
 ## Appalachian Frolic
 
-- Simulator Gate 1 now runs a live Three.js `SkinnedMesh`/`AnimationMixer`
-  character from the shared Blender-authored GLB. Flatfoot, Buck, and Clog are
-  selectable and have distinct jump height/timing/contact profiles. The full
-  Flatfoot, Buck, and Clog content packs are not produced or approved; Gate 1
-  deliberately stops at eight grounded movement candidates, three jump
-  prototypes, and twenty-four transition/recovery recipes.
-- The live export includes 88 skinned mesh objects across KittyKaki and Soter,
-  39 bones, and 13 actions on `KakiFrolicProductionBiped`. The shapes retain
-  deliberately rounded, low-resolution proportions. Review captures still
-  show close foot silhouettes, large glove/costume masses, simple shoulder and
-  knee deformation, and motion that can read blocked rather than fully
-  weighted. Corrective shapes/twist deformation remain incomplete.
-- The contact root lock holds the reported planted foot under the 1 cm
-  automated threshold in the forced-WebGL2 figure-eight smoke. This does not
-  prove natural weight transfer: the transition release threshold and
-  animation contact timing need half-speed dancer review.
-- WebGL2 is the Gate 1 baseline. A requested WebGPU path is capability-gated
+- Simulator Gate 2 runs a live Three.js `SkinnedMesh`/`AnimationMixer` from the
+  shared Blender-authored GLB. It contains 88 skinned mesh objects, 39 bones,
+  23 actions, and 20 side-masked foot-layer actions for KittyKaki and Soter.
+- The release-blocking foot defect was repaired in the source rig. Foot/toe
+  bones now use explicit local +Y forward, do not inherit the shin IK pole
+  twist, and the right shoe is mirrored with reflected vertices and reversed
+  winding under positive transforms. Blender sampled 1,696 action/bone vectors
+  at a minimum dot of 0.939; the exported GLB sampled the same 1,696 vectors at
+  0.941 against the 0.78 threshold. Two pivot frames are explicit metadata
+  opt-outs.
+- The current approval deck is intentionally small: paired basic pulse,
+  brush-return, heel-toe, backstep/chug, and low-pivot gestures plus the
+  existing style-specific hop/landing prototypes. Double Shuffle, Double
+  Backstep, Drag-Slide, Double Step, Triple Step, Cross-step, and advanced Clog
+  aerials remain unapproved; they were not mass-produced to satisfy a count.
+- The contact root lock remains below the 1 cm automated threshold in the
+  forced-WebGL2 figure-eight smoke. This does not prove natural weight:
+  support transfers, close foot silhouettes, pelvis timing, and recoveries
+  still need full-, half-, quarter-speed, and frame-by-frame dancer review.
+- The independent-foot grammar, persistent arms, WASD travel, gamepad parity,
+  touch controls, and deterministic 120 Hz replay are automated. Keyboard is
+  the feel gate; physical gamepad and touch approval still follows it.
+- WebGL2 is the Gate 2 baseline. A requested WebGPU path is capability-gated
   back to WebGL2 until animation, capture, and performance parity are proven.
   This is a future-ready boundary, not a claim that WebGPU rendering ships.
 - The atlas rescue remains available for old/new comparison and fallback.
   It is not the primary simulator dancer and is still Flatfoot-only.
-- The public Flatfoot pixels now come from the modeled, weighted, and animated
-  characters archived in
-  `tools/blender/kaki-appalachian-frolic-atlas-candidate-1.blend`. The previous
-  Pillow capsule renderer remains only as rejected-baseline/debug evidence.
-  Aseprite and LibreSprite are not installed, so candidate 1 retains the
-  palette-reduced toon render; manual hand, foot-contact, outline-crawl, and
-  silhouette cleanup is still blocked.
-- The 13 live actions are hand-keyed at 30 source fps and the persistent
-  controller can retarget through the live transition solver. Motion QA checks
-  plants, bounded travel, entry-frame search, jump states, anatomy limits, and
-  layer independence, but it does not approve the dancing.
+- The 23 live actions are hand-keyed at 30 source fps. Motion QA checks plants,
+  bounded travel, entry-frame search, support state, action foot basis, jump
+  states, anatomy limits, and layer independence, but cannot approve the
+  dancing. Corrective shoulder/thigh twist shapes remain incomplete.
 - The replacement foot kit contains 66 cuts derived from three retained CC0
   recordings of real shoes on wood/parquet. Each of eleven families has six
-  distinct files split across soft, medium, and strong layers. Signal QA passes;
-  whether each classification and the full mix convincingly read as
-  shoe-on-board Foley remains a mandatory human audition.
+  distinct files across soft, medium, and strong layers. Contacts now schedule
+  from authored contact metadata rather than primary keydown. Signal,
+  provenance, family, velocity, and round-robin QA pass; a qualified human
+  must still listen to every cut and approve “shoe on this board.”
 - “Board & Bow” remains the earlier deterministic code-synthesized tune at the
   exact 120 BPM, 32-bar AABB map. It was not allowed to displace the hero,
   response, and foot-kit rescue. Its acoustic realism is not approved and is
@@ -51,17 +51,21 @@
   authoritative taxonomy. Movement names, distinctions, contextual notes, and
   stage framing still require review by Appalachian percussive dancers from
   more than one community.
-- The slice is intentionally one solo 32-bar chorus, one tune, and one
-  community-hall stage. Couple dance, square dance, team clogging, crews,
-  additional tunes, and named archival unlockables remain outside scope.
+- Free Frolic and the embedded Trade Licks / Measure Echo activity share one
+  solo 32-bar chorus, one tune, and one community-hall stage. Calls encode
+  timing/emphasis/subdivision rather than a required animation. Additional
+  tunes, partner/team forms, and named archival unlockables remain outside
+  scope.
 - The current responsive mix reacts through the player-controlled foot
   instrument, crowd, board, and phrase cues. Per-stem band foregrounding is a
   documented next production step, not silently claimed as complete.
 - Browser QA covers native rendering, keyboard, simulated gamepad mappings,
   real touch events, live/fallback paths, local-only assets, and desktop frame
-  pacing. Candidate latency numbers come from headless Chromium; its virtual
-  audio output latency is not a physical speaker result. A physical lower-end
-  Android/iOS latency, haptics, thermal, and speaker-mix pass remains required.
+  pacing. Headless Chromium measured input-to-simulation p95 0.2 ms,
+  input-to-first-changed-pixel p95 21.9 ms, and contact-to-Web-Audio-call p95
+  0.4 ms. These are browser scheduling results, not physical speaker latency.
+  Lower-end Android/iOS latency, haptics, thermal, and speaker-mix review
+  remain required.
 - Cultural-history PDFs supplied with the brief were not copied into the
   repository. The development provenance document uses their public review
   records and the cited practitioner/heritage sources.

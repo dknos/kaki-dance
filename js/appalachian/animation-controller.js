@@ -1,5 +1,6 @@
 import { clamp } from "../core/math.js";
 import { smoothPoseVector } from "./arm-pose-field.js";
+import { resolveFootGesture } from "./foot-gesture-deck.js";
 import {
   FROLIC_JUMP_PROFILES,
   getFootwork,
@@ -95,6 +96,17 @@ export class AppalachianAnimationController {
       intentionalSamples: 0,
       previousInput: { x: 0, y: -0.18 },
     };
+    this.weight = {
+      left: 0.16,
+      right: 0.84,
+      targetLeft: 0.16,
+    };
+    this.feet = {
+      left: footState("left"),
+      right: footState("right"),
+    };
+    this.activeFamily = "groove";
+    this.lastModifierChord = null;
     this.jump = {
       state: "grounded",
       chargeSeconds: 0,
@@ -243,11 +255,97 @@ export class AppalachianAnimationController {
     });
   }
 
+  anticipateFoot({ foot = "left", tick = this.lastTick, modifiers = {}, sequence = 0 } = {}) {
+    const side = foot === "right" ? "right" : "left";
+    const state = this.feet[side];
+    state.anticipation = Object.freeze({
+      sequence,
+      tick: Number(tick) || 0,
+      modifiers: Object.freeze({
+        grounded: Boolean(modifiers.grounded),
+        committed: Boolean(modifiers.committed),
+      }),
+    });
+    state.phase = Math.max(state.phase, 0.035);
+    state.stage = "anticipation";
+    return state.anticipation;
+  }
+
+  requestFootGesture(intent, {
+    tick = this.lastTick,
+    direction = "neutral",
+    phrasePhase = 0,
+  } = {}) {
+    const requestTick = Number(tick) || 0;
+    const support = this.supportingFoot();
+    const gesture = resolveFootGesture(intent, {
+      style: this.style,
+      supportingFoot: support,
+    });
+    if (!gesture.ok) return gesture;
+    const transitionRequest = this.request(gesture.moveId, {
+      tick: requestTick,
+      direction,
+      entryFoot: gesture.foot,
+      inputTimestamp: intent.rawTimeStamp,
+      simulationReceiptTimestamp: now(),
+      phrasePhase,
+    });
+    if (!transitionRequest.ok) return transitionRequest;
+    transitionRequest.request.contactSource = "foot-layer";
+    const layer = {
+      id: transitionRequest.request.id,
+      gesture,
+      intent,
+      startTick: requestTick + gesture.weightTransferTicks,
+      requestedTick: requestTick,
+      contactCursor: 0,
+      contacts: gesture.contacts,
+      phase: 0,
+      stage: gesture.weightTransferTicks ? "weight-transfer" : "attack",
+      transition: transitionRequest.transition,
+      validated: transitionRequest.transition?.resolved === true,
+      direction,
+      appliedFacingRadians: 0,
+    };
+    const foot = this.feet[gesture.foot];
+    if (foot.active && foot.active.phase < 0.58) {
+      foot.queue.push(layer);
+      if (foot.queue.length > 16) foot.queue.shift();
+      foot.stage = "buffered-double";
+    } else {
+      foot.active = layer;
+      foot.stage = layer.stage;
+      foot.phase = 0;
+    }
+    foot.anticipation = null;
+    foot.articulation = gesture.contacts[0]?.articulation ?? "flat";
+    this.activeFamily = gesture.family;
+    this.lastModifierChord = Object.freeze({
+      family: gesture.family,
+      foot: gesture.foot,
+      variant: gesture.variant,
+      grounded: Boolean(intent.modifiers?.grounded),
+      committed: Boolean(intent.modifiers?.committed),
+      sourceCodes: intent.sourceCodes,
+    });
+    if (gesture.weightTransferTicks) {
+      this.weight.targetLeft = gesture.foot === "left" ? 0.14 : 0.86;
+    }
+    return Object.freeze({
+      ...transitionRequest,
+      status: foot.active === layer ? "foot-layer-started" : "foot-layer-buffered",
+      gesture,
+      footLayer: layer,
+    });
+  }
+
   applyPerformanceInput(dt = DEFAULT_DT, input = {}, tick = this.lastTick) {
     const safeDt = Math.max(0, Number(dt) || 0);
     this.updateTravel(safeDt, input);
     this.updateUpperBody(safeDt, input);
     this.updateJump(safeDt, input, Number(tick) || 0);
+    this.updateWeight(safeDt);
   }
 
   update(tick, { dt = DEFAULT_DT, input = null } = {}) {
@@ -259,10 +357,11 @@ export class AppalachianAnimationController {
       return;
     }
     if (this.action) {
-      this.collectContacts(this.lastTick, currentTick);
+      if (this.action.contactSource !== "foot-layer") this.collectContacts(this.lastTick, currentTick);
       const endTick = this.action.startTick + this.action.move.durationTicks;
       if (currentTick >= endTick && this.jump.state === "grounded") this.completeAction(endTick);
     }
+    this.updateFootLayers(this.lastTick, currentTick);
     if (this.transition && currentTick >= this.transition.startTick + this.transition.durationTicks) {
       this.transition = null;
       this.bridge = null;
@@ -335,6 +434,11 @@ export class AppalachianAnimationController {
     const presentationPhase = jumpActive ? this.jumpPresentationPhase() : lower.presentationPhase;
     const supportingFoot = this.supportingFoot();
     const armSafety = this.jump.state === "airborne" ? 0.58 : this.jump.state === "landing" ? 0.72 : 1;
+    const forwardVelocity = this.world.vx * Math.sin(this.world.facing)
+      + this.world.vz * Math.cos(this.world.facing);
+    const lateralVelocity = this.world.vx * Math.cos(this.world.facing)
+      - this.world.vz * Math.sin(this.world.facing);
+    const travelSpeed = STYLE_TRAVEL[this.style].speed;
     return freezeSnapshot({
       ...lower,
       presentationClip,
@@ -346,6 +450,11 @@ export class AppalachianAnimationController {
       rootVelocity: Object.freeze({ x: this.world.vx, y: 0, z: this.world.vz }),
       facing: this.world.facing,
       angularVelocity: this.world.angularVelocity,
+      bodyLean: Object.freeze({
+        forward: clamp(forwardVelocity / travelSpeed, -1, 1),
+        lateral: clamp(lateralVelocity / travelSpeed, -1, 1),
+        turn: clamp(this.world.angularVelocity / 4, -1, 1),
+      }),
       centerOfMass: Object.freeze({
         x: this.world.x + this.centerOfMassOffset(),
         y: 2.7 + this.jump.height,
@@ -377,6 +486,7 @@ export class AppalachianAnimationController {
         leftArm: this.upper.leftOverride ? armSafety : 0,
         rightArm: this.upper.rightOverride ? armSafety : 0,
         bodyLine: this.upper.bodyActive ? armSafety : 0,
+        counterbalance: jumpActive ? 0.5 : 1,
         headGaze: 1,
         costume: 1,
         contactIK: this.jump.state === "airborne" ? 0 : 1,
@@ -404,27 +514,38 @@ export class AppalachianAnimationController {
           ? this.metrics.transitionScoreTotal / this.metrics.transitionCount
           : 0,
       }),
+      footLayers: Object.freeze(["left", "right"].map((side) => footSnapshot(this.feet[side]))),
+      feet: Object.freeze({
+        left: footSnapshot(this.feet.left),
+        right: footSnapshot(this.feet.right),
+      }),
+      weightDistribution: Object.freeze({
+        left: this.weight.left,
+        right: this.weight.right,
+      }),
+      activeMovementFamily: this.activeFamily,
+      modifierChord: this.lastModifierChord,
     });
   }
 
   lowerSnapshot(currentTick) {
-    if (!this.action) {
+    if (!this.action || this.action.contactSource === "foot-layer") {
       const travelling = Math.hypot(this.world.vx, this.world.vz) > 0.08;
       const phase = travelling
         ? positiveModulo(this.world.distance / 0.82, 1)
         : positiveModulo(currentTick - this.base.startTick, GROOVE_TICKS) / GROOVE_TICKS;
       return {
-        moveId: travelling ? "walkingStep" : "groove",
-        moveName: travelling ? "Travelling Groove" : "Musical Groove",
-        family: travelling ? "foundation" : "groove",
+        moveId: this.action?.move.id ?? (travelling ? "walkingStep" : "groove"),
+        moveName: this.action?.move.displayName ?? (travelling ? "Travelling Groove" : "Musical Groove"),
+        family: this.action?.move.family ?? (travelling ? "foundation" : "groove"),
         presentationClip: travelling ? "walkingStep" : "groove",
         presentationPhase: phase,
         entryFoot: this.base.freeFoot,
         exitFoot: this.base.supportingFoot,
         direction: directionSign(this.direction),
         travelDirection: this.direction,
-        actionId: 0,
-        actionStartedAtTick: null,
+        actionId: this.action?.id ?? 0,
+        actionStartedAtTick: this.action?.requestedTick ?? null,
         response: this.lastResponse,
       };
     }
@@ -454,6 +575,9 @@ export class AppalachianAnimationController {
   supportingFoot() {
     if (this.jump.state === "airborne") return "none";
     if (this.action?.move.id === "recovery") return this.action.entryFoot === "right" ? "left" : "right";
+    if (this.feet.left.active || this.feet.right.active) {
+      return this.weight.left >= 0.5 ? "left" : "right";
+    }
     if (this.action) {
       const elapsed = Math.max(0, this.lastTick - this.action.startTick);
       const contact = resolvedContacts(this.action.move, this.action.entryFoot)
@@ -471,7 +595,12 @@ export class AppalachianAnimationController {
   centerOfMassOffset() {
     const speed = Math.hypot(this.world.vx, this.world.vz);
     const travelBias = clamp(speed / 2.2, 0, 1) * 0.12;
-    return clamp(this.upper.body.x * 0.08 + Math.sin(this.world.facing) * travelBias, -0.18, 0.18);
+    const supportBias = (this.weight.right - this.weight.left) * -0.16;
+    return clamp(
+      supportBias + this.upper.body.x * 0.08 + Math.sin(this.world.facing) * travelBias,
+      -0.22,
+      0.22,
+    );
   }
 
   updateTravel(dt, input) {
@@ -517,18 +646,32 @@ export class AppalachianAnimationController {
       this.upper.handAccentTime = Math.max(0, this.upper.handAccentTime - dt);
       if (!this.upper.handAccentTime) this.upper.handAccent = "";
     }
-    const rawTarget = {
-      x: clamp(Number(input.armX) || 0, -1, 1),
-      y: clamp(Number(input.armY) || 0, -1, 1),
-    };
-    const target = Math.hypot(rawTarget.x, rawTarget.y) < 0.02
-      ? { x: 0, y: -0.18 }
-      : rawTarget;
+    const styleHeight = { flatfoot: 0.62, buck: 0.82, clog: 1 }[this.style];
+    const active = Boolean(input.armActive)
+      || Math.hypot(Number(input.armX) || 0, Number(input.armY) || 0) > 0.02;
+    const currentTarget = input.leftArmModifier && !input.rightArmModifier
+      ? this.upper.left
+      : input.rightArmModifier && !input.leftArmModifier
+        ? this.upper.right
+        : this.upper.coordinated;
+    const rawTarget = input.armInputMode !== "rate"
+      ? {
+          x: clamp(Number(input.armX) || 0, -1, 1),
+          y: clamp(Number(input.armY) || 0, -1, styleHeight),
+        }
+      : {
+          x: currentTarget.x,
+          y: clamp(currentTarget.y + (Number(input.armY) || 0) * dt * 1.7, -1, styleHeight),
+        };
+    const target = active ? rawTarget : currentTarget;
     const delta = Math.hypot(target.x - this.upper.previousInput.x, target.y - this.upper.previousInput.y);
     this.upper.inputDistance += delta;
     if (delta > 0.015 && delta < 0.42) this.upper.intentionalSamples += 1;
     this.upper.previousInput = target;
-    if (input.bodyModifier) {
+    if (!active) {
+      // Persist the selected authored pose. Automatic counterbalance is
+      // layered by the renderer and never rewrites the player's target.
+    } else if (input.bodyModifier) {
       this.upper.body = smoothPoseVector(this.upper.body, target, dt, 20);
       this.upper.bodyActive = true;
     } else if (input.leftArmModifier && !input.rightArmModifier) {
@@ -539,12 +682,125 @@ export class AppalachianAnimationController {
       this.upper.rightOverride = true;
     } else {
       this.upper.coordinated = smoothPoseVector(this.upper.coordinated, target, dt, 20);
+      this.upper.left = smoothPoseVector(this.upper.left, target, dt, 20);
+      this.upper.right = smoothPoseVector(this.upper.right, target, dt, 20);
+      this.upper.leftOverride = false;
+      this.upper.rightOverride = false;
       this.upper.bodyActive = false;
     }
     if (input.handAccentPressed) {
       this.upper.handAccent = Math.abs(target.y) > 0.62 ? "flourish" : "clap";
       this.upper.handAccentTime = 0.28;
     }
+  }
+
+  updateWeight(dt) {
+    const rate = 1 - Math.exp(-Math.max(0, dt) * 28);
+    this.weight.left += (this.weight.targetLeft - this.weight.left) * rate;
+    this.weight.left = clamp(this.weight.left, 0.08, 0.92);
+    this.weight.right = 1 - this.weight.left;
+  }
+
+  updateFootLayers(previousTick, currentTick) {
+    for (const side of ["left", "right"]) {
+      const state = this.feet[side];
+      let layer = state.active;
+      if (!layer) {
+        if (state.anticipation) {
+          state.phase = clamp(
+            (currentTick - state.anticipation.tick) / 16,
+            0.035,
+            0.22,
+          );
+          state.stage = "anticipation";
+        } else {
+          state.phase *= 0.78;
+          if (state.phase < 0.002) state.stage = "planted";
+        }
+        continue;
+      }
+      if (currentTick < layer.startTick) {
+        state.stage = "weight-transfer";
+        state.phase = clamp((currentTick - layer.requestedTick) / Math.max(1, layer.startTick - layer.requestedTick), 0, 1) * 0.18;
+        continue;
+      }
+      layer.phase = clamp((currentTick - layer.startTick) / layer.gesture.durationTicks, 0, 1);
+      if (layer.gesture.facingChangeRadians) {
+        const turnSign = layer.direction === "turn-left"
+          ? -1
+          : layer.direction === "turn-right"
+            ? 1
+            : layer.gesture.foot === "left" ? -1 : 1;
+        const turnProgress = Math.sin(layer.phase * Math.PI / 2);
+        const applied = turnSign * layer.gesture.facingChangeRadians * turnProgress;
+        const delta = applied - layer.appliedFacingRadians;
+        this.world.facing += delta;
+        const elapsedSeconds = Math.max(1 / 192, (currentTick - previousTick) / 192);
+        this.world.angularVelocity = delta / elapsedSeconds;
+        layer.appliedFacingRadians = applied;
+      }
+      state.phase = layer.phase;
+      state.stage = layer.phase < 0.24
+        ? "attack"
+        : layer.phase < 0.72
+          ? "contact"
+          : "recover";
+      while (
+        layer.contactCursor < layer.contacts.length
+        && layer.contacts[layer.contactCursor].tick <= currentTick - layer.startTick + 1e-7
+      ) {
+        const contact = layer.contacts[layer.contactCursor];
+        const contactTick = layer.startTick + contact.tick;
+        if (contactTick > previousTick + 1e-7) {
+          this.emitFootLayerContact(layer, contact, contactTick);
+        }
+        layer.contactCursor += 1;
+      }
+      if (state.queue.length && layer.phase >= 0.58 && layer.contactCursor > 0) {
+        state.active = state.queue.shift();
+        state.active.startTick = Math.max(currentTick, state.active.startTick);
+        state.phase = 0;
+        state.stage = state.active.stage;
+        continue;
+      }
+      if (layer.phase >= 1) {
+        state.active = state.queue.shift() ?? null;
+        if (state.active) {
+          state.active.startTick = Math.max(currentTick, state.active.startTick);
+          state.phase = 0;
+          state.stage = state.active.stage;
+        } else {
+          state.stage = "planted";
+          state.phase = 0;
+          state.contact = "flat";
+        }
+      }
+    }
+  }
+
+  emitFootLayerContact(layer, contact, tick) {
+    const foot = layer.gesture.foot;
+    const state = this.feet[foot];
+    state.contact = contact.articulation;
+    state.articulation = contact.articulation;
+    if (
+      ["basic", "drive", "turn"].includes(layer.gesture.family)
+      && ["flat", "heel", "chug"].includes(contact.articulation)
+    ) {
+      this.weight.targetLeft = foot === "left" ? 0.82 : 0.18;
+    }
+    this.pendingContacts.push(Object.freeze({
+      ...contact,
+      contactId: `foot:${layer.id}:${contact.index}:${contact.tick}`,
+      actionId: layer.id,
+      tick,
+      moveId: layer.gesture.moveId,
+      style: this.style,
+      requested: false,
+      inputIntent: layer.intent,
+      transitionValidated: layer.validated,
+      worldPosition: Object.freeze({ x: this.world.x, z: this.world.z }),
+    }));
   }
 
   updateJump(dt, input, tick) {
@@ -568,9 +824,15 @@ export class AppalachianAnimationController {
       this.jump.elapsedSeconds += dt;
       this.jump.progress = clamp(this.jump.elapsedSeconds / this.jump.airSeconds, 0, 1);
       this.jump.height = 4 * this.jump.maxHeight * this.jump.progress * (1 - this.jump.progress);
-      if (input.actionPressed) this.jump.variation = profile.allowedFollowUps[0];
-      if (input.stylePressed) this.jump.variation = profile.allowedFollowUps[1];
-      if (input.powerPressed) this.jump.variation = profile.allowedFollowUps[2];
+      if (input.leftFootPressed || input.rightFootPressed || input.actionPressed) {
+        this.jump.variation = profile.allowedFollowUps[0];
+      }
+      if (input.brushPressed || input.articulationPressed || input.stylePressed) {
+        this.jump.variation = profile.allowedFollowUps[1];
+      }
+      if (input.drivePressed || input.turnPressed || input.powerPressed) {
+        this.jump.variation = profile.allowedFollowUps[2];
+      }
       if (Number(input.turnDirection)) this.jump.turnDirection = Math.sign(input.turnDirection);
       if (this.jump.progress >= 1) this.landJump(profile, tick, input);
     } else if (this.jump.state === "landing") {
@@ -789,6 +1051,42 @@ function positiveModulo(value, divisor) {
 function finiteOrNull(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function footState(side) {
+  return {
+    side,
+    stage: "planted",
+    phase: 0,
+    articulation: "flat",
+    contact: "flat",
+    anticipation: null,
+    active: null,
+    queue: [],
+  };
+}
+
+function footSnapshot(state) {
+  const layer = state.active;
+  return Object.freeze({
+    side: state.side,
+    stage: state.stage,
+    phase: state.phase,
+    articulation: state.articulation,
+    contact: state.contact,
+    clipId: layer?.gesture.clipId ?? "",
+    moveId: layer?.gesture.moveId ?? "",
+    family: layer?.gesture.family ?? "",
+    variant: layer?.gesture.variant ?? "",
+    actionId: layer?.id ?? 0,
+    queueDepth: state.queue.length,
+    validated: layer?.validated ?? false,
+    anticipation: state.anticipation,
+  });
+}
+
+function now() {
+  return globalThis.performance?.now?.() ?? Date.now();
 }
 
 function lerp(left, right, amount) {

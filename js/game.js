@@ -291,15 +291,19 @@ export class KakiDanceGame {
     this.render(0);
     const renderedTimestamp = now();
     const lastInput = this.simulation.lastInput;
-    const schedule = this.footPercussion.lastSchedule;
+    const immediateContact = lastInput?.rawInputTimestamp === edge.rawTimeStamp
+      && lastInput?.contactPending !== true;
+    const schedule = immediateContact ? this.footPercussion.lastSchedule : null;
     const record = Object.freeze({
-      actionId: lastInput?.actionId ?? 0,
-      inputKind: lastInput?.kind ?? edge.action,
+      actionId: immediateContact ? lastInput?.actionId ?? 0 : 0,
+      inputKind: immediateContact ? lastInput?.kind ?? edge.action : edge.action,
       device: edge.device,
       rawEventTimestamp: edge.rawTimeStamp,
       inputManagerReceiptTimestamp: edge.receivedTimeStamp,
       gameReceiptTimestamp: receiptTimestamp,
-      simulationReceiptTimestamp: lastInput?.simulationReceiptTimestamp ?? null,
+      simulationReceiptTimestamp: this.simulation.lastPerformanceReceipt?.simulationReceiptTimestamp
+        ?? lastInput?.simulationReceiptTimestamp
+        ?? null,
       audioSchedulingTimestamp: schedule?.schedulingCallTimestamp ?? null,
       scheduledAudioTime: schedule?.scheduledAudioTime ?? null,
       immediateRenderCompletedTimestamp: renderedTimestamp,
@@ -434,6 +438,23 @@ export class KakiDanceGame {
       }
       if (event.type === "footContact") {
         this.footPercussion.playContact(event);
+        const rawInputTimestamp = Number(event.inputIntent?.rawTimeStamp);
+        const schedule = this.footPercussion.lastSchedule;
+        if (Number.isFinite(rawInputTimestamp) && schedule) {
+          const index = this.frolicLatencyRecords.findLastIndex(
+            (record) => record.rawEventTimestamp === rawInputTimestamp,
+          );
+          if (index >= 0) {
+            this.frolicLatencyRecords[index] = Object.freeze({
+              ...this.frolicLatencyRecords[index],
+              actionId: event.actionId,
+              contactId: event.contactId,
+              contactEmissionTimestamp: event.contactEmissionTimestamp,
+              audioSchedulingTimestamp: schedule.schedulingCallTimestamp,
+              scheduledAudioTime: schedule.scheduledAudioTime,
+            });
+          }
+        }
         if (event.immediate && globalThis.navigator?.vibrate) globalThis.navigator.vibrate(8);
       }
       if (event.type === "tradeCall") {
@@ -507,7 +528,7 @@ export class KakiDanceGame {
         ? player.total >= 82 ? "PURRFECT echo!" : player.total >= 62 ? "In the pocket!" : "Run the echo again"
         : player.total >= 70 ? "Clean round!" : "Build the next phrase";
     const resultCategories = isFrolic
-      ? ["time", "tune", "flow", "footwork", "spirit"]
+      ? ["time", "phraseFit", "footClarity", "flow", "useOfSpace", "personalStyle", "landingResolution"]
       : ["musicality", "vocabulary", "originality", "technique", "execution"];
     this.elements.judgeGrid.replaceChildren(...resultCategories.map((category) => {
       const cell = document.createElement("div");
@@ -515,7 +536,13 @@ export class KakiDanceGame {
       const score = document.createElement("strong");
       score.textContent = opponent ? `${player[category]}/${opponent[category]}` : String(player[category]);
       const label = document.createElement("span");
-      label.textContent = category;
+      label.textContent = {
+        phraseFit: "tune / phrase",
+        footClarity: "foot clarity",
+        useOfSpace: "use of space",
+        personalStyle: "personal style",
+        landingResolution: "landing / resolve",
+      }[category] ?? category;
       cell.append(score, label);
       return cell;
     }));
@@ -733,7 +760,15 @@ export class KakiDanceGame {
         : "LISTEN / COPY / FREEZE";
     }
     const labels = isFrolic
-      ? { action: "STEP", style: "BRUSH", power: "DRIVE", freeze: "LICK" }
+      ? {
+          leftFoot: "L FOOT",
+          rightFoot: "R FOOT",
+          brush: "Q · BRUSH",
+          articulation: "E · HEEL/TOE",
+          drive: "F · DRIVE",
+          turn: "T · TURN",
+          jump: "JUMP",
+        }
       : { action: "PAW", style: "S", power: "P", freeze: "F" };
     for (const button of this.elements.touchButtons) {
       const control = button.dataset.control;

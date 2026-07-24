@@ -60,18 +60,30 @@ test("both gamepad sticks use independent radial dead zones and semantic buttons
   assert.notDeepEqual([value.x, value.y], [value.armX, value.armY]);
 });
 
-test("keyboard travel, arrow arms, modifiers, and STEP survive simultaneous rollover", () => {
+test("keyboard travel, anatomical foot, persistent arms, and family chord survive rollover", () => {
   const input = new InputManager({ target: null, profile: "appalachian" });
-  for (const code of ["KeyW", "KeyD", "ArrowUp", "ArrowLeft", "KeyQ", "KeyZ"]) {
+  for (const code of ["KeyW", "KeyD", "ArrowUp", "ArrowLeft", "KeyQ", "ShiftLeft"]) {
     input.keys.add(code);
   }
-  input.bufferAction("action", true, { device: "keyboard", rawTimeStamp: 1, receivedTimeStamp: 1 });
+  input.bufferCode("ArrowLeft", true, {
+    device: "keyboard",
+    rawTimeStamp: 1,
+    receivedTimeStamp: 1,
+    committed: true,
+  });
+  input.bufferCode("KeyQ", true, {
+    device: "keyboard",
+    rawTimeStamp: 2,
+    receivedTimeStamp: 2,
+    committed: true,
+  });
   input.update(DT);
   const value = input.consumeStep();
   assert.deepEqual([value.travelX, value.travelY], [1, -1]);
-  assert.deepEqual([value.armX, value.armY], [-1, 1]);
+  assert.deepEqual([value.armX, value.armY], [0, 1]);
   assert.equal(value.leftArmModifier, true);
-  assert.equal(value.stepPressed, true);
+  assert.deepEqual(value.performanceEdges.map((edge) => edge.action), ["leftFoot", "brush"]);
+  assert.equal(value.performanceEdges[0].committed, true);
   input.destroy();
 });
 
@@ -277,7 +289,8 @@ test("shared GLB includes both heroes while costume parts remain non-support", (
   assert.deepEqual(manifest.supportCapableBones, ["foot.L", "foot.R"]);
   assert.ok(manifest.excludedSupportBones.includes("costume.tail"));
   assert.ok(manifest.excludedSupportBones.includes("costume.hood"));
-  assert.equal(Object.keys(manifest.actions).length, 13);
+  assert.equal(Object.keys(manifest.actions).length, 23);
+  assert.equal(manifest.gateCounts.goldenPairedGestures, 10);
   assert.equal(manifest.armPoseField.length, 9);
   assert.equal(manifest.candidateStatus, "CANDIDATE — HUMAN REVIEW REQUIRED");
 });
@@ -305,8 +318,10 @@ test("review surface and Pages-safe runtime paths expose all required control fa
   for (const token of [
     "data-hero", "data-style", "data-renderer", "data-speed",
     "data-touch-stick=\"travel\"", "data-touch-stick=\"arms\"",
-    "data-control=\"action\"", "data-control=\"style\"", "data-control=\"power\"",
-    "data-control=\"jump\"", "data-debug=\"skeleton\"", "data-debug=\"contacts\"",
+    "data-control=\"leftFoot\"", "data-control=\"rightFoot\"",
+    "data-control=\"brush\"", "data-control=\"articulation\"",
+    "data-control=\"drive\"", "data-control=\"turn\"", "data-control=\"jump\"",
+    "data-debug=\"skeleton\"", "data-debug=\"contacts\"", "data-debug=\"footBasis\"",
   ]) {
     assert.match(page, new RegExp(token));
   }

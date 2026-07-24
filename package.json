@@ -11,6 +11,7 @@
     "art:frolic:build": "python3 tools/art/build_appalachian_atlases.py",
     "art:frolic:candidate": "python3 tools/art/build_frolic_blender_atlases.py",
     "rig:frolic:build": "blender --background --factory-startup --python tools/blender/build_appalachian_frolic_rig.py",
+    "rig:frolic:export": "blender --background --factory-startup --python tools/blender/export_appalachian_simulator_glb.py",
     "check": "node tests/syntax-check.mjs",
     "test": "node --test tests/*.test.js",
     "qa:browser": "node scripts/browser-smoke.mjs",
@@ -33,7 +34,7 @@
     "qa:appalachian-sim:audio": "node scripts/appalachian-simulator-qa.mjs audio",
     "qa:appalachian-sim:latency": "node scripts/appalachian-simulator-browser.mjs latency",
     "qa:appalachian-sim:capture": "node scripts/appalachian-simulator-browser.mjs capture",
-    "qa:appalachian-sim": "npm run check && npm test && npm run qa:appalachian-sim:motion && npm run qa:appalachian-sim:arms && npm run qa:appalachian-sim:jumps && npm run qa:appalachian-sim:audio && node scripts/appalachian-simulator-browser.mjs smoke",
+    "qa:appalachian-sim": "npm run check && npm test && npm run qa:appalachian-sim:motion && npm run qa:appalachian-sim:arms && npm run qa:appalachian-sim:jumps && npm run qa:appalachian-sim:audio && node scripts/appalachian-simulator-browser.mjs smoke && npm run qa:appalachian-sim:latency && npm run qa:frolic:latency",
     "verify": "npm run check && npm test"
   },
   "devDependencies": {

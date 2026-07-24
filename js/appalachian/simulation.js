@@ -7,6 +7,7 @@ import {
   resolvedContacts,
 } from "./footwork-catalog.js";
 import { AppalachianAnimationController } from "./animation-controller.js";
+import { AppalachianIntentBuffer } from "./performance-intent.js";
 import { boardRegion, BoardLineTracker } from "./board-lines.js";
 import { AppalachianPhraseJudge } from "./phrase-judge.js";
 import {
@@ -34,21 +35,21 @@ export const PRACTICE_LESSONS = Object.freeze([
   Object.freeze({
     id: "pulse",
     title: "Step joins the band",
-    instruction: "Tap STEP four times with the pulse.",
-    inputKind: "step",
+    instruction: "Alternate Left and Right Arrow four times with the pulse.",
+    inputKind: "basic",
     required: 4,
   }),
   Object.freeze({
     id: "brush",
     title: "Brush between steps",
-    instruction: "Add two BRUSH sounds between foundation steps.",
+    instruction: "Use Q with either foot for two brush-return sounds.",
     inputKind: "brush",
     required: 2,
   }),
   Object.freeze({
     id: "drive",
     title: "Build a backstep",
-    instruction: "Use DRIVE twice for a backstep or chug phrase.",
+    instruction: "Use F twice for a backstep or chug phrase.",
     inputKind: "drive",
     required: 2,
   }),
@@ -62,7 +63,7 @@ export const PRACTICE_LESSONS = Object.freeze([
   Object.freeze({
     id: "one-arm",
     title: "Lead with one arm",
-    instruction: "Hold the left- or right-arm modifier and shape that arm.",
+    instruction: "Hold Shift for left or Control for right while using Up/Down.",
     inputKind: "one-arm",
     required: 1,
   }),
@@ -76,14 +77,14 @@ export const PRACTICE_LESSONS = Object.freeze([
   Object.freeze({
     id: "aerial-detail",
     title: "Shape the air",
-    instruction: "During a hop, add a valid BRUSH, STEP, or DRIVE variation.",
+    instruction: "During a hop, add a documented Q, E, F, or T detail.",
     inputKind: "aerial-detail",
     required: 1,
   }),
   Object.freeze({
     id: "turnaround",
     title: "Travel into a turnaround",
-    instruction: "Keep travelling and use DRIVE at the end of the bar.",
+    instruction: "Keep travelling and use T at the end of the bar.",
     inputKind: "turnaround",
     required: 1,
   }),
@@ -133,6 +134,7 @@ export class AppalachianJamSimulation {
     this.callout = "";
     this.calloutAge = 0;
     this.lastInput = null;
+    this.lastPerformanceReceipt = null;
     this.liveScore = null;
     this.crowdHeat = 16;
     this.maxCrowdHeat = 16;
@@ -143,6 +145,7 @@ export class AppalachianJamSimulation {
     this.boardLines = new BoardLineTracker();
     this.lastBoardLineCount = 0;
     this.bankHistory = [];
+    this.intents = new AppalachianIntentBuffer();
   }
 
   begin(beatSnapshot) {
@@ -160,6 +163,7 @@ export class AppalachianJamSimulation {
     this.callout = "";
     this.calloutAge = 0;
     this.lastInput = null;
+    this.lastPerformanceReceipt = null;
     this.liveScore = null;
     this.crowdHeat = 16;
     this.maxCrowdHeat = 16;
@@ -169,6 +173,7 @@ export class AppalachianJamSimulation {
     this.boardLines.reset();
     this.lastBoardLineCount = 0;
     this.bankHistory = [];
+    this.intents.clear();
     this.lastBar = Math.floor(Math.max(0, tick) / FROLIC_TICKS_PER_BAR) + 1;
     this.animation = new AppalachianAnimationController({ style: this.style });
     this.animation.reset(Math.max(0, tick));
@@ -181,7 +186,9 @@ export class AppalachianJamSimulation {
       mode: this.mode,
       performer: "player",
       round: 1,
-      message: this.mode === "stepShed" ? "Step Shed: tap STEP with the pulse." : "Find the groove. Your feet are in the band.",
+      message: this.mode === "stepShed"
+        ? "Step Shed: alternate Left and Right Arrow with the pulse."
+        : "Free Frolic. Your feet are in the band.",
     });
   }
 
@@ -193,6 +200,8 @@ export class AppalachianJamSimulation {
     if (this.calloutAge > 1.25) this.callout = "";
     this.handleStateChange(tick);
     this.emitTradeCalls(this.lastTick, tick);
+    this.handlePerformanceEdges(input, tick, beatSnapshot);
+    this.flushPerformanceIntents(tick, input, beatSnapshot);
     this.animation.update(Math.max(0, tick), { dt, input });
     this.animation.consumeContacts((contact) => this.emitScheduledContact(contact, beatSnapshot));
     this.updateBoardPerformance(input, tick);
@@ -211,9 +220,115 @@ export class AppalachianJamSimulation {
     if (tick < 0) return false;
     if (input.device) this.inputDevice = input.device;
     this.animation.applyPerformanceInput(0, input, tick);
-    this.handleInput(input, tick, beatSnapshot);
+    const handled = this.handlePerformanceEdges(input, tick, beatSnapshot);
+    if (!handled) this.handleInput(input, tick, beatSnapshot);
     this.recordReplay(input, tick);
+    return handled || Boolean(
+      input.actionPressed || input.stylePressed || input.powerPressed || input.freezePressed
+    );
+  }
+
+  handlePerformanceEdges(input, tick, beatSnapshot) {
+    const edges = input?.performanceEdges ?? [];
+    if (!edges.length) return false;
+    if (this.animation.jump.state === "airborne") return false;
+    for (const edge of edges) {
+      const result = this.intents.accept(edge, tick, {
+        freeFoot: oppositeFoot(this.animation.supportingFoot()),
+      });
+      for (const anticipation of result.anticipations) {
+        const simulationReceiptTimestamp = now();
+        this.animation.anticipateFoot(anticipation);
+        this.lastPerformanceReceipt = Object.freeze({
+          foot: anticipation.foot,
+          rawInputTimestamp: finiteOrNull(edge.rawTimeStamp),
+          simulationReceiptTimestamp,
+          inputToSimulationMilliseconds: Number.isFinite(Number(edge.rawTimeStamp))
+            ? Math.max(0, simulationReceiptTimestamp - Number(edge.rawTimeStamp))
+            : null,
+        });
+        this.emit("footAnticipation", {
+          ...anticipation,
+          ...this.lastPerformanceReceipt,
+        });
+      }
+      for (const intent of result.intents) {
+        this.requestFootIntent(intent, input, tick, beatSnapshot);
+      }
+    }
     return true;
+  }
+
+  flushPerformanceIntents(tick, input, beatSnapshot) {
+    const support = this.animation.supportingFoot();
+    for (const intent of this.intents.advance(tick, {
+      freeFoot: oppositeFoot(support),
+    })) {
+      this.requestFootIntent(intent, input, tick, beatSnapshot);
+    }
+  }
+
+  requestFootIntent(intent, input, tick, beatSnapshot) {
+    const simulationReceiptTimestamp = now();
+    const direction = inputDirection(input ?? {}, intent.family);
+    const currentId = this.animation.current?.move.id ?? "";
+    const request = this.animation.requestFootGesture(intent, {
+      tick,
+      direction,
+      phrasePhase: (tick % FROLIC_PPQ) / FROLIC_PPQ,
+    });
+    if (!request.ok) {
+      this.emit("frolicInputRejected", {
+        inputKind: intent.family,
+        foot: intent.foot,
+        reason: request.reason,
+        tick,
+      });
+      return;
+    }
+    const rawInputTimestamp = finiteOrNull(intent.rawTimeStamp);
+    this.lastInput = Object.freeze({
+      kind: intent.family,
+      tick: round(tick),
+      audioTime: beatSnapshot.audioTime,
+      rawInputTimestamp,
+      simulationReceiptTimestamp,
+      timingOffsetTicks: null,
+      moveId: request.gesture.moveId,
+      foot: intent.foot,
+      articulation: request.gesture.contacts[0]?.articulation ?? "flat",
+      device: intent.device,
+      actionId: request.request.id,
+      response: request.status,
+      queued: request.status === "foot-layer-buffered",
+      rhythmOnly: false,
+      chord: intent.chord,
+      modifiers: intent.modifiers,
+      contactPending: true,
+    });
+    this.judge.recordTransition({
+      tick,
+      fromId: currentId,
+      toId: request.gesture.moveId,
+      legal: request.transition?.resolved === true,
+      reset: false,
+    });
+    this.emit("frolicInput", {
+      tick,
+      inputKind: intent.family,
+      foot: intent.foot,
+      moveId: request.gesture.moveId,
+      queued: request.status === "foot-layer-buffered",
+      rhythmOnly: false,
+      actionId: request.request.id,
+      rawInputTimestamp,
+      simulationReceiptTimestamp,
+      transitionValidated: request.transition?.resolved === true,
+      chord: intent.chord,
+      modifiers: intent.modifiers,
+      contactPending: true,
+    });
+    this.advancePractice(intent.family === "basic" ? "basic" : intent.family, tick);
   }
 
   handleStateChange(tick) {
@@ -233,11 +348,11 @@ export class AppalachianJamSimulation {
   handleInput(input, tick, beatSnapshot) {
     if (!input || tick < 0) return;
     if (this.animation.jump.state === "airborne") {
-      const aerialKind = input.actionPressed
-        ? "step"
-        : input.stylePressed
+      const aerialKind = input.leftFootPressed || input.rightFootPressed || input.actionPressed
+        ? "basic"
+        : input.brushPressed || input.articulationPressed || input.stylePressed
           ? "brush"
-          : input.powerPressed
+          : input.drivePressed || input.turnPressed || input.powerPressed
             ? "drive"
             : "";
       if (aerialKind) {
@@ -497,14 +612,51 @@ export class AppalachianJamSimulation {
 
   emitScheduledContact(contact, beatSnapshot) {
     const region = boardRegion(contact.worldPosition);
-    this.emit("footContact", {
+    const event = {
       ...contact,
       boardRegion: region.id,
       boardResonance: region.resonance,
       immediate: false,
       inputAudioTime: beatSnapshot.audioTime,
+      contactEmissionTimestamp: now(),
       inputKind: "continuation",
       message: "",
+    };
+    if (contact.inputIntent) this.recordPerformanceContact(event);
+    this.emit("footContact", event);
+  }
+
+  recordPerformanceContact(contact) {
+    const nearest = nearestPulseTick(contact.tick, FROLIC_PPQ / 2);
+    const timingOffsetTicks = contact.tick - nearest;
+    const intent = contact.inputIntent;
+    const judged = this.judge.recordInput({
+      tick: contact.tick,
+      moveId: contact.moveId,
+      articulation: contact.articulation,
+      intensity: contact.intensity,
+      timingOffsetTicks,
+      style: this.style,
+      foot: contact.foot,
+      inputKind: intent.family,
+    });
+    this.liveScore = this.judge.getResult();
+    this.lastInput = Object.freeze({
+      ...(this.lastInput ?? {}),
+      kind: intent.family,
+      tick: round(contact.tick),
+      timingOffsetTicks: round(timingOffsetTicks),
+      moveId: contact.moveId,
+      foot: contact.foot,
+      articulation: contact.articulation,
+      actionId: contact.actionId,
+      contactPending: false,
+    });
+    if (Math.abs(timingOffsetTicks) <= 10) this.setCallout("IN THE TUNE");
+    this.emit("frolicContactJudged", {
+      ...judged,
+      actionId: contact.actionId,
+      transitionValidated: contact.transitionValidated,
     });
   }
 
@@ -529,13 +681,13 @@ export class AppalachianJamSimulation {
     if (!lesson) return;
     let accepted = false;
     if (lesson.inputKind === kind) accepted = true;
-    if (lesson.id === "pulse" && kind === "step") {
+    if (lesson.id === "pulse" && ["step", "basic"].includes(kind)) {
       const offset = Math.abs(tick - nearestPulseTick(tick, FROLIC_PPQ));
       accepted = offset <= 24;
     }
-    if (lesson.id === "turnaround") accepted = kind === "drive" && isAnyBarTurnaround(tick);
+    if (lesson.id === "turnaround") accepted = kind === "turn" && isAnyBarTurnaround(tick);
     if (lesson.id === "aerial-detail") accepted = this.animation.jump.state === "airborne"
-      && ["step", "brush", "drive"].includes(kind);
+      && ["brush", "articulation", "drive", "turn"].includes(kind);
     if (accepted) this.practiceProgress += 1;
     this.completePracticeLesson(lesson);
   }
@@ -591,6 +743,11 @@ export class AppalachianJamSimulation {
         drive: Boolean(input?.powerPressed),
         lick: Boolean(input?.freezePressed),
         jump: Boolean(input?.jumpPressed),
+        performanceEdges: Object.freeze((input?.performanceEdges ?? []).map((edge) => Object.freeze({
+          action: edge.action,
+          grounded: Boolean(edge.grounded),
+          committed: Boolean(edge.committed),
+        }))),
       }),
     }));
   }
@@ -693,6 +850,11 @@ export class AppalachianJamSimulation {
         currentMove: dancer.moveId,
         queuedMove: dancer.queuedMove,
         supportingFoot: dancer.supportingFoot,
+        weightDistribution: dancer.weightDistribution,
+        leftFoot: dancer.feet.left,
+        rightFoot: dancer.feet.right,
+        inputBuffers: this.intents.snapshot(),
+        modifierChord: dancer.modifierChord,
         lastInput: this.lastInput,
         restraint: liveScore.restraint,
         score: liveScore,
@@ -753,8 +915,8 @@ export function simulateFrolicInputs(inputs, {
 }
 
 function inputDirection(input, kind) {
-  if (["drive", "lick"].includes(kind) && Number(input.turnDirection) < 0) return "turn-left";
-  if (["drive", "lick"].includes(kind) && Number(input.turnDirection) > 0) return "turn-right";
+  if (["drive", "lick", "turn"].includes(kind) && Number(input.turnDirection) < 0) return "turn-left";
+  if (["drive", "lick", "turn"].includes(kind) && Number(input.turnDirection) > 0) return "turn-right";
   if (kind === "lick" && input.x < -0.45) return "turn-left";
   if (kind === "lick" && input.x > 0.45) return "turn-right";
   if (Math.abs(input.x) > 0.45 && kind !== "step") return "cross";

@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "mode": "smoke",
+  "generatedAt": "2026-07-24T23:28:38.475Z",
+  "errors": [],
+  "failedRequests": [],
+  "forcedWebGL2": {
+    "requested": "webgl2",
+    "actual": "webgl2",
+    "forced": true,
+    "reason": "WebGL2 was explicitly forced for deterministic candidate QA."
+  },
+  "webgpuCapabilityGate": {
+    "requested": "webgpu",
+    "actual": "webgl2",
+    "forced": false,
+    "reason": "WebGPU remains capability-gated until animation and capture parity pass."
+  },
+  "maximumPlantedFootDriftMeters": 3.1401849173675503e-16,
+  "liveCanvasFrameClearing": {
+    "samples": 24,
+    "maximumOpaquePixels": 786,
+    "maximumAllowedPixels": 1658.88
+  },
+  "liveRig": {
+    "skinnedMeshes": 88,
+    "bones": 39,
+    "actions": 23,
+    "independentFootLayers": 20,
+    "exportedFootBasis": {
+      "ok": true,
+      "localForwardAxis": "+Y",
+      "intendedForward": [
+        0,
+        0,
+        1
+      ],
+      "minimumAllowed": 0.78,
+      "minimumDot": 0.9407251444332719,
+      "sampledVectors": 1696,
+      "explicitOptOutFrames": 2,
+      "failedActions": [],
+      "actions": {
+        "backstep": {
+          "sampledVectors": 64,
+          "minimumDot": 0.9999988759968476,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "buckSpringHop": {
+          "sampledVectors": 80,
+          "minimumDot": 0.980907068845879,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "chug": {
+          "sampledVectors": 64,
+          "minimumDot": 0.9999960880608171,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "clogJumpPullback": {
+          "sampledVectors": 96,
+          "minimumDot": 0.9999977248641482,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "flatfootHop": {
+          "sampledVectors": 64,
+          "minimumDot": 0.9999994384633023,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gestureBackstepLeft": {
+          "sampledVectors": 60,
+          "minimumDot": 0.999998260154282,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gestureBackstepRight": {
+          "sampledVectors": 60,
+          "minimumDot": 0.999996950239881,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gestureBrushLeft": {
+          "sampledVectors": 52,
+          "minimumDot": 0.9990706215950823,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gestureBrushRight": {
+          "sampledVectors": 52,
+          "minimumDot": 0.9990479073372244,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gestureHeelToeLeft": {
+          "sampledVectors": 56,
+          "minimumDot": 0.99999977331133,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gestureHeelToeRight": {
+          "sampledVectors": 56,
+          "minimumDot": 0.9999998006720768,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gesturePivotLeft": {
+          "sampledVectors": 60,
+          "minimumDot": 0.9407251554692662,
+          "explicitOptOutFrames": 1,
+          "passed": true
+        },
+        "gesturePivotRight": {
+          "sampledVectors": 60,
+          "minimumDot": 0.9407251444332719,
+          "explicitOptOutFrames": 1,
+          "passed": true
+        },
+        "gesturePulseLeft": {
+          "sampledVectors": 44,
+          "minimumDot": 0.9999919849878554,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "gesturePulseRight": {
+          "sampledVectors": 44,
+          "minimumDot": 0.9999821434845801,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "groove": {
+          "sampledVectors": 124,
+          "minimumDot": 0.9999999876737947,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "heelToeChange": {
+          "sampledVectors": 124,
+          "minimumDot": 0.9999998919739115,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "recovery": {
+          "sampledVectors": 36,
+          "minimumDot": 0.999998965673355,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "rockStep": {
+          "sampledVectors": 64,
+          "minimumDot": 0.999999772963723,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "shuffle": {
+          "sampledVectors": 64,
+          "minimumDot": 0.9969618895356469,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "slidingWalk": {
+          "sampledVectors": 124,
+          "minimumDot": 0.9999999530481302,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "turnaround": {
+          "sampledVectors": 124,
+          "minimumDot": 0.9773240532778441,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        },
+        "walkingStep": {
+          "sampledVectors": 124,
+          "minimumDot": 0.9999997108544766,
+          "explicitOptOutFrames": 0,
+          "passed": true
+        }
+      }
+    }
+  },
+  "atlasFallback": true,
+  "bothHeroes": true,
+  "allStyles": true,
+  "integratedGame": {
+    "style": "buck",
+    "action": 1,
+    "arm": {
+      "x": 0,
+      "y": -0.1365031553856742
+    },
+    "renderer": {
+      "ready": true,
+      "error": "",
+      "backend": {
+        "requested": "auto",
+        "actual": "webgl2",
+        "forced": false,
+        "reason": "WebGPU remains capability-gated until animation and capture parity pass."
+      },
+      "internalSize": [
+        192,
+        108
+      ],
+      "skinnedMeshCount": 88,
+      "actionCount": 23,
+      "footLayerActionCount": 20,
+      "boneCount": 39,
+      "boneNames": [
+        "root",
+        "pelvis",
+        "spine",
+        "chest",
+        "neck",
+        "head",
+        "costumehood",
+        "clavicleL",
+        "upperArmL",
+        "forearmL",
+        "handL",
+        "clavicleR",
+        "upperArmR",
+        "forearmR",
+        "handR",
+        "thighL",
+        "shinL",
+        "footL",
+        "toeL",
+        "thighR",
+        "shinR",
+        "footR",
+        "toeR",
+        "costumetail",
+        "CTRLroot",
+        "CTRLpelvis",
+        "CTRLchest",
+        "handIKL",
+        "handIKR",
+        "footIKL",
+        "heelPivotL",
+        "ballPivotL",
+        "toePivotL",
+        "footIKR",
+        "heelPivotR",
+        "ballPivotR",
+        "toePivotR",
+        "kneePoleL",
+        "kneePoleR"
+      ],
+      "character": "kitty",
+      "style": "buck",
+      "clip": "walkingStep",
+      "supportFoot": "right",
+      "plantedFootDriftMeters": 0,
+      "footBasis": {
+        "intendedForward": [
+          0.9294821711763092,
+          0,
+          0.3688670403619363
+        ],
+        "facingRadians": 1.1930065162241472,
+        "left": {
+          "vector": [
+            0.9555168821321054,
+            0,
+            0.29493641341913035
+          ],
+          "dot": 0.9969282281126459,
+          "contact": "brush",
+          "support": false
+        },
+        "right": {
+          "vector": [
+            0.9402676506144175,
+            0,
+            0.3404361103174041
+          ],
+          "dot": 0.9995376778250465,
+          "contact": "flat",
+          "support": true
+        },
+        "minimumDot": 0.9969282281126459
+      },
+      "renderP95Milliseconds": 1.800000011920929,
+      "tailSupportEligible": false,
+      "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"
+    }
+  }
+}

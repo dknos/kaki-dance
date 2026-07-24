@@ -8,12 +8,13 @@ import {
 } from "../js/appalachian/arm-pose-field.js";
 import { AppalachianAnimationController } from "../js/appalachian/animation-controller.js";
 import { BoardLineTracker, BOARD_BOUNDS } from "../js/appalachian/board-lines.js";
+import { GOLDEN_FOOT_GESTURES, validateGoldenFootGestures } from "../js/appalachian/foot-gesture-deck.js";
 import { FROLIC_JUMP_PROFILES } from "../js/appalachian/footwork-catalog.js";
 import { PERFORMANCE_TRANSITIONS, validatePerformanceTransitions } from "../js/appalachian/transition-recipes.js";
 import { CONTACT_SAMPLE_MAP, resolveFootSampleGroup } from "../js/audio/foot-percussion-player.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
-const OUTPUT = resolve(ROOT, "docs/review/appalachian-simulator-gate-1/reports");
+const OUTPUT = resolve(ROOT, "docs/review/appalachian-instrument-gate-2/reports");
 const MODE = process.argv[2] ?? "motion";
 const DT = 1 / 120;
 
@@ -29,7 +30,7 @@ const runners = {
 assert.ok(runners[MODE], `Unknown Appalachian simulator QA mode: ${MODE}`);
 const startedAt = performance.now();
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   candidateStatus: "CANDIDATE — HUMAN REVIEW REQUIRED",
   mode: MODE,
   generatedAt: new Date().toISOString(),
@@ -64,6 +65,7 @@ function runMotion() {
   assert.equal(board.figureEightCandidate, true);
   assert.equal(PERFORMANCE_TRANSITIONS.length, 24);
   assert.deepEqual(validatePerformanceTransitions(), []);
+  assert.deepEqual(validateGoldenFootGestures(), []);
   return {
     fixedStepHz: 120,
     boardBounds: BOARD_BOUNDS,
@@ -72,6 +74,8 @@ function runMotion() {
     directionChanges: dancer.performance.directionChanges,
     figureEightCandidate: board.figureEightCandidate,
     transitionRecipes: PERFORMANCE_TRANSITIONS.length,
+    goldenFootFamilies: Object.keys(GOLDEN_FOOT_GESTURES),
+    pairedGoldenGestureActions: Object.keys(GOLDEN_FOOT_GESTURES).length * 2,
     handoffMilliseconds: {
       minimum: Math.min(...PERFORMANCE_TRANSITIONS.map((value) => value.durationMs)),
       maximum: Math.max(...PERFORMANCE_TRANSITIONS.map((value) => value.durationMs)),

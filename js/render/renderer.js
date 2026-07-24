@@ -80,6 +80,10 @@ export class KakiDanceRenderer {
     });
   }
 
+  setAppalachianCameraPreset(value) {
+    return this.appalachian3d?.setCameraPreset?.(value) ?? "gameplay";
+  }
+
   preloadCharacter(character) {
     return this.heroes.preload(character);
   }

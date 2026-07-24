@@ -63,6 +63,11 @@ REST = {
     "toe.R": ((-0.5, -0.46, 0.26), (-0.5, -0.88, 0.23)),
 }
 
+FOOT_FORWARD_AXIS = "+Y"
+BLENDER_DANCER_FORWARD = (0.0, -1.0, 0.0)
+GLTF_DANCER_FORWARD = (0.0, 0.0, 1.0)
+PLANTED_TOE_FORWARD_DOT_MIN = 0.78
+
 DEFORM_PARENTS = {
     "pelvis": "root",
     "spine": "pelvis",
@@ -205,6 +210,15 @@ def build_armature() -> bpy.types.Object:
         edit[name].use_connect = name not in {
             "pelvis", "clavicle.L", "clavicle.R", "thigh.L", "thigh.R"
         }
+    # The leg IK pole determines the thigh/shin bend plane. A deform foot that
+    # inherits the constrained shin's full rotation also inherits that bend
+    # plane twist, which turned both feet roughly ninety degrees toward
+    # anatomical left. Keep the ankle position connected while giving each
+    # foot its explicit armature-space forward basis.
+    for side in ("L", "R"):
+        edit[f"foot.{side}"].use_inherit_rotation = False
+        edit[f"foot.{side}"].roll = 0.0
+        edit[f"toe.{side}"].roll = 0.0
     for name, (head, tail) in CONTROL_BONES.items():
         bone = data.edit_bones.new(name)
         bone.head = head
@@ -238,6 +252,10 @@ def build_armature() -> bpy.types.Object:
         rig.pose.bones[f"foot.{side}"]["heelControl"] = f"heelPivot.{side}"
         rig.pose.bones[f"foot.{side}"]["ballControl"] = f"ballPivot.{side}"
         rig.pose.bones[f"toe.{side}"]["toeControl"] = f"toePivot.{side}"
+        rig.pose.bones[f"foot.{side}"]["localForwardAxis"] = FOOT_FORWARD_AXIS
+        rig.pose.bones[f"toe.{side}"]["localForwardAxis"] = FOOT_FORWARD_AXIS
+        rig.pose.bones[f"foot.{side}"]["anatomicalSide"] = "left" if side == "L" else "right"
+        rig.pose.bones[f"toe.{side}"]["anatomicalSide"] = "left" if side == "L" else "right"
     rig.pose.bones["pelvis"]["primaryControl"] = "CTRL.pelvis"
     rig.pose.bones["chest"]["primaryControl"] = "CTRL.chest"
     bpy.ops.object.mode_set(mode="OBJECT")
@@ -555,21 +573,29 @@ def build_shoe(
     rig: bpy.types.Object,
 ) -> None:
     sign = 1 if side == "L" else -1
-    x = 0.5 * sign
-    vertices = [
-        (x - 0.28, 0.14, 0.15), (x + 0.28, 0.14, 0.15),
-        (x - 0.30, -0.48, 0.13), (x + 0.30, -0.48, 0.13),
-        (x - 0.26, 0.08, 0.50), (x + 0.26, 0.08, 0.50),
-        (x - 0.32, -0.52, 0.34), (x + 0.32, -0.52, 0.34),
-        (x - 0.27, -0.94, 0.11), (x + 0.27, -0.94, 0.11),
-        (x - 0.29, -0.91, 0.27), (x + 0.29, -0.91, 0.27),
+    center_x = 0.5 * sign
+    # Define one anatomical shoe in outward/medial coordinates, then build the
+    # opposite shoe by reflecting vertex positions and reversing winding. No
+    # negative object scale survives into the source or glTF.
+    local_vertices = [
+        (-0.23, 0.16, 0.14), (0.29, 0.16, 0.14),
+        (-0.26, -0.47, 0.12), (0.33, -0.49, 0.12),
+        (-0.20, 0.10, 0.49), (0.27, 0.10, 0.49),
+        (-0.28, -0.52, 0.34), (0.35, -0.54, 0.35),
+        (-0.25, -0.97, 0.10), (0.30, -0.95, 0.10),
+        (-0.27, -0.94, 0.28), (0.32, -0.92, 0.29),
     ]
-    faces = [
+    vertices = [
+        (center_x + sign * outward, forward, height)
+        for outward, forward, height in local_vertices
+    ]
+    base_faces = [
         (0, 1, 5, 4), (0, 2, 3, 1), (4, 5, 7, 6),
         (0, 4, 6, 2), (1, 3, 7, 5), (2, 6, 10, 8),
         (3, 9, 11, 7), (6, 7, 11, 10), (8, 10, 11, 9),
         (2, 8, 9, 3),
     ]
+    faces = base_faces if side == "L" else [tuple(reversed(face)) for face in base_faces]
     obj = mesh_object(f"{prefix}.DanceShoe.{side}", vertices, faces, material, collection)
     weights = {
         f"foot.{side}": [(index, 1.0) for index in range(8)],
@@ -577,9 +603,17 @@ def build_shoe(
     }
     add_armature_modifier(obj, rig, weights)
     obj["shoeArticulation"] = "separate heel, ball and toe silhouette"
+    obj["anatomicalSide"] = "left" if side == "L" else "right"
+    obj["mirroring"] = "reflected vertices with reversed winding and applied positive transforms"
+    obj["forwardAxisBlender"] = "-Y"
+    obj["geometryLandmarks"] = "heel, medial instep, broad toe box, articulated sole"
     curve_mesh(
         f"{prefix}.Sole.{side}",
-        [(x - 0.26, 0.15, 0.11), (x, -0.42, 0.08), (x + 0.02, -0.93, 0.07)],
+        [
+            (center_x + sign * -0.22, 0.16, 0.09),
+            (center_x + sign * 0.02, -0.43, 0.07),
+            (center_x + sign * 0.04, -0.96, 0.06),
+        ],
         0.035,
         f"foot.{side}",
         sole_material,
@@ -870,7 +904,7 @@ def action_specs() -> dict[str, dict]:
         "upperArm.R": (-3, 6, 8),
         "forearm.R": (8, -2, -3),
     }
-    return {
+    specs = {
         "groove": {
             "display": "Neutral musical groove",
             "frames": [
@@ -1087,6 +1121,144 @@ def action_specs() -> dict[str, dict]:
             ],
         },
     }
+    specs.update(golden_gesture_specs(left_plant, right_plant, relaxed))
+    return specs
+
+
+def golden_gesture_specs(
+    left_plant: tuple[float, float, float],
+    right_plant: tuple[float, float, float],
+    relaxed: dict,
+) -> dict[str, dict]:
+    """Small, paired, approval-focused gesture deck for independent feet."""
+    left_specs = {
+        "gesturePulseLeft": {
+            "display": "Left basic pulse",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.18, 0, -0.16), pelvis_rot=(0, -2, -4), chest=(0, 3, 4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+                (3, pose(pelvis_shift=(-0.25, 0, -0.21), pelvis_rot=(0, -3, -5), chest=(0, 4, 6), foot_R=right_plant, **{"foot.L": (0.53, -0.08, 0.48), "foot_rot.L": (-8, 0, 0), **relaxed})),
+                (6, pose(pelvis_shift=(-0.17, -0.02, -0.13), pelvis_rot=(0, -2, -3), chest=(0, 3, 4), foot_R=right_plant, **{"foot.L": (0.54, -0.32, 0.56), "foot_rot.L": (-13, 0, 0), **relaxed})),
+                (8, pose(pelvis_shift=(0.06, -0.01, -0.19), pelvis_rot=(0, 1, 2), chest=(0, -2, -3), foot_R=right_plant, **{"foot.L": (0.52, -0.47, 0.39), "foot_rot.L": (8, 0, 0), **relaxed})),
+                (11, pose(pelvis_shift=(0.17, 0, -0.15), pelvis_rot=(0, 2, 3), chest=(0, -3, -4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "right", "contact": "anticipation", "freeFoot": "left"},
+                {"frame": 8, "support": "left", "contact": "flat", "freeFoot": "right"},
+                {"frame": 11, "support": "left", "contact": "recover", "freeFoot": "right"},
+            ],
+        },
+        "gestureBrushLeft": {
+            "display": "Left brush-return",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.22, 0, -0.18), pelvis_rot=(0, -3, -5), chest=(0, 4, 6), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+                (3, pose(pelvis_shift=(-0.27, 0, -0.21), pelvis_rot=(0, -4, -6), chest=(0, 5, 7), foot_R=right_plant, **{"foot.L": (0.55, -0.12, 0.53), "foot_rot.L": (-14, 0, 2), **relaxed})),
+                (6, pose(pelvis_shift=(-0.20, -0.02, -0.14), pelvis_rot=(0, -3, -4), chest=(0, 4, 5), foot_R=right_plant, **{"foot.L": (0.58, -0.76, 0.44), "foot_rot.L": (7, 0, -3), **relaxed})),
+                (9, pose(pelvis_shift=(-0.24, 0.01, -0.18), pelvis_rot=(0, -3, -5), chest=(0, 4, 6), foot_R=right_plant, **{"foot.L": (0.55, -0.24, 0.49), "foot_rot.L": (-10, 0, 2), **relaxed})),
+                (13, pose(pelvis_shift=(-0.14, 0, -0.14), pelvis_rot=(0, -2, -3), chest=(0, 3, 4), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "right", "contact": "anticipation", "freeFoot": "left"},
+                {"frame": 6, "support": "right", "contact": "brush", "freeFoot": "left"},
+                {"frame": 9, "support": "right", "contact": "brush-return", "freeFoot": "left"},
+                {"frame": 13, "support": "right", "contact": "toe", "freeFoot": "left"},
+            ],
+        },
+        "gestureHeelToeLeft": {
+            "display": "Left heel-toe articulation",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.20, 0, -0.17), pelvis_rot=(0, -3, -5), chest=(0, 4, 6), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+                (4, pose(pelvis_shift=(-0.26, 0, -0.20), pelvis_rot=(0, -4, -6), chest=(0, 5, 7), foot_R=right_plant, foot_L=left_plant, **{"foot_rot.L": (25, 0, 0), "toe_rot.L": (-19, 0, 0), **relaxed})),
+                (7, pose(pelvis_shift=(-0.17, 0, -0.13), pelvis_rot=(0, -2, -4), chest=(0, 3, 5), foot_R=right_plant, foot_L=left_plant, **{"foot_rot.L": (-17, 0, 0), "toe_rot.L": (24, 0, 0), **relaxed})),
+                (10, pose(pelvis_shift=(-0.10, 0, -0.15), pelvis_rot=(0, -1, -2), chest=(0, 2, 3), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+                (14, pose(pelvis_shift=(-0.18, 0, -0.16), pelvis_rot=(0, -2, -4), chest=(0, 3, 5), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "right", "contact": "anticipation", "freeFoot": "left"},
+                {"frame": 4, "support": "right", "contact": "heel", "freeFoot": "left"},
+                {"frame": 7, "support": "right", "contact": "toe", "freeFoot": "left"},
+                {"frame": 14, "support": "right", "contact": "recover", "freeFoot": "left"},
+            ],
+        },
+        "gestureBackstepLeft": {
+            "display": "Left backstep/chug",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.20, 0, -0.17), pelvis_rot=(0, -3, -5), chest=(0, 4, 6), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+                (4, pose(pelvis_shift=(-0.27, 0.03, -0.22), pelvis_rot=(0, -4, -6), chest=(0, 5, 7), foot_R=right_plant, **{"foot.L": (0.55, 0.18, 0.54), "foot_rot.L": (-12, 0, 0), **relaxed})),
+                (8, pose(pelvis_shift=(-0.14, 0.11, -0.14), pelvis_rot=(0, -2, -3), chest=(0, 3, 4), foot_R=right_plant, **{"foot.L": (0.57, 0.46, 0.41), "foot_rot.L": (11, 0, 0), **relaxed})),
+                (11, pose(pelvis_shift=(0.10, 0.05, -0.20), pelvis_rot=(0, 1, 3), chest=(0, -2, -4), foot_R=right_plant, foot_L=(0.56, 0.22, 0.38), **relaxed)),
+                (15, pose(pelvis_shift=(0.18, 0, -0.16), pelvis_rot=(0, 2, 4), chest=(0, -3, -5), foot_R=right_plant, foot_L=left_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "right", "contact": "anticipation", "freeFoot": "left"},
+                {"frame": 8, "support": "right", "contact": "heel", "freeFoot": "left"},
+                {"frame": 11, "support": "left", "contact": "flat", "freeFoot": "right"},
+                {"frame": 15, "support": "left", "contact": "recover", "freeFoot": "right"},
+            ],
+        },
+        "gesturePivotLeft": {
+            "display": "Left low pivot",
+            "frames": [
+                (1, pose(pelvis_shift=(0.15, 0, -0.20), pelvis_rot=(0, 2, 4), chest=(0, -3, -5), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+                (4, pose(pelvis_shift=(0.23, 0, -0.24), pelvis_rot=(0, 8, 10), chest=(0, -9, -11), foot_L=left_plant, **{"foot_rot.L": (-8, 0, -12), "foot.R": (-0.46, -0.18, 0.48), **relaxed})),
+                (8, pose(pelvis_shift=(0.19, -0.03, -0.18), pelvis_rot=(0, 14, 17), chest=(0, -15, -18), foot_L=left_plant, **{"foot_rot.L": (-6, 0, -20), "foot.R": (-0.18, -0.50, 0.43), **relaxed})),
+                (12, pose(pelvis_shift=(0.06, 0, -0.19), pelvis_rot=(0, 8, 10), chest=(0, -9, -11), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+                (16, pose(pelvis_shift=(0.02, 0, -0.16), pelvis_rot=(0, 2, 3), chest=(0, -3, -4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "left", "contact": "anticipation", "freeFoot": "right"},
+                {"frame": 4, "support": "left", "contact": "ball-pivot", "freeFoot": "right", "toeForwardOptOut": "authored low pivot"},
+                {"frame": 12, "support": "both", "contact": "flat", "freeFoot": "right"},
+                {"frame": 16, "support": "both", "contact": "resolve", "freeFoot": "right"},
+            ],
+        },
+    }
+    paired = {}
+    for left_id, definition in left_specs.items():
+        paired[left_id] = definition
+        right_id = left_id.removesuffix("Left") + "Right"
+        paired[right_id] = mirror_gesture_definition(definition, right_id)
+    return paired
+
+
+def mirror_gesture_definition(definition: dict, right_id: str) -> dict:
+    frames = [(frame, mirror_pose(frame_pose)) for frame, frame_pose in definition["frames"]]
+    contacts = []
+    for contact in definition["contacts"]:
+        mirrored = dict(contact)
+        for key in ("support", "freeFoot"):
+            if mirrored.get(key) == "left":
+                mirrored[key] = "right"
+            elif mirrored.get(key) == "right":
+                mirrored[key] = "left"
+        contacts.append(mirrored)
+    return {
+        "display": definition["display"].replace("Left", "Right").replace("left", "right"),
+        "frames": frames,
+        "contacts": contacts,
+        "anatomicalMirrorOf": right_id.removesuffix("Right") + "Left",
+    }
+
+
+def mirror_pose(value: dict) -> dict:
+    result = {}
+    for key, item in value.items():
+        mirrored_key = key
+        if key.endswith(".L"):
+            mirrored_key = key[:-2] + ".R"
+        elif key.endswith(".R"):
+            mirrored_key = key[:-2] + ".L"
+        if isinstance(item, tuple) and len(item) == 3:
+            if key in {"root", "pelvis_shift"} or key.startswith(("foot.", "knee.")):
+                result[mirrored_key] = (-item[0], item[1], item[2])
+            elif key.startswith(("foot_rot.", "toe_rot.")):
+                result[mirrored_key] = (item[0], -item[1], -item[2])
+            elif key.startswith(("upperArm.", "forearm.", "hand.")):
+                result[mirrored_key] = (-item[0], -item[1], -item[2])
+            else:
+                result[mirrored_key] = (item[0], -item[1], -item[2])
+        else:
+            result[mirrored_key] = item
+    return result
 
 
 def build_actions(rig: bpy.types.Object) -> dict:
@@ -1102,6 +1274,22 @@ def build_actions(rig: bpy.types.Object) -> dict:
         action["bpm"] = BPM
         action["contacts"] = json.dumps(definition["contacts"], separators=(",", ":"))
         action["candidateStatus"] = "human-review-required"
+        action["movementProvenance"] = (
+            "hand-keyed on shared biped from practitioner-informed mechanical reference"
+        )
+        action["humanReviewStatus"] = "CANDIDATE — HUMAN REVIEW REQUIRED"
+        action["anatomicalMirrorOf"] = definition.get("anatomicalMirrorOf", "")
+        action["toeForwardExemptions"] = json.dumps(
+            [
+                {
+                    "frame": contact["frame"],
+                    "reason": contact["toeForwardOptOut"],
+                }
+                for contact in definition["contacts"]
+                if contact.get("toeForwardOptOut")
+            ],
+            separators=(",", ":"),
+        )
         rig.animation_data.action = action
         for frame, frame_pose in definition["frames"]:
             key_pose(rig, frame, frame_pose)
@@ -1169,8 +1357,8 @@ def validate_production_source(
     actions: dict,
 ) -> dict:
     errors = []
-    if len(actions) != 13:
-        errors.append("thirteen simulator gate actions are required")
+    if len(actions) != 23:
+        errors.append("thirteen Gate 1 actions plus ten paired golden gestures are required")
     required = {
         "pelvis", "spine", "chest", "clavicle.L", "clavicle.R",
         "upperArm.L", "upperArm.R", "forearm.L", "forearm.R",
@@ -1199,9 +1387,81 @@ def validate_production_source(
             errors.append(f"{collection.name} does not contain enough weighted production parts")
         if vertices < 2500:
             errors.append(f"{collection.name} topology is too sparse for the candidate")
+        shoes = sorted(
+            (obj for obj in meshes if ".DanceShoe." in obj.name),
+            key=lambda value: value.name,
+        )
+        if len(shoes) != 2:
+            errors.append(f"{collection.name} needs exactly two anatomical shoes")
+        for shoe in shoes:
+            if any(value <= 0 for value in shoe.scale):
+                errors.append(f"{shoe.name} retains a negative or zero object scale")
+            if shoe.matrix_world.determinant() <= 0:
+                errors.append(f"{shoe.name} has reflected object transforms")
+            if not all(polygon.area > 1e-7 for polygon in shoe.data.polygons):
+                errors.append(f"{shoe.name} has degenerate shoe faces")
+    foot_basis_validation = validate_action_foot_basis(rig, actions, errors)
+    rig["footBasisValidation"] = json.dumps(foot_basis_validation, separators=(",", ":"))
     if errors:
         raise RuntimeError("Production source validation failed:\n" + "\n".join(errors))
     return mesh_summary
+
+
+def validate_action_foot_basis(
+    rig: bpy.types.Object,
+    actions: dict,
+    errors: list[str],
+) -> dict:
+    sampled = 0
+    opted_out = 0
+    minimum_dot = 1.0
+    action_summary = {}
+    for clip_id, exported in actions.items():
+        action = bpy.data.actions[f"FrolicCandidate.{clip_id}"]
+        rig.animation_data.action = action
+        exemptions = {
+            int(value["frame"]): str(value["reason"])
+            for value in json.loads(str(action.get("toeForwardExemptions", "[]")))
+        }
+        clip_minimum = 1.0
+        clip_samples = 0
+        for frame in range(exported["frameRange"][0], exported["frameRange"][1] + 1):
+            bpy.context.scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            if frame in exemptions:
+                opted_out += 1
+                continue
+            for side in ("L", "R"):
+                for name in (f"foot.{side}", f"toe.{side}"):
+                    bone = rig.pose.bones[name]
+                    vector = bone.tail - bone.head
+                    planar = Vector((vector.x, vector.y, 0.0))
+                    if planar.length < 1e-7:
+                        errors.append(f"{clip_id}/{name} has no planar forward at frame {frame}")
+                        continue
+                    dot = planar.normalized().dot(Vector(BLENDER_DANCER_FORWARD))
+                    sampled += 1
+                    clip_samples += 1
+                    minimum_dot = min(minimum_dot, dot)
+                    clip_minimum = min(clip_minimum, dot)
+                    if dot < PLANTED_TOE_FORWARD_DOT_MIN:
+                        errors.append(
+                            f"{clip_id}/{name} points away from dancer forward at "
+                            f"frame {frame}: dot={dot:.4f}"
+                        )
+        action_summary[clip_id] = {
+            "samples": clip_samples,
+            "minimumDot": round(clip_minimum, 6),
+            "optOutFrames": exemptions,
+        }
+    rig.animation_data.action = bpy.data.actions["FrolicCandidate.groove"]
+    return {
+        "sampledVectors": sampled,
+        "minimumDot": round(minimum_dot, 6),
+        "minimumAllowedDot": PLANTED_TOE_FORWARD_DOT_MIN,
+        "explicitOptOutFrames": opted_out,
+        "actions": action_summary,
+    }
 
 
 def main() -> None:
@@ -1240,6 +1500,17 @@ def main() -> None:
         "cameraType": "orthographic-three-quarter-front",
         "deformBones": [bone.name for bone in rig.data.bones if bone.use_deform],
         "controls": [bone.name for bone in rig.data.bones if not bone.use_deform],
+        "footBasis": {
+            "localForwardAxis": FOOT_FORWARD_AXIS,
+            "blenderDancerForward": list(BLENDER_DANCER_FORWARD),
+            "gltfDancerForward": list(GLTF_DANCER_FORWARD),
+            "plantedToeForwardDotMin": PLANTED_TOE_FORWARD_DOT_MIN,
+            "footBones": ["foot.L", "foot.R"],
+            "toeBones": ["toe.L", "toe.R"],
+            "sourceRepair": "foot deform bones keep connected ankle positions without inheriting shin IK pole twist",
+            "shoeMirroring": "reflected vertices, reversed winding, positive applied transforms",
+            "validation": json.loads(str(rig["footBasisValidation"])),
+        },
         "meshSummary": mesh_summary,
         "actions": actions,
         "manualPixelCleanup": {

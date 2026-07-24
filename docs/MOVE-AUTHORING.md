@@ -17,6 +17,12 @@ references, entry-frame candidates, and valid successors. A candidate is not
 legal until the live transition solver returns a resolved entry and planted
 support.
 
+Every Appalachian action also declares anatomical mirror provenance, all
+contact frames, and any explicit toe-forward exception. `foot.L`, `foot.R`,
+`toe.L`, and `toe.R` use local +Y forward; ordinary exported frames must meet
+the 0.78 planar dot threshold against dancer forward. Never repair a failed
+sample with a runtime shoe rotation.
+
 The authored right-stick samples live in the GLB manifest. Stick position
 blends nearby poses; it never maps directly to shoulder rotations. Add a pose
 sample only after checking both heroes, both arms, torso collision, jump safety

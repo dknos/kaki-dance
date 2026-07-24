@@ -40,8 +40,8 @@ await page.waitForFunction(
   undefined,
   { timeout: 15_000 },
 );
-await page.keyboard.press("KeyZ");
-await page.waitForTimeout(18);
+await page.keyboard.press("ArrowLeft");
+await page.waitForTimeout(100);
 const immediate = await page.evaluate(() => {
   const value = globalThis.kakiDance.getSnapshot();
   return {
@@ -54,13 +54,14 @@ const immediate = await page.evaluate(() => {
 });
 assert.equal(immediate.mode, "frolic");
 assert.equal(immediate.style, "flatfoot");
-assert.equal(immediate.input.kind, "step");
+assert.equal(immediate.input.kind, "basic");
+assert.equal(immediate.input.foot, "left");
 assert.ok(immediate.input.actionId > 0);
 assert.ok(Number.isFinite(immediate.input.simulationReceiptTimestamp));
 assert.equal(immediate.topology, "biped");
 assert.equal(immediate.practice, null);
 
-for (const code of ["KeyX", "KeyC", "Space"]) {
+for (const code of ["KeyQ", "KeyE", "KeyF", "KeyT", "Space"]) {
   await page.keyboard.press(code);
   await page.waitForTimeout(260);
 }
@@ -168,15 +169,16 @@ await touchPage.waitForFunction(
   undefined,
   { timeout: 15_000 },
 );
-await touchPage.locator("[data-control='action']").tap();
-await touchPage.waitForTimeout(32);
+await touchPage.locator("[data-control='leftFoot']").tap();
+await touchPage.waitForTimeout(100);
 const touchInput = await touchPage.evaluate(() => {
   const snapshot = globalThis.kakiDance.getSnapshot();
   return {
     lastInput: snapshot.simulation?.frolic?.lastInput,
   };
 });
-assert.equal(touchInput.lastInput.kind, "step");
+assert.equal(touchInput.lastInput.kind, "basic");
+assert.equal(touchInput.lastInput.foot, "left");
 assert.equal(touchInput.lastInput.device, "touch");
 assert.ok(touchInput.lastInput.actionId > 0);
 const touch = await touchPage.evaluate(() => {
@@ -205,7 +207,15 @@ const touch = await touchPage.evaluate(() => {
 assert.equal(touch.mode, "frolic");
 assert.deepEqual(
   Object.fromEntries(touch.buttons.map((button) => [button.control, button.label])),
-  { style: "BRUSH", power: "DRIVE", jump: "JUMP", action: "STEP" },
+  {
+    brush: "Q · BRUSH",
+    articulation: "E · HEEL/TOE",
+    drive: "F · DRIVE",
+    turn: "T · TURN",
+    jump: "JUMP",
+    leftFoot: "L FOOT",
+    rightFoot: "R FOOT",
+  },
 );
 assert.ok(touch.buttons.every((button) => button.width >= 65 && button.height >= 39));
 assert.ok(touch.buttons.every((button) => button.left >= touch.canvas.left));

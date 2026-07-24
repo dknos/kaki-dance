@@ -72,6 +72,7 @@ export class AppalachianThreeRenderer {
       contacts: false,
       centerOfMass: false,
       rootTrail: false,
+      footBasis: false,
     };
     this.frameDurations = [];
     this.rootTrail = [];
@@ -79,6 +80,9 @@ export class AppalachianThreeRenderer {
     this.lastClip = "";
     this.currentAction = null;
     this.previousAction = null;
+    this.footLayerActions = new Map();
+    this.activeFootLayerKeys = new Set();
+    this.footBasis = null;
     this.supportLock = {
       foot: "none",
       target: null,
@@ -234,6 +238,8 @@ export class AppalachianThreeRenderer {
       if (!getBone(this.bones, "foot.L") || !getBone(this.bones, "foot.R")) {
         throw new Error("The live GLB is missing paired support feet.");
       }
+      this.buildFootLayerActions();
+      this.buildFootBasisDiagnostics();
       this.skeletonHelper = new THREE.SkeletonHelper(this.model);
       this.skeletonHelper.material.depthTest = false;
       this.skeletonHelper.material.transparent = true;
@@ -269,6 +275,19 @@ export class AppalachianThreeRenderer {
     this.debug = { ...this.debug, ...value };
     if (this.skeletonHelper) this.skeletonHelper.visible = Boolean(this.debug.skeleton);
     this.rootTrailLine.visible = Boolean(this.debug.rootTrail);
+    this.setFootBasisVisibility(Boolean(this.debug.footBasis));
+  }
+
+  setCameraPreset(value = "gameplay") {
+    const preset = {
+      front: [0, 3.1, 14],
+      side: [14, 3.1, 0],
+      gameplay: [7.4, 7.6, 11.6],
+    }[value] ?? [7.4, 7.6, 11.6];
+    this.camera.position.set(...preset);
+    this.camera.lookAt(0, 2.45, 0);
+    this.camera.updateProjectionMatrix();
+    return ["front", "side", "gameplay"].includes(value) ? value : "gameplay";
   }
 
   render(snapshot) {
@@ -331,11 +350,70 @@ export class AppalachianThreeRenderer {
       this.previousAction.setEffectiveTimeScale(0);
     }
     action.setEffectiveWeight(1 - previousWeight * 0.5);
+    this.applyFootLayers(dancer);
     this.mixer.update(0);
     if (this.previousAction && previousWeight <= 0.002) {
       this.previousAction.stop();
       this.previousAction = null;
     }
+  }
+
+  buildFootLayerActions() {
+    for (const clip of this.animations ?? []) {
+      const id = clip.name.replace(/^FrolicCandidate\./, "");
+      if (!id.startsWith("gesture")) continue;
+      for (const side of ["left", "right"]) {
+        const suffix = side === "left" ? "L" : "R";
+        const trackNames = [`thigh${suffix}.`, `shin${suffix}.`, `foot${suffix}.`, `toe${suffix}.`];
+        const tracks = clip.tracks
+          .filter((track) => trackNames.some((name) => track.name.startsWith(name)))
+          .map((track) => track.clone());
+        if (!tracks.length) continue;
+        const layerClip = new THREE.AnimationClip(
+          `FootLayer.${id}.${side}`,
+          clip.duration,
+          tracks,
+        );
+        THREE.AnimationUtils.makeClipAdditive(layerClip, 0, layerClip, 30);
+        const action = this.mixer.clipAction(layerClip);
+        action.blendMode = THREE.AdditiveAnimationBlendMode;
+        action.enabled = false;
+        action.setEffectiveTimeScale(0);
+        action.play();
+        this.footLayerActions.set(`${id}:${side}`, action);
+      }
+    }
+  }
+
+  applyFootLayers(dancer) {
+    const next = new Set();
+    for (const layer of dancer.footLayers ?? []) {
+      if (!(layer.phase > 0.001) && layer.stage === "planted") continue;
+      const clipId = layer.clipId || (layer.side === "left" ? "gesturePulseLeft" : "gesturePulseRight");
+      const key = `${clipId}:${layer.side}`;
+      const action = this.footLayerActions.get(key);
+      if (!action) continue;
+      const duration = Math.max(1 / 30, action.getClip().duration);
+      action.time = clamp(layer.phase, 0, 1) * duration;
+      action.enabled = true;
+      const envelope = layer.stage === "anticipation"
+        ? clamp(layer.phase * 3.4, 0.16, 0.62)
+        : layer.phase > 0.82
+          ? clamp((1 - layer.phase) / 0.18, 0, 1)
+          : 1;
+      action.setEffectiveWeight(envelope);
+      action.setEffectiveTimeScale(0);
+      next.add(key);
+    }
+    for (const key of this.activeFootLayerKeys) {
+      if (next.has(key)) continue;
+      const action = this.footLayerActions.get(key);
+      if (action) {
+        action.enabled = false;
+        action.setEffectiveWeight(0);
+      }
+    }
+    this.activeFootLayerKeys = next;
   }
 
   applyUpperBody(dancer) {
@@ -358,6 +436,18 @@ export class AppalachianThreeRenderer {
       addBoneEuler(getBone(this.bones, "pelvis"), line.pelvisDegrees, safety);
       addBoneEuler(getBone(this.bones, "chest"), line.chestDegrees, safety);
     }
+    const lean = dancer.bodyLean ?? {};
+    const styleScale = { flatfoot: 0.62, buck: 0.82, clog: 1 }[this.style];
+    addBoneEuler(getBone(this.bones, "pelvis"), [
+      (Number(lean.forward) || 0) * -3.2,
+      (Number(lean.turn) || 0) * 2.2,
+      (Number(lean.lateral) || 0) * 4.4,
+    ], styleScale * safety);
+    addBoneEuler(getBone(this.bones, "chest"), [
+      (Number(lean.forward) || 0) * 2.4,
+      (Number(lean.turn) || 0) * -3.2,
+      (Number(lean.lateral) || 0) * -5.2,
+    ], styleScale * safety);
     if (upper.handAccentWeight > 0) {
       const accent = upper.handAccent === "clap"
         ? { left: [10, -8, -28], right: [-10, 8, 28] }
@@ -469,6 +559,183 @@ export class AppalachianThreeRenderer {
       this.rootTrailLine.geometry.setDrawRange(0, this.rootTrail.length);
     }
     this.rootTrailLine.visible = Boolean(this.debug.rootTrail);
+    this.updateFootBasisDiagnostics(dancer);
+  }
+
+  buildFootBasisDiagnostics() {
+    this.footAxes = {};
+    this.toeForwardArrows = {};
+    this.footLabels = {};
+    for (const [side, footName, color] of [
+      ["left", "foot.L", 0x4be0b4],
+      ["right", "foot.R", 0xf0744b],
+    ]) {
+      const foot = getBone(this.bones, footName);
+      const axes = new THREE.AxesHelper(0.48);
+      axes.material.depthTest = false;
+      axes.visible = false;
+      foot.add(axes);
+      this.footAxes[side] = axes;
+      const arrow = new THREE.ArrowHelper(
+        new THREE.Vector3(0, 0, 1),
+        new THREE.Vector3(),
+        0.72,
+        color,
+        0.16,
+        0.1,
+      );
+      arrow.visible = false;
+      arrow.line.material.depthTest = false;
+      arrow.cone.material.depthTest = false;
+      this.scene.add(arrow);
+      this.toeForwardArrows[side] = arrow;
+      const label = diagnosticLabel(side === "left" ? "L" : "R", color);
+      label.visible = false;
+      this.scene.add(label);
+      this.footLabels[side] = label;
+    }
+    this.rootForwardArrow = new THREE.ArrowHelper(
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(),
+      1.05,
+      0xf1c86b,
+      0.2,
+      0.13,
+    );
+    this.rootForwardArrow.line.material.depthTest = false;
+    this.rootForwardArrow.cone.material.depthTest = false;
+    this.rootForwardArrow.visible = false;
+    this.scene.add(this.rootForwardArrow);
+  }
+
+  setFootBasisVisibility(visible) {
+    for (const value of Object.values(this.footAxes ?? {})) value.visible = visible;
+    for (const value of Object.values(this.toeForwardArrows ?? {})) value.visible = visible;
+    for (const value of Object.values(this.footLabels ?? {})) value.visible = visible;
+    if (this.rootForwardArrow) this.rootForwardArrow.visible = visible;
+  }
+
+  updateFootBasisDiagnostics(dancer) {
+    if (!this.toeForwardArrows) return;
+    const intended = new THREE.Vector3(0, 0, 1)
+      .applyQuaternion(this.dancerRoot.getWorldQuaternion(new THREE.Quaternion()))
+      .setY(0)
+      .normalize();
+    const values = {};
+    for (const [side, toeName] of [["left", "toe.L"], ["right", "toe.R"]]) {
+      const toe = getBone(this.bones, toeName);
+      const origin = new THREE.Vector3();
+      const direction = new THREE.Vector3(0, 1, 0);
+      toe.getWorldPosition(origin);
+      direction.applyQuaternion(toe.getWorldQuaternion(new THREE.Quaternion()));
+      const planar = direction.clone().setY(0);
+      if (planar.lengthSq() > 1e-8) planar.normalize();
+      const arrow = this.toeForwardArrows[side];
+      arrow.position.copy(origin);
+      if (planar.lengthSq() > 1e-8) arrow.setDirection(planar);
+      const label = this.footLabels[side];
+      label.position.copy(origin).add(new THREE.Vector3(0, 0.42, 0));
+      values[side] = Object.freeze({
+        vector: Object.freeze(planar.toArray()),
+        dot: planar.dot(intended),
+        contact: dancer.feet?.[side]?.contact ?? "flat",
+        support: dancer.supportingFoot === side,
+      });
+    }
+    this.rootForwardArrow.position.set(
+      Number(dancer.worldPosition?.x) || 0,
+      0.08,
+      Number(dancer.worldPosition?.z) || 0,
+    );
+    this.rootForwardArrow.setDirection(intended);
+    this.footBasis = Object.freeze({
+      intendedForward: Object.freeze(intended.toArray()),
+      facingRadians: Number(dancer.facing) || 0,
+      left: values.left,
+      right: values.right,
+      minimumDot: Math.min(values.left.dot, values.right.dot),
+    });
+    this.setFootBasisVisibility(Boolean(this.debug.footBasis));
+  }
+
+  validateExportedFootBasis() {
+    if (!this.ready || !this.mixer || !this.manifest) {
+      return Object.freeze({ ok: false, reason: "renderer-not-ready", actions: Object.freeze({}) });
+    }
+    const minimumAllowed = Number(this.manifest.footBasis?.plantedToeForwardDotMin) || 0.78;
+    const intended = new THREE.Vector3(0, 0, 1);
+    const actionResults = {};
+    let minimumDot = 1;
+    let sampledVectors = 0;
+    let explicitOptOutFrames = 0;
+
+    this.mixer.stopAllAction();
+    for (const action of this.footLayerActions.values()) {
+      action.enabled = false;
+      action.setEffectiveWeight(0);
+    }
+    this.activeFootLayerKeys.clear();
+
+    for (const [clipId, metadata] of Object.entries(this.manifest.actions ?? {})) {
+      const action = this.actions.get(clipId);
+      if (!action) continue;
+      const [firstFrame, lastFrame] = metadata.frameRange ?? [1, 1];
+      const excluded = new Set(
+        (metadata.toeForwardExemptions ?? []).map((value) => Number(value.frame)),
+      );
+      explicitOptOutFrames += excluded.size;
+      let actionMinimum = 1;
+      let actionSamples = 0;
+      action.reset();
+      action.enabled = true;
+      action.setEffectiveWeight(1);
+      action.setEffectiveTimeScale(0);
+      action.play();
+      for (let frame = firstFrame; frame <= lastFrame; frame += 1) {
+        if (excluded.has(frame)) continue;
+        const denominator = Math.max(1, lastFrame - firstFrame);
+        action.time = ((frame - firstFrame) / denominator) * action.getClip().duration;
+        this.mixer.update(0);
+        this.model.updateMatrixWorld(true);
+        for (const name of ["foot.L", "toe.L", "foot.R", "toe.R"]) {
+          const bone = getBone(this.bones, name);
+          const direction = new THREE.Vector3(0, 1, 0)
+            .applyQuaternion(bone.getWorldQuaternion(new THREE.Quaternion()))
+            .setY(0);
+          if (direction.lengthSq() <= 1e-8) continue;
+          const dot = direction.normalize().dot(intended);
+          actionMinimum = Math.min(actionMinimum, dot);
+          minimumDot = Math.min(minimumDot, dot);
+          actionSamples += 1;
+          sampledVectors += 1;
+        }
+      }
+      action.stop();
+      actionResults[clipId] = Object.freeze({
+        sampledVectors: actionSamples,
+        minimumDot: actionMinimum,
+        explicitOptOutFrames: excluded.size,
+        passed: actionMinimum >= minimumAllowed,
+      });
+    }
+
+    this.lastClip = "";
+    this.currentAction = null;
+    this.previousAction = null;
+    const failedActions = Object.entries(actionResults)
+      .filter(([, value]) => !value.passed)
+      .map(([clipId]) => clipId);
+    return Object.freeze({
+      ok: sampledVectors > 0 && failedActions.length === 0,
+      localForwardAxis: "+Y",
+      intendedForward: Object.freeze(intended.toArray()),
+      minimumAllowed,
+      minimumDot,
+      sampledVectors,
+      explicitOptOutFrames,
+      failedActions: Object.freeze(failedActions),
+      actions: Object.freeze(actionResults),
+    });
   }
 
   getDiagnostics() {
@@ -481,6 +748,7 @@ export class AppalachianThreeRenderer {
       internalSize: Object.freeze([this.canvas.width, this.canvas.height]),
       skinnedMeshCount: this.skinnedMeshes?.length ?? 0,
       actionCount: this.actions?.size ?? 0,
+      footLayerActionCount: this.footLayerActions?.size ?? 0,
       boneCount: this.bones?.size ?? 0,
       boneNames: Object.freeze([...(this.bones?.keys?.() ?? [])]),
       character: this.character,
@@ -488,6 +756,7 @@ export class AppalachianThreeRenderer {
       clip: this.lastClip,
       supportFoot: this.supportLock.foot,
       plantedFootDriftMeters: this.supportLock.drift,
+      footBasis: this.footBasis,
       renderP95Milliseconds: p95,
       tailSupportEligible: false,
       candidateStatus: this.manifest?.candidateStatus ?? "CANDIDATE — HUMAN REVIEW REQUIRED",
@@ -551,6 +820,35 @@ function marker(color, radius = 0.055) {
     new THREE.SphereGeometry(radius, 8, 6),
     new THREE.MeshBasicMaterial({ color, depthTest: false, transparent: true, opacity: 0.9 }),
   );
+}
+
+function diagnosticLabel(text, color) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, 64, 64);
+  context.fillStyle = "#08141d";
+  context.beginPath();
+  context.arc(32, 32, 25, 0, Math.PI * 2);
+  context.fill();
+  context.lineWidth = 6;
+  context.strokeStyle = `#${new THREE.Color(color).getHexString()}`;
+  context.stroke();
+  context.font = "bold 32px monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "#fff6d8";
+  context.fillText(text, 32, 34);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+  }));
+  sprite.scale.set(0.48, 0.48, 0.48);
+  return sprite;
 }
 
 function normalizeCharacter(value) {

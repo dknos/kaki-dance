@@ -22,25 +22,28 @@ trade calls, audience response, and judging all derive from 96 PPQ ticks.
 
 Runtime states are `COUNT_IN`, `OPEN_JAM`, `TRADE_CALL`,
 `TRADE_RESPONSE`, `TURNAROUND`, `BREAKDOWN`, `FINISH`, and `RESULTS`.
-The persistent animation controller keeps a current movement and at most one
-buffered successor. An authored bridge lands the successor on a sixteenth-note
-boundary.
+The persistent animation controller keeps continuous travel/groove, separate
+left/right intent and gesture queues, support/weight/contact state, upper-body
+pose, body lean, jump state, and authored transition state.
 
 ## Controls
 
-| Semantic channel | Frolic label | Default keyboard | Gamepad | Touch |
-| --- | --- | --- | --- | --- |
-| Action | STEP | Space | A | STEP |
-| Style | BRUSH | F | X | BRUSH |
-| Power | DRIVE | Left Shift | Y | DRIVE |
-| Freeze | LICK | T | B | LICK |
-| Direction | travel / cross / safe turn | WASD or arrows | left stick | left stick |
+| Semantic channel | Default keyboard | Gamepad | Touch |
+| --- | --- | --- | --- |
+| Left/right anatomical foot | Left/Right Arrow | D-pad left/right | L/R FOOT |
+| Travel | WASD | Left stick | Travel stick |
+| Persistent arms | Up/Down; Shift left; Ctrl right | Right stick; LB/RB isolate | Arm stick + isolates |
+| Brush / shuffle | Q | X | BRUSH |
+| Heel-toe / articulation | E | Y | HEEL/TOE |
+| Drive / backstep / chug | F | B | DRIVE |
+| Turn / phrase ending | T (+ A/D side) | R3 | TURN |
+| Grounded / committed | Ctrl / Shift | LT / RT | GROUND / COMMIT |
+| Style hop | Space hold/release | A | JUMP |
 
-STEP automatically alternates the compatible foot. Direction modifies travel
-or crossing without exposing a move-name memorization requirement. Every
-accepted input immediately emits a contact event, a foot/body micro-response,
-and an optional short haptic pulse. A full-body transition may remain buffered
-until its authored boundary.
+Each anatomical foot keydown edge creates one immediate anticipation. The
+intent buffer allows Q/E/F/T to specialize it for 72 ms, regardless of key
+order, without emitting a duplicate basic tap. Audio follows authored contact
+metadata rather than keydown.
 
 Separate settings calibrate:
 
@@ -57,7 +60,7 @@ entry/exit-foot rule, 96 PPQ contacts, articulation, intensity, local sample
 group, root travel, transition tags, animation IDs, score traits, difficulty,
 and source notes.
 
-`footwork-transition-graph.js` accepts a successor only when:
+`transition-graph.js` accepts a successor only when:
 
 1. an authored edge exists;
 2. the current exit foot can become the next entry foot;
@@ -71,7 +74,8 @@ move land; it never teleports the body.
 
 ## Phrase judging
 
-The results screen reports `TIME`, `TUNE`, `FLOW`, `FOOTWORK`, and `SPIRIT`.
+The results screen reports `TIME`, `TUNE / PHRASE FIT`, `FOOT CLARITY`,
+`FLOW`, `USE OF SPACE`, `PERSONAL STYLE`, and `LANDING / RESOLUTION`.
 A secondary restraint factor reduces the value of excessive density, one-move
 loops, and constant maximum accents. It does not classify intentional A/B motif
 returns as spam.
@@ -87,20 +91,25 @@ Easy play accepts a clean exact echo. Advanced evaluation can score a coherent
 variation above mechanical copying. Automated seeded simulations compare
 high-frequency repetition with a clean varied routine.
 
-The checked-in anti-spam fixture scores the 64-contact, six-family routine
-`70` with restraint `1.00`; a 384-contact maximum-density one-move stream
-scores `41` with restraint `0.08`. The advanced call fixture accepts an
-anchor-preserving variation and scores it above an exact easy echo.
+The checked-in anti-spam fixture requires a varied, restrained routine to score
+at least twenty points above a maximum-density one-move stream. The advanced
+call fixture accepts an anchor-preserving variation and scores it above an
+exact easy echo.
 
 ## Step Shed
 
-The learn-by-doing practice mode teaches:
+The ten learn-by-doing lessons teach:
 
-1. four STEP contacts with the pulse;
-2. BRUSH between foundation contacts;
-3. DRIVE into a backstep or chug;
-4. a one-bar anchor answer;
-5. LICK in a turnaround window.
+1. WASD board travel;
+2. four alternating Left/Right Arrow contacts;
+3. Q brush-return;
+4. F backstep/chug;
+5. persistent arms;
+6. anatomical one-arm isolation;
+7. compact style hop;
+8. a documented aerial detail;
+9. T turnaround;
+10. a controlled ending or clean landing.
 
 Move names appear after the body has already performed the action. The
 Footwork Lab doubles as the development movebook, showing preview, rhythm

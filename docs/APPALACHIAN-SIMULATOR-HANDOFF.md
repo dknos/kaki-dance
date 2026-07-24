@@ -1,149 +1,160 @@
-# Appalachian simulator Gate 1 handoff
+# Appalachian two-foot instrument Gate 2 handoff
 
 **CANDIDATE — HUMAN REVIEW REQUIRED**
 
-No deployment, push, merge, or approval was performed.
+No deployment, push, merge, or pull request was performed.
 
-## Play and review
+## Outcome
 
-From the repository root:
+Appalachian Frolic now plays as a two-foot performance instrument:
+
+- Left/Right Arrow are independent anatomical foot edges with separate
+  deterministic buffers and no operating-system repeat.
+- Q/E/F/T specialize the same gesture inside a 72 ms intent window, in either
+  key order, without adding a duplicate default tap.
+- WASD travel, persistent authored arm height, arm isolation, modifiers,
+  footwork, turns, and charged style hops coexist without restarting one
+  another.
+- Free Frolic and Trade Licks / Measure Echo reward timing, phrase fit, foot
+  clarity, flow, use of space, personal style, and landing/resolution.
+
+## Root causes and rig repair
+
+The “both feet face screen-right” defect originated in the authoritative
+Blender rig. Both deform feet inherited the shin IK pole rotation, twisting
+their evaluated forward axes about 90 degrees even though their edit-bone rest
+tails were nominally forward. The glTF exporter and runtime camera faithfully
+showed that broken pose; it was not a Three.js basis-conversion defect.
+
+The shared source rig now:
+
+- keeps connected ankle positions but disables inherited shin rotation on
+  `foot.L` and `foot.R`;
+- declares local +Y as foot/toe forward and applies explicit zero bone roll;
+- builds the anatomical right shoe from reflected vertices with reversed face
+  winding and positive applied transforms;
+- validates shoe transforms, faces, normals, weights, and both heroes before
+  export;
+- samples foot/toe forward on every frame of all 23 actions.
+
+Blender validated 1,696 vectors at minimum dot 0.939. The live exported GLB
+validated 1,696 vectors at minimum dot 0.941 against a 0.78 threshold. Only the
+two authored low-pivot frame-4 poses opt out, with reasons in action metadata.
+
+## Controls
+
+| Purpose | Keyboard | Gamepad |
+| --- | --- | --- |
+| Travel | WASD | Left stick |
+| Left/right foot | Left/Right Arrow | D-pad left/right |
+| Both arms | Up/Down | Right stick |
+| Isolate arms | Shift+Up/Down left, Ctrl+Up/Down right | LB/RB |
+| Brush / shuffle | Q | X |
+| Heel-toe / articulation | E | Y |
+| Drive / backstep / chug | F | B |
+| Turn / phrase ending | T, with A/D direction | R3 |
+| Grounded / committed | Ctrl / Shift | LT/RT |
+| Charge/release hop | Space | A |
+| Pause | Escape/P | Start |
+
+Touch exposes travel and arm sticks, both feet, Q/E/F/T, jump, both arm
+isolates, and both movement modifiers. Z/X/C remain unadvertised compatibility
+bindings.
+
+## Animation and gameplay work
+
+- Added paired Blender actions for basic pulse, brush-return, heel-toe,
+  backstep/chug, and low pivot: ten new actions, twenty runtime side-masked
+  additive layers.
+- Added per-foot phase, articulation, contact, queue, support, weight,
+  anticipation, attack, recover, and authored Foley state.
+- All live gesture requests use the existing transition graph and record a
+  resolved support/contact/entry-phase/facing/style handoff.
+- Supporting-foot gestures insert a visible short weight transfer; grounded
+  state never reports both feet unsupported.
+- Arms persist after release, use spring-smoothed authored pose samples, retain
+  style-specific range, and do not replace foot or travel state.
+- Contact sound moved to authored contact events. The retained local
+  shoe-on-wood families still use velocity layers and round robin.
+
+This is deliberately the smallest approval deck. Double Shuffle, Double
+Backstep, Drag-Slide, Double Step, Triple Step, Cross-step, and advanced Clog
+aerials remain unapproved.
+
+## Changed areas
+
+- Rig/export: `tools/blender/build_appalachian_frolic_rig.py`,
+  `tools/blender/export_appalachian_simulator_glb.py`, the `.blend`, production
+  JSON, GLB, and simulator manifest.
+- Instrument state: `js/appalachian/performance-intent.js`,
+  `foot-gesture-deck.js`, `animation-controller.js`, `simulation.js`,
+  `transition-graph.js`, and `phrase-judge.js`.
+- Input/application: `js/input.js`, `js/game.js`, `index.html`, and
+  `styles.css`.
+- Live review: `js/render/appalachian-three-renderer.js`, `renderer.js`,
+  `hud.js`, the review HTML/JS, browser QA, captures, and reports.
+- Tests/docs: the Appalachian test suites, README, animation bible, known
+  limitations, and this handoff.
+
+## QA evidence
+
+- `npm run verify`: 115 tests pass.
+- Blender source validation: 23 actions, 1,696 sampled vectors, minimum 0.939.
+- Exported-runtime validation: 23 actions, 1,696 sampled vectors, minimum
+  0.941, no failed action.
+- Forced-WebGL2 smoke: 88 skinned meshes, 39 bones, 23 actions, 20 foot-layer
+  actions, no console/request failures.
+- Figure-eight planted-foot drift: below 1 cm.
+- Rapid input: 32 alternating edges at 16 edges/second retained in order.
+- Headless Chromium p95: input-to-simulation 0.2 ms; first changed dancer pixel
+  18.8 ms; contact-to-Web-Audio scheduling call 0.4 ms.
+- Physical speaker latency is not claimed from headless Chromium.
+
+Before/after evidence:
+
+- [before foot repair](review/appalachian-instrument-gate-2/captures/before-foot-basis-repair.png)
+- [after foot repair](review/appalachian-instrument-gate-2/captures/after-foot-basis-repair.png)
+- [front/side/gameplay pose set](review/appalachian-instrument-gate-2/captures/)
+- [browser reports](review/appalachian-instrument-gate-2/reports/)
+
+## Human review still required
+
+- Appalachian practitioner review across personal/regional variation.
+- Full-, half-, quarter-speed and frame-by-frame weight, knee, ankle, arm,
+  costume, contact, and landing review for both heroes.
+- Human audition of every Foley cut and the full board/tune/crowd mix.
+- Keyboard feel approval before physical gamepad/touch approval.
+- Physical controller, lower-end phone, haptics, thermal, accessibility-device,
+  and speaker-latency testing.
+
+## Play and review locally
+
+Terminal A:
 
 ```bash
+cd /home/nemoclaw/kaki-dance
 npm install
 npm run serve
 ```
 
-Open:
-
-- game: `http://127.0.0.1:4177/` and choose Appalachian Frolic;
-- review workbench: `http://127.0.0.1:4177/appalachian-simulator-review.html`;
-- forced WebGL2: append `?renderer=webgl2`;
-- explicit WebGPU capability-gate smoke: append `?renderer=webgpu`;
-- old atlas comparison: use the review workbench’s **Old atlas** control.
-
-## Controls
-
-Gamepad: left stick travels; right stick shapes the authored arm field; LB/RB
-isolate left/right arms; LT plus right stick controls body line and also biases
-grounded variants; RT commits spring/toe variants; A holds/releases jump; X is
-STEP; Y is BRUSH; B is DRIVE; D-pad left/right selects turn side; D-pad
-up/down changes the small palette intent; R3 triggers a hand accent; Start
-pauses.
-
-Keyboard: WASD travels; arrows shape both arms; Q/E plus arrows isolate one
-arm; Left Control plus arrows controls body line and grounds movement; Left
-Shift commits; Space holds/releases jump; Z/X/C are STEP/BRUSH/DRIVE; R is a
-hand accent; Escape/P pauses.
-
-Touch provides separate travel and arm sticks, STEP/BRUSH/DRIVE/JUMP,
-Ground/Commit, and left/right arm modifiers in landscape.
-
-## Gate contents
-
-- One shared GLB: 88 skinned mesh objects, 39 bones, 13 actions.
-- Both first-class heroes: KittyKaki and Soter.
-- Three selectable qualified profiles: Flatfoot, Buck, and Clog.
-- Eight grounded movement candidates.
-- Three distinct style jump prototypes.
-- Nine authored right-stick arm-field poses.
-- Independent left/right arm masks and a body-line layer.
-- Twenty-four explicit 80–140 ms transition/recovery recipes with entry-frame
-  ranking and bounded root warp.
-- Deterministic 120 Hz travel, facing, jump, landing, Board Line, line-banking,
-  scoring, and replay state.
-- Genuine shoe-on-wood Foley families triggered by contact metadata, with
-  velocity layers, round robin, footwear mapping, and board resonance.
-- Live/atlas comparison, debug overlays, slow motion, frame step, and 13
-  automated review captures.
-- Ten Step Shed learn-by-doing lessons.
-
-## Changed-file map
-
-- Simulator state and gameplay: `js/appalachian/animation-controller.js`,
-  `simulation.js`, `arm-pose-field.js`, `board-lines.js`,
-  `transition-recipes.js`, `transition-graph.js`, `footwork-catalog.js`, and
-  `phrase-judge.js`.
-- Input and app integration: `js/input.js`, `js/game.js`,
-  `js/integration-adapter.js`, `index.html`, and `styles.css`.
-- Live rendering: `js/render/appalachian-three-renderer.js`,
-  `js/render/renderer.js`, the local `js/vendor/` Three.js modules, and
-  `assets/models/appalachian/`.
-- Contact audio: `js/audio/foot-percussion-player.js` plus the retained local
-  Foley receipts and sample packs under `assets/audio/frolic/feet/`.
-- Blender source/export: `tools/blender/build_appalachian_frolic_rig.py`,
-  `export_appalachian_simulator_glb.py`,
-  `kaki-appalachian-frolic.blend`, and the archived atlas source
-  `kaki-appalachian-frolic-atlas-candidate-1.blend`.
-- Review surface: `appalachian-simulator-review.html`,
-  `appalachian-simulator-review.css`,
-  `js/appalachian-simulator-review.js`, and
-  `docs/review/appalachian-simulator-gate-1/`.
-- QA: `tests/appalachian-simulator.test.js`,
-  `scripts/appalachian-simulator-qa.mjs`,
-  `scripts/appalachian-simulator-browser.mjs`, package scripts, and compatible
-  updates to the pre-existing Frolic QA.
-- Documentation: `docs/APPALACHIAN-SIMULATOR-AUDIT.md`, this handoff,
-  `docs/KNOWN-LIMITATIONS.md`, `docs/MOVE-AUTHORING.md`, and
-  `docs/appalachian-animation-bible.md`.
-
-## Source and provenance
-
-Character, rig, motion, contacts, and exports are authored from
-`tools/blender/kaki-appalachian-frolic.blend`. The current actions are
-hand-blocked candidates informed by the practitioner and instructional sources
-recorded in `docs/appalachian-sources.md`; they are not unattended generated
-animation or reconstructions of personal historical steps.
-
-The foot kit retains its CC0 source receipts in
-`assets/audio/frolic/feet/manifest.json`: Joseph SARDIN shoe-on-wood/parquet
-recordings and sturmankin’s trekking-shoe shuffle. No drum, cartoon impact, or
-synthesized foot hit is substituted.
-
-## QA
+Terminal B, while the local server is running:
 
 ```bash
+cd /home/nemoclaw/kaki-dance
+npm run rig:frolic:build
+npm run rig:frolic:export
+npm run verify
 npm run qa:appalachian-sim
-npm run qa:appalachian-sim:motion
-npm run qa:appalachian-sim:arms
-npm run qa:appalachian-sim:jumps
 npm run qa:appalachian-sim:latency
-npm run qa:appalachian-sim:audio
 npm run qa:appalachian-sim:capture
 ```
 
-Headless desktop evidence at this handoff:
+- Game: <http://127.0.0.1:4177/>
+- Workbench: <http://127.0.0.1:4177/appalachian-simulator-review.html>
+- Forced WebGL2: <http://127.0.0.1:4177/appalachian-simulator-review.html?renderer=webgl2>
+- WebGPU capability gate: <http://127.0.0.1:4177/appalachian-simulator-review.html?renderer=webgpu>
 
-- forced-WebGL2 live smoke: 88 skins, 39 bones, 13 actions;
-- renderer p95 observed up to 1.8 ms at the 192×108 internal target during
-  the integrated browser smoke; frame pacing p95 was 16.8 ms;
-- sampled planted-foot residual during figure-eight smoke below 1 cm;
-- input-to-visible p95: arms 16.3 ms, foot action 16.0 ms, jump anticipation
-  15.4 ms;
-- browser console/request failures: none after benign cancelled audio
-  preloads are excluded.
-
-These are headless desktop measurements, not physical controller/audio or
-representative-phone results.
-
-## Visible defects and required review
-
-- Motion is a hand-blocked prototype; weight, timing, phrase character, and
-  entrances/exits need practitioner and animator review.
-- Feet can read close together at 192×108, especially under the padded Soter
-  costume and during the Clog prototype.
-- Shoulder, forearm, thigh, and knee twist/corrective deformation is basic;
-  high arm poses and cross-body sweeps need anatomy review.
-- Soter’s hood and belly mass can dominate the silhouette; the decorative tail
-  is excluded from support but its secondary motion remains minimal.
-- The three jump prototypes establish distinct systems, not an approved aerial
-  library. Clog pullback articulation and every landing need half-speed review.
-- The arm field is authored and bounded, but clap/pat/flourish coverage and
-  collision-specific pose exclusions are still sparse.
-- “Board & Bow” and the Foley mix need a human musical/audio-taste pass.
-- WebGPU is not enabled; it intentionally falls back to WebGL2.
-- Physical gamepad, lower-end Android/iOS, thermal, speaker latency, and
-  accessibility-device review remain outstanding.
-
-Gate waiting: **Gate 1 — live rig, performance controls, jumps, eight grounded
-movements, twenty-four transitions, and both heroes.** Do not produce the full
-Flatfoot pack until this gate passes human review.
+The workbench includes skeleton/bone axes, anatomical L/R, foot/toe forward
+arrows, support/contact, center of mass, root trail, per-foot buffers,
+modifier/chord state, transition candidates, input/contact timelines, camera
+presets, slow motion, and frame stepping.

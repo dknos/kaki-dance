@@ -169,7 +169,9 @@ test("production Blender source models and weights both candidate heroes on one 
   ]) {
     assert.ok(exportValue.controls.includes(name), name);
   }
-  assert.equal(Object.keys(exportValue.actions).length, 13);
+  assert.equal(Object.keys(exportValue.actions).length, 23);
+  assert.equal(exportValue.footBasis.validation.sampledVectors, 1696);
+  assert.ok(exportValue.footBasis.validation.minimumDot >= 0.78);
   for (const action of [
     "slidingWalk", "rockStep",
     "flatfootHop", "buckSpringHop", "clogJumpPullback",

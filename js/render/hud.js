@@ -36,7 +36,7 @@ function drawFrolicHud(ctx, snapshot, settings) {
   };
   pixelRect(ctx, 6, 6, 124, 19, palette.ink);
   pixelRect(ctx, 7, 7, 122, 17, palette.panel);
-  drawPixelText(ctx, snapshot.mode === "stepShed" ? "STEP SHED" : "APPALACHIAN FROLIC", 12, 10, {
+  drawPixelText(ctx, snapshot.mode === "stepShed" ? "STEP SHED" : "FREE FROLIC", 12, 10, {
     color: palette.amber,
     scale: 1,
   });
@@ -77,10 +77,32 @@ function drawFrolicHud(ctx, snapshot, settings) {
     drawStepShedCoach(ctx, frolic.practice, palette);
   } else {
     drawMoveBadge(ctx, snapshot, palette);
+    drawFootInstrument(ctx, snapshot, palette);
     drawRestraintMeter(ctx, frolic.restraint, palette);
   }
   if (snapshot.callout && settings.timingLabels) drawCallout(ctx, snapshot.callout, snapshot.calloutAge, 59);
   if (settings.frolicDebug) drawFrolicDebug(ctx, snapshot, palette, settings);
+}
+
+function drawFootInstrument(ctx, snapshot, palette) {
+  const feet = snapshot.dancer.feet;
+  if (!feet) return;
+  for (const [side, x] of [["left", 169], ["right", 215]]) {
+    const foot = feet[side];
+    const active = foot.stage !== "planted";
+    pixelRect(ctx, x - 18, 35, 38, 17, palette.ink);
+    pixelRect(ctx, x - 17, 36, 36, 15, active ? palette.cedar : palette.panel);
+    drawPixelText(ctx, side === "left" ? "L FOOT" : "R FOOT", x + 1, 39, {
+      align: "center",
+      color: active ? palette.amber : palette.chalk,
+      scale: 1,
+    });
+    drawPixelText(ctx, (foot.articulation || "flat").toUpperCase().slice(0, 7), x + 1, 46, {
+      align: "center",
+      color: active ? palette.mint : palette.indigo,
+      scale: 1,
+    });
+  }
 }
 
 function drawFrolicPhraseRail(ctx, frolic, palette) {

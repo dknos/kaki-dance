@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "mode": "audio",
+  "generatedAt": "2026-07-24T23:27:43.122Z",
+  "sourceType": "real Foley-derived shoe recordings",
+  "noSynthesis": true,
+  "requiredContactFamilies": [
+    "softSole",
+    "flatContact",
+    "heel",
+    "toeBall",
+    "brush",
+    "skuff",
+    "drag",
+    "slide",
+    "chug",
+    "doubleTap",
+    "metalHeelTap",
+    "metalToeTap",
+    "hopLaunch",
+    "landing",
+    "boardResonance"
+  ],
+  "localSampleGroups": 12,
+  "localSampleReferences": 72,
+  "roundRobin": 6,
+  "velocityLayers": [
+    "soft",
+    "medium",
+    "strong"
+  ],
+  "trigger": "authored visual contact metadata",
+  "boardResonanceAffectsGain": true,
+  "elapsedMilliseconds": 1.307
+}

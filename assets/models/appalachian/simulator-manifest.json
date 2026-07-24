@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
   "sourceBlend": "tools/blender/kaki-appalachian-frolic.blend",
-  "sourceBlendSha256": "47c4dc62745b39f333fddbc84bfdd1139c80c43d040352ede5922d612c47b269",
+  "sourceBlendSha256": "b9131663814cd630c4a4611be6809f5abdb79e332af11e5375e2121185f28b35",
   "glb": "assets/models/appalachian/kaki-appalachian-simulator.glb",
-  "glbSha256": "a82bc9318e57499ec25706becfc670c9e44c83baa2844f84087c3b1cfa919743",
-  "glbBytes": 1140336,
+  "glbSha256": "5f2a271a09dea5c7242784f3aa30d2434dfb2f8bb928af9fda074fba3fc100a1",
+  "glbBytes": 1381536,
   "threeRuntime": {
     "loader": "GLTFLoader",
     "characterType": "SkinnedMesh",
@@ -26,6 +26,157 @@
     "costume.tail",
     "costume.hood"
   ],
+  "footBasis": {
+    "localForwardAxis": "+Y",
+    "blenderDancerForward": [
+      0,
+      -1,
+      0
+    ],
+    "gltfDancerForward": [
+      0,
+      0,
+      1
+    ],
+    "plantedToeForwardDotMin": 0.78,
+    "footBones": [
+      "foot.L",
+      "foot.R"
+    ],
+    "toeBones": [
+      "toe.L",
+      "toe.R"
+    ],
+    "sourceRepair": "foot deform bones keep connected ankle positions without inheriting shin IK pole twist",
+    "shoeMirroring": "reflected vertices, reversed winding, positive applied transforms",
+    "validation": {
+      "sampledVectors": 1696,
+      "minimumDot": 0.939233,
+      "minimumAllowedDot": 0.78,
+      "explicitOptOutFrames": 2,
+      "actions": {
+        "groove": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "walkingStep": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "slidingWalk": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "shuffle": {
+          "samples": 64,
+          "minimumDot": 0.995705,
+          "optOutFrames": {}
+        },
+        "heelToeChange": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "backstep": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "chug": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "rockStep": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "flatfootHop": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "buckSpringHop": {
+          "samples": 80,
+          "minimumDot": 0.980173,
+          "optOutFrames": {}
+        },
+        "clogJumpPullback": {
+          "samples": 96,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "recovery": {
+          "samples": 36,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "turnaround": {
+          "samples": 124,
+          "minimumDot": 0.974446,
+          "optOutFrames": {}
+        },
+        "gesturePulseLeft": {
+          "samples": 44,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gesturePulseRight": {
+          "samples": 44,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureBrushLeft": {
+          "samples": 52,
+          "minimumDot": 0.998438,
+          "optOutFrames": {}
+        },
+        "gestureBrushRight": {
+          "samples": 52,
+          "minimumDot": 0.998438,
+          "optOutFrames": {}
+        },
+        "gestureHeelToeLeft": {
+          "samples": 56,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureHeelToeRight": {
+          "samples": 56,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureBackstepLeft": {
+          "samples": 60,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureBackstepRight": {
+          "samples": 60,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gesturePivotLeft": {
+          "samples": 60,
+          "minimumDot": 0.939233,
+          "optOutFrames": {
+            "4": "authored low pivot"
+          }
+        },
+        "gesturePivotRight": {
+          "samples": 60,
+          "minimumDot": 0.939233,
+          "optOutFrames": {
+            "4": "authored low pivot"
+          }
+        }
+      }
+    }
+  },
   "sourceFps": 30,
   "actions": {
     "backstep": {
@@ -55,6 +206,10 @@
           "freeFoot": "right"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "buckSpringHop": {
@@ -90,6 +245,10 @@
           "freeFoot": "left"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "chug": {
@@ -119,6 +278,10 @@
           "freeFoot": "both"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "clogJumpPullback": {
@@ -160,6 +323,10 @@
           "freeFoot": "both"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "flatfootHop": {
@@ -189,6 +356,400 @@
           "freeFoot": "both"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gestureBackstepLeft": {
+      "name": "FrolicCandidate.gestureBackstepLeft",
+      "displayName": "Left backstep/chug",
+      "frameRange": [
+        1,
+        15
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "right",
+          "contact": "heel",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 15,
+          "support": "left",
+          "contact": "recover",
+          "freeFoot": "right"
+        }
+      ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gestureBackstepRight": {
+      "name": "FrolicCandidate.gestureBackstepRight",
+      "displayName": "Right backstep/chug",
+      "frameRange": [
+        1,
+        15
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 8,
+          "support": "left",
+          "contact": "heel",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 15,
+          "support": "right",
+          "contact": "recover",
+          "freeFoot": "left"
+        }
+      ],
+      "anatomicalMirrorOf": "gestureBackstepLeft",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gestureBrushLeft": {
+      "name": "FrolicCandidate.gestureBrushLeft",
+      "displayName": "Left brush-return",
+      "frameRange": [
+        1,
+        13
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 6,
+          "support": "right",
+          "contact": "brush",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 9,
+          "support": "right",
+          "contact": "brush-return",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 13,
+          "support": "right",
+          "contact": "toe",
+          "freeFoot": "left"
+        }
+      ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gestureBrushRight": {
+      "name": "FrolicCandidate.gestureBrushRight",
+      "displayName": "Right brush-return",
+      "frameRange": [
+        1,
+        13
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 6,
+          "support": "left",
+          "contact": "brush",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 9,
+          "support": "left",
+          "contact": "brush-return",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 13,
+          "support": "left",
+          "contact": "toe",
+          "freeFoot": "right"
+        }
+      ],
+      "anatomicalMirrorOf": "gestureBrushLeft",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gestureHeelToeLeft": {
+      "name": "FrolicCandidate.gestureHeelToeLeft",
+      "displayName": "Left heel-toe articulation",
+      "frameRange": [
+        1,
+        14
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 4,
+          "support": "right",
+          "contact": "heel",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 7,
+          "support": "right",
+          "contact": "toe",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 14,
+          "support": "right",
+          "contact": "recover",
+          "freeFoot": "left"
+        }
+      ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gestureHeelToeRight": {
+      "name": "FrolicCandidate.gestureHeelToeRight",
+      "displayName": "Right heel-toe articulation",
+      "frameRange": [
+        1,
+        14
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 4,
+          "support": "left",
+          "contact": "heel",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 7,
+          "support": "left",
+          "contact": "toe",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 14,
+          "support": "left",
+          "contact": "recover",
+          "freeFoot": "right"
+        }
+      ],
+      "anatomicalMirrorOf": "gestureHeelToeLeft",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gesturePivotLeft": {
+      "name": "FrolicCandidate.gesturePivotLeft",
+      "displayName": "Left low pivot",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 4,
+          "support": "left",
+          "contact": "ball-pivot",
+          "freeFoot": "right",
+          "toeForwardOptOut": "authored low pivot"
+        },
+        {
+          "frame": 12,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 16,
+          "support": "both",
+          "contact": "resolve",
+          "freeFoot": "right"
+        }
+      ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [
+        {
+          "frame": 4,
+          "reason": "authored low pivot"
+        }
+      ],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gesturePivotRight": {
+      "name": "FrolicCandidate.gesturePivotRight",
+      "displayName": "Right low pivot",
+      "frameRange": [
+        1,
+        16
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 4,
+          "support": "right",
+          "contact": "ball-pivot",
+          "freeFoot": "left",
+          "toeForwardOptOut": "authored low pivot"
+        },
+        {
+          "frame": 12,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "both",
+          "contact": "resolve",
+          "freeFoot": "left"
+        }
+      ],
+      "anatomicalMirrorOf": "gesturePivotLeft",
+      "toeForwardExemptions": [
+        {
+          "frame": 4,
+          "reason": "authored low pivot"
+        }
+      ],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gesturePulseLeft": {
+      "name": "FrolicCandidate.gesturePulseLeft",
+      "displayName": "Left basic pulse",
+      "frameRange": [
+        1,
+        11
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 11,
+          "support": "left",
+          "contact": "recover",
+          "freeFoot": "right"
+        }
+      ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
+      "candidateStatus": "human-review-required"
+    },
+    "gesturePulseRight": {
+      "name": "FrolicCandidate.gesturePulseRight",
+      "displayName": "Right basic pulse",
+      "frameRange": [
+        1,
+        11
+      ],
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 8,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "recover",
+          "freeFoot": "left"
+        }
+      ],
+      "anatomicalMirrorOf": "gesturePulseLeft",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "groove": {
@@ -212,6 +773,10 @@
           "freeFoot": "right"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "heelToeChange": {
@@ -247,6 +812,10 @@
           "freeFoot": "right"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "recovery": {
@@ -270,6 +839,10 @@
           "freeFoot": "right"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "rockStep": {
@@ -305,6 +878,10 @@
           "freeFoot": "left"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "shuffle": {
@@ -334,6 +911,10 @@
           "freeFoot": "left"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "slidingWalk": {
@@ -375,6 +956,10 @@
           "freeFoot": "right"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "turnaround": {
@@ -410,6 +995,10 @@
           "freeFoot": "both"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     },
     "walkingStep": {
@@ -439,11 +1028,17 @@
           "freeFoot": "right"
         }
       ],
+      "anatomicalMirrorOf": "",
+      "toeForwardExemptions": [],
+      "movementProvenance": "hand-keyed on shared biped from practitioner-informed mechanical reference",
+      "humanReviewStatus": "CANDIDATE \u2014 HUMAN REVIEW REQUIRED",
       "candidateStatus": "human-review-required"
     }
   },
   "gateCounts": {
+    "actions": 23,
     "groundedMovements": 8,
+    "goldenPairedGestures": 10,
     "jumpPrototypes": 3,
     "recoveryActions": 1,
     "armPoseSamples": 9

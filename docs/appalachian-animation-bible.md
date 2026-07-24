@@ -1,19 +1,22 @@
 # Appalachian Frolic animation bible
 
-## Simulator Gate 1
+## Two-foot instrument Gate 2
 
 Status: **CANDIDATE — HUMAN REVIEW REQUIRED**
 
 The primary dancer is now the live shared
 `KakiFrolicProductionBiped` exported to
 `assets/models/appalachian/kaki-appalachian-simulator.glb`. Three.js loads 88
-skinned mesh objects, 39 bones, and 13 authored actions. KittyKaki and Soter
+skinned mesh objects, 39 bones, and 23 authored actions. KittyKaki and Soter
 switch mesh visibility without changing skeleton or animation compatibility.
 The atlas rescue remains a comparison/fallback path.
 
-Gate 1 contains eight grounded movement candidates, three style-specific jump
-prototypes, nine authored arm-field poses, and twenty-four handoff/recovery
-recipes. It stops before full pack production and cannot be approved by tests.
+Gate 2 exports 23 actions: the original thirteen candidates plus paired
+left/right pulse, brush-return, heel-toe, backstep/chug, and low-pivot
+gestures. Runtime builds twenty side-masked additive foot actions over
+continuous travel/groove. It retains three style-specific jump prototypes,
+nine authored arm-field poses, and twenty-four handoff/recovery recipes. It
+stops before full pack production and cannot be approved by tests.
 
 ## Atlas rescue candidate 1 product gate
 
@@ -67,6 +70,11 @@ The shared live action catalog contains:
 | `clogJumpPullback` | 24 | projected pullback/landing prototype |
 | `recovery` | 9 | short support correction |
 | `turnaround` | 31 | cross, turn, and ending |
+| `gesturePulseLeft/Right` | 11 | independent compact pulse |
+| `gestureBrushLeft/Right` | 13 | independent brush and return |
+| `gestureHeelToeLeft/Right` | 14 | independent heel/toe articulation |
+| `gestureBackstepLeft/Right` | 15 | independent backstep/chug transfer |
+| `gesturePivotLeft/Right` | 16 | independent low-pivot ending |
 
 Actions are pose-to-pose keys in Blender. The source does not use the rejected
 Pillow anchor library or sine-coordinate motion.
@@ -78,7 +86,7 @@ Pillow anchor library or sine-coordinate motion.
    proportion references, not unattended animation frames.
 2. `tools/blender/build_appalachian_frolic_rig.py` builds the modeled,
    weighted characters, shared armature, controls, toon materials, stable
-   three-quarter orthographic camera, and thirteen named 30 fps actions in
+   three-quarter orthographic camera, and twenty-three named 30 fps actions in
    `tools/blender/kaki-appalachian-frolic.blend`.
 3. `tools/blender/export_appalachian_simulator_glb.py` exports both hero mesh
    sets, the shared skeleton, actions, contacts, support exclusions, and nine
@@ -111,22 +119,43 @@ the review package and must not be waived by green motion tests.
 
 ## Responsive runtime contract
 
-The animation controller persists board position, root velocity, facing,
-support, contacts, center of mass, lower-body action, upper-body fields,
-body-line input, jump state, one short request buffer, recent performance
-metrics, and recovery state. STEP, BRUSH, or DRIVE begins a contact-aware
-handoff immediately; right-stick and body-line changes never replace or
-restart the lower-body action.
+The animation controller persists board position/velocity, facing/angular
+velocity, support, weight distribution, center of mass, separate left/right
+foot phase/contact/articulation/queues, active family, arm height/openness and
+overrides, body line, jump state, phrase phase, recent metrics, and recovery
+state.
 
-Contacts created at input are deduplicated from later action metadata. The
-phrase layer may influence follow-through and recovery, but never buffer the
-initial foot response.
+A foot edge creates visible anticipation immediately. The deterministic intent
+buffer holds specialization for 72 ms; Q/E/F/T arriving in either order
+coalesce into the same request. Every resolved request passes through the
+transition graph, then drives one anatomical foot layer with an authored
+weight-transfer, contact, and recovery envelope. Authored contact metadata—not
+keydown—triggers footwear audio.
+
+WASD locomotion, left/right foot layers, contact-aware weight transfer,
+counterbalance, persistent player arm pose, body line, and style-specific
+aerials are independent. Arm or travel changes never replace or restart a foot
+layer.
+
+## Foot basis contract
+
+`foot.L`, `foot.R`, `toe.L`, and `toe.R` declare local +Y forward. Blender
+forward is global -Y; exported glTF dancer forward is +Z. Feet stay connected
+at the ankle without inheriting shin IK pole rotation. The right shoe is true
+mirrored topology—reflected vertices and reversed winding—with positive
+transforms.
+
+Every action/frame samples both foot and toe vectors. Ordinary frames must
+remain at or above a 0.78 planar dot with dancer forward. Any pivot/cross/turn
+exception must be action metadata with a frame and reason. Gate 2 contains only
+two such exceptions: frame 4 in each paired low pivot.
 
 ## Mechanical checks versus approval
 
 `npm run qa:frolic:motion` checks planted-foot world drift, support/center of
 mass, heel/toe pivots, knee and elbow continuity, hand attachment, left/right
 depth, silhouette separation, outfit volume, and loop compatibility.
-`npm run qa:frolic:latency` measures real event timestamps through first changed
-hero pixels. Both suites are regression gates only. They cannot approve
+`npm run qa:frolic:latency` measures real event timestamps through simulation,
+first changed hero pixels, authored contact emission, and Web Audio scheduling.
+Both suites are regression gates only. They cannot approve
 anatomy, weight, groove, musicality, or taste.

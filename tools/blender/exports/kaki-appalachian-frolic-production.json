@@ -65,6 +65,157 @@
     "kneePole.L",
     "kneePole.R"
   ],
+  "footBasis": {
+    "localForwardAxis": "+Y",
+    "blenderDancerForward": [
+      0.0,
+      -1.0,
+      0.0
+    ],
+    "gltfDancerForward": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "plantedToeForwardDotMin": 0.78,
+    "footBones": [
+      "foot.L",
+      "foot.R"
+    ],
+    "toeBones": [
+      "toe.L",
+      "toe.R"
+    ],
+    "sourceRepair": "foot deform bones keep connected ankle positions without inheriting shin IK pole twist",
+    "shoeMirroring": "reflected vertices, reversed winding, positive applied transforms",
+    "validation": {
+      "sampledVectors": 1696,
+      "minimumDot": 0.939233,
+      "minimumAllowedDot": 0.78,
+      "explicitOptOutFrames": 2,
+      "actions": {
+        "groove": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "walkingStep": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "slidingWalk": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "shuffle": {
+          "samples": 64,
+          "minimumDot": 0.995705,
+          "optOutFrames": {}
+        },
+        "heelToeChange": {
+          "samples": 124,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "backstep": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "chug": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "rockStep": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "flatfootHop": {
+          "samples": 64,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "buckSpringHop": {
+          "samples": 80,
+          "minimumDot": 0.980173,
+          "optOutFrames": {}
+        },
+        "clogJumpPullback": {
+          "samples": 96,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "recovery": {
+          "samples": 36,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "turnaround": {
+          "samples": 124,
+          "minimumDot": 0.974446,
+          "optOutFrames": {}
+        },
+        "gesturePulseLeft": {
+          "samples": 44,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gesturePulseRight": {
+          "samples": 44,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureBrushLeft": {
+          "samples": 52,
+          "minimumDot": 0.998438,
+          "optOutFrames": {}
+        },
+        "gestureBrushRight": {
+          "samples": 52,
+          "minimumDot": 0.998438,
+          "optOutFrames": {}
+        },
+        "gestureHeelToeLeft": {
+          "samples": 56,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureHeelToeRight": {
+          "samples": 56,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureBackstepLeft": {
+          "samples": 60,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gestureBackstepRight": {
+          "samples": 60,
+          "minimumDot": 1.0,
+          "optOutFrames": {}
+        },
+        "gesturePivotLeft": {
+          "samples": 60,
+          "minimumDot": 0.939233,
+          "optOutFrames": {
+            "4": "authored low pivot"
+          }
+        },
+        "gesturePivotRight": {
+          "samples": 60,
+          "minimumDot": 0.939233,
+          "optOutFrames": {
+            "4": "authored low pivot"
+          }
+        }
+      }
+    }
+  },
   "meshSummary": {
     "Hero.KittyKaki": {
       "meshObjects": 44,
@@ -607,6 +758,426 @@
         21,
         26,
         31
+      ]
+    },
+    "gesturePulseLeft": {
+      "action": "FrolicCandidate.gesturePulseLeft",
+      "displayName": "Left basic pulse",
+      "frameRange": [
+        1,
+        11
+      ],
+      "sourceFrames": 11,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 11,
+          "support": "left",
+          "contact": "recover",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        3,
+        6,
+        8,
+        11
+      ]
+    },
+    "gesturePulseRight": {
+      "action": "FrolicCandidate.gesturePulseRight",
+      "displayName": "Right basic pulse",
+      "frameRange": [
+        1,
+        11
+      ],
+      "sourceFrames": 11,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 8,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "recover",
+          "freeFoot": "left"
+        }
+      ],
+      "keyframes": [
+        1,
+        3,
+        6,
+        8,
+        11
+      ]
+    },
+    "gestureBrushLeft": {
+      "action": "FrolicCandidate.gestureBrushLeft",
+      "displayName": "Left brush-return",
+      "frameRange": [
+        1,
+        13
+      ],
+      "sourceFrames": 13,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 6,
+          "support": "right",
+          "contact": "brush",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 9,
+          "support": "right",
+          "contact": "brush-return",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 13,
+          "support": "right",
+          "contact": "toe",
+          "freeFoot": "left"
+        }
+      ],
+      "keyframes": [
+        1,
+        3,
+        6,
+        9,
+        13
+      ]
+    },
+    "gestureBrushRight": {
+      "action": "FrolicCandidate.gestureBrushRight",
+      "displayName": "Right brush-return",
+      "frameRange": [
+        1,
+        13
+      ],
+      "sourceFrames": 13,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 6,
+          "support": "left",
+          "contact": "brush",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 9,
+          "support": "left",
+          "contact": "brush-return",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 13,
+          "support": "left",
+          "contact": "toe",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        3,
+        6,
+        9,
+        13
+      ]
+    },
+    "gestureHeelToeLeft": {
+      "action": "FrolicCandidate.gestureHeelToeLeft",
+      "displayName": "Left heel-toe articulation",
+      "frameRange": [
+        1,
+        14
+      ],
+      "sourceFrames": 14,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 4,
+          "support": "right",
+          "contact": "heel",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 7,
+          "support": "right",
+          "contact": "toe",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 14,
+          "support": "right",
+          "contact": "recover",
+          "freeFoot": "left"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        7,
+        10,
+        14
+      ]
+    },
+    "gestureHeelToeRight": {
+      "action": "FrolicCandidate.gestureHeelToeRight",
+      "displayName": "Right heel-toe articulation",
+      "frameRange": [
+        1,
+        14
+      ],
+      "sourceFrames": 14,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 4,
+          "support": "left",
+          "contact": "heel",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 7,
+          "support": "left",
+          "contact": "toe",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 14,
+          "support": "left",
+          "contact": "recover",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        7,
+        10,
+        14
+      ]
+    },
+    "gestureBackstepLeft": {
+      "action": "FrolicCandidate.gestureBackstepLeft",
+      "displayName": "Left backstep/chug",
+      "frameRange": [
+        1,
+        15
+      ],
+      "sourceFrames": 15,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 8,
+          "support": "right",
+          "contact": "heel",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 11,
+          "support": "left",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 15,
+          "support": "left",
+          "contact": "recover",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        8,
+        11,
+        15
+      ]
+    },
+    "gestureBackstepRight": {
+      "action": "FrolicCandidate.gestureBackstepRight",
+      "displayName": "Right backstep/chug",
+      "frameRange": [
+        1,
+        15
+      ],
+      "sourceFrames": 15,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 8,
+          "support": "left",
+          "contact": "heel",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 11,
+          "support": "right",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 15,
+          "support": "right",
+          "contact": "recover",
+          "freeFoot": "left"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        8,
+        11,
+        15
+      ]
+    },
+    "gesturePivotLeft": {
+      "action": "FrolicCandidate.gesturePivotLeft",
+      "displayName": "Left low pivot",
+      "frameRange": [
+        1,
+        16
+      ],
+      "sourceFrames": 16,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "left",
+          "contact": "anticipation",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 4,
+          "support": "left",
+          "contact": "ball-pivot",
+          "freeFoot": "right",
+          "toeForwardOptOut": "authored low pivot"
+        },
+        {
+          "frame": 12,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "right"
+        },
+        {
+          "frame": 16,
+          "support": "both",
+          "contact": "resolve",
+          "freeFoot": "right"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        8,
+        12,
+        16
+      ]
+    },
+    "gesturePivotRight": {
+      "action": "FrolicCandidate.gesturePivotRight",
+      "displayName": "Right low pivot",
+      "frameRange": [
+        1,
+        16
+      ],
+      "sourceFrames": 16,
+      "fps": 30,
+      "contacts": [
+        {
+          "frame": 1,
+          "support": "right",
+          "contact": "anticipation",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 4,
+          "support": "right",
+          "contact": "ball-pivot",
+          "freeFoot": "left",
+          "toeForwardOptOut": "authored low pivot"
+        },
+        {
+          "frame": 12,
+          "support": "both",
+          "contact": "flat",
+          "freeFoot": "left"
+        },
+        {
+          "frame": 16,
+          "support": "both",
+          "contact": "resolve",
+          "freeFoot": "left"
+        }
+      ],
+      "keyframes": [
+        1,
+        4,
+        8,
+        12,
+        16
       ]
     }
   },

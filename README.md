@@ -37,16 +37,18 @@ same checked-in files remain compatible with static GitHub Pages.
 - Twelve reusable movement families plus turnaround and ending, represented at
   96 PPQ with entry/exit foot, contacts, articulations, root motion, authored
   successors, animation IDs, sound groups, and source notes.
-- Phrase judging across **Time, Tune, Flow, Footwork, and Spirit**, with
+- Phrase judging across **Time, Tune/Phrase Fit, Foot Clarity, Flow, Use of
+  Space, Personal Style, and Landing/Resolution**, with
   restraint, motif return, anti-spam decay, exact/simplified/varied/
   complementary trade answers, and musical-ending credit.
-- Immediate contact sound and body micro-response at input time, even when the
-  full-body transition waits for a safe boundary.
-- **Step Shed**, a five-lesson learn-by-doing practice board.
+- Independent anatomical left/right foot anticipation is immediate; shoe Foley
+  fires from authored contact metadata after the 60–80 ms chord window.
+- **Step Shed**, a ten-lesson learn-by-doing practice board.
 - One warm community hall, resonant board, visible string band, and phrase-aware
   audience without hillbilly or saloon caricature.
-- Six lazy hero/profile packs. Only the selected 1024² indexed atlas is
-  resident (4 MiB decoded).
+- One shared live Three.js `SkinnedMesh` biped for both heroes, 23 exported
+  actions, and 20 independent foot-layer actions. The indexed atlas remains a
+  fallback/comparison renderer.
 
 Both KittyKaki and Soder retain a complete shared biped. Soder is a padded
 snake kigurumi over two arms, two hands, two legs, and two feet—not a coil or
@@ -78,16 +80,23 @@ milestone.
 
 | Appalachian Frolic | Keyboard | Gamepad | Touch |
 | --- | --- | --- | --- |
-| STEP / alternating foundation | Space | A | STEP |
-| BRUSH / shuffle, scuff, slide | F | X | BRUSH |
-| DRIVE / backstep, chug, double | Left Shift | Y | DRIVE |
-| LICK / phrase, turn, ending | T | B | LICK |
-| Travel / cross modifier | WASD or arrows | Left stick | Left stick |
+| Left / right foot percussion | ← / → | D-pad left / right | L FOOT / R FOOT |
+| Travel | WASD | Left stick | Travel stick |
+| Persistent arm height | ↑ / ↓ | Right stick vertical | Arm stick vertical |
+| Arm openness / lead | automatic on keyboard | Right stick horizontal | Arm stick horizontal |
+| Isolate left / right arm | Shift+↑/↓ / Ctrl+↑/↓ | LB / RB | L ARM / R ARM |
+| Brush / shuffle | Q | X | Q · BRUSH |
+| Heel-toe / scuff / articulation | E | Y | E · HEEL/TOE |
+| Drive / backstep / chug / rock | F | B | F · DRIVE |
+| Turn / lick / phrase ending | T (+ A/D direction) | R3 | T · TURN |
+| Grounded / committed modifier | Ctrl / Shift | LT / RT | GROUND / COMMIT |
+| Charge and release style hop | Space | A | JUMP |
 | Pause | Escape / P | Start | Pause |
 
-STEP alone creates a valid groove but cannot earn an elite result. Directions,
-subdivision timing, vocabulary, restraint, trade variation, and musical
-endings form the advanced layer.
+Each foot keydown edge produces one gesture; operating-system repeat is
+ignored. Add Q/E/F/T within the short intent window to specialize that same
+gesture without producing a duplicate tap. Z/X/C remain compatibility
+bindings only and are not advertised Appalachian controls.
 
 | Measure Match | Keyboard | Gamepad | Touch |
 | --- | --- | --- | --- |
@@ -102,9 +111,6 @@ Optional controls are introduced only after the copy rule:
 | Style cell | F / X | X |
 | Prompted power variation | Shift / Y | Y |
 | Phrase-ending freeze / advanced hold | T / B | B |
-
-The direct Q/E/F/T move-family controls remain available only in the
-experimental advanced modes.
 
 Judgment, foot-audio, and full-body visual offsets are independently
 configurable in Settings.

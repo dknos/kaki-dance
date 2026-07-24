@@ -104,8 +104,8 @@ def main() -> None:
         (action for action in bpy.data.actions if action.name.startswith("FrolicCandidate.")),
         key=lambda value: str(value["clipId"]),
     )
-    if len(actions) != 13:
-        raise RuntimeError(f"Expected 13 simulator actions, found {len(actions)}")
+    if len(actions) != 23:
+        raise RuntimeError(f"Expected 23 simulator actions, found {len(actions)}")
 
     bpy.ops.object.select_all(action="DESELECT")
     rig.hide_set(False)
@@ -180,6 +180,22 @@ def main() -> None:
         "characters": ["kitty", "soder"],
         "supportCapableBones": ["foot.L", "foot.R"],
         "excludedSupportBones": ["costume.tail", "costume.hood"],
+        "footBasis": {
+            "localForwardAxis": "+Y",
+            "blenderDancerForward": [0, -1, 0],
+            "gltfDancerForward": [0, 0, 1],
+            "plantedToeForwardDotMin": 0.78,
+            "footBones": ["foot.L", "foot.R"],
+            "toeBones": ["toe.L", "toe.R"],
+            "sourceRepair": (
+                "foot deform bones keep connected ankle positions without "
+                "inheriting shin IK pole twist"
+            ),
+            "shoeMirroring": (
+                "reflected vertices, reversed winding, positive applied transforms"
+            ),
+            "validation": json.loads(str(rig["footBasisValidation"])),
+        },
         "sourceFps": bpy.context.scene.render.fps,
         "actions": {
             str(action["clipId"]): {
@@ -187,12 +203,18 @@ def main() -> None:
                 "displayName": str(action["displayName"]),
                 "frameRange": [int(action["frameStart"]), int(action["frameEnd"])],
                 "contacts": json.loads(str(action["contacts"])),
+                "anatomicalMirrorOf": str(action.get("anatomicalMirrorOf", "")),
+                "toeForwardExemptions": json.loads(str(action.get("toeForwardExemptions", "[]"))),
+                "movementProvenance": str(action.get("movementProvenance", "")),
+                "humanReviewStatus": str(action.get("humanReviewStatus", "")),
                 "candidateStatus": str(action["candidateStatus"]),
             }
             for action in actions
         },
         "gateCounts": {
+            "actions": len(actions),
             "groundedMovements": 8,
+            "goldenPairedGestures": 10,
             "jumpPrototypes": 3,
             "recoveryActions": 1,
             "armPoseSamples": len(ARM_POSE_FIELD),

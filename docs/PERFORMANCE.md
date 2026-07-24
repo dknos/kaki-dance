@@ -59,22 +59,22 @@ All six generated reports have:
 | Audio set | Checked-in bytes | Approx. decoded AudioBuffer bytes | Runtime-loaded |
 | --- | ---: | ---: | --- |
 | 68-second stereo master | 5,997,644 | 11,995,200 | yes |
-| 39 round-robin foot samples + manifest | 493,286 | 979,020 | yes |
+| 66 velocity/round-robin foot cuts + manifest | 2,405,090 | about 3,121,920 | yes |
 | Four synchronized mono stems | 11,995,376 | 23,990,400 | no |
 
-The Frolic-specific loaded audio is about 6.49 MB on disk and 12.97 MB
-decoded. With one atlas, the incremental decoded working set is approximately
-17.17 MB (16.37 MiB), excluding the application’s shared UI and Web Audio
-graph. Authored stems are source assets for future responsive mixing and are
-not requested by the current runtime.
+The Frolic-specific loaded audio is about 8.40 MB on disk and 15.12 MB
+decoded, excluding the application’s shared UI, live GLB, and Web Audio graph.
+Authored stems are source assets for future responsive mixing and are not
+requested by the current runtime.
 
 ## Touch layout
 
 The automated landscape mobile viewport is 844×390. Frolic and Step Shed show
-four 66×40 pads in a two-by-two bank labeled STEP, BRUSH, DRIVE, and LICK plus
-the existing direction stick. The bank begins to the right of the hero’s
-lower-body gameplay region, so it never covers the shoes. A real Playwright
-touch tap produced an immediate STEP input and visible micro-response.
+66×40 pads for L FOOT, R FOOT, BRUSH, HEEL/TOE, DRIVE, TURN, and JUMP, separate
+travel/arm sticks, four compact modifier controls, and pause. The action bank
+stays to the right of the hero’s lower-body gameplay region. A real Playwright
+touch tap produced an immediate anatomical left-foot anticipation and a later
+authored shoe contact.
 
 Portrait remains a rotate-device gate. Physical haptic strength, end-to-end
 speaker latency, low-end Android frame pacing, and thermal behavior still need

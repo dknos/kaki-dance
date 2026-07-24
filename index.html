@@ -56,7 +56,7 @@
               <button class="mode-card mode-card--primary mode-card--frolic" type="button" data-start-mode="frolic">
                 <span class="mode-card__kicker">NEW MODE · 32-BAR AABB</span>
                 <span class="mode-card__name">Appalachian Frolic</span>
-                <span class="mode-card__detail">Free travel · live rig · arm field · charged hops · Dance Lines</span>
+                <span class="mode-card__detail">Free Frolic · Trade Licks / Measure Echo · two-foot instrument</span>
               </button>
               <div class="frolic-style-picks" role="radiogroup" aria-label="Choose an Appalachian Frolic gameplay profile">
                 <button class="frolic-style-pick is-selected" type="button" role="radio" aria-checked="true" data-frolic-style="flatfoot">
@@ -72,7 +72,7 @@
               <div class="supporting-modes">
                 <button class="mode-card" type="button" data-start-mode="stepShed">
                   <span class="mode-card__name">Step Shed</span>
-                  <span class="mode-card__detail">Five learn-by-doing lessons</span>
+                  <span class="mode-card__detail">Ten learn-by-doing lessons</span>
                 </button>
                 <button class="mode-card" type="button" data-start-mode="measure">
                   <span class="mode-card__name">Measure Match</span>
@@ -160,7 +160,7 @@
                 <button type="button" class="close-button" data-close-layer aria-label="Close controls">×</button>
               </div>
               <div class="control-map">
-                <div><button type="button" class="keycap" data-remap="action">Z</button><span>STEP · foundation and directional travel pattern</span></div>
+                <div><kbd>← / →</kbd><span>Anatomical left / right foot percussion · one gesture per tap</span></div>
                 <div>
                   <span class="movement-keycaps">
                     <button type="button" class="keycap" data-remap="up">W</button>
@@ -170,17 +170,19 @@
                   </span>
                   <span>Travel freely across the full board</span>
                 </div>
-                <div><kbd>Arrow keys</kbd><span>Both-arm authored expression field</span></div>
-                <div><kbd>Q / E + arrows</kbd><span>Shape left / right arm independently</span></div>
-                <div><kbd>Left Ctrl + arrows</kbd><span>Body line, lean, and grounded modifier</span></div>
+                <div><kbd>↑ / ↓</kbd><span>Raise / lower persistent authored arm pose</span></div>
+                <div><kbd>Shift + ↑/↓</kbd><span>Shape the anatomical left arm only</span></div>
+                <div><kbd>Ctrl + ↑/↓</kbd><span>Shape the anatomical right arm only</span></div>
                 <div><kbd>Space hold / release</kbd><span>Compress, then launch the style-specific hop</span></div>
-                <div><button type="button" class="keycap" data-remap="style">X</button><span>BRUSH · shuffle, brush, heel/toe detail</span></div>
-                <div><button type="button" class="keycap" data-remap="power">C</button><span>DRIVE / LICK · chug, backstep, turn, resolution</span></div>
-                <div><kbd>Left Shift</kbd><span>Commit / spring / toe modifier</span></div>
-                <div><kbd>R</kbd><span>Context hand accent or clap</span></div>
+                <div><kbd>Q</kbd><span>BRUSH / SHUFFLE family · chord with a foot for exact side</span></div>
+                <div><kbd>E</kbd><span>HEEL–TOE / SCUFF / articulation family</span></div>
+                <div><kbd>F</kbd><span>DRIVE / BACKSTEP / CHUG / ROCK family</span></div>
+                <div><kbd>T + A/D</kbd><span>TURN / LICK / phrase ending toward that side</span></div>
+                <div><kbd>Ctrl</kbd><span>Grounded, heel-led, dragged, compact movement modifier</span></div>
+                <div><kbd>Shift</kbd><span>Lifted, ball/toe-led, doubled, committed movement modifier</span></div>
                 <div><kbd>Esc / P</kbd><span>Pause</span></div>
               </div>
-              <p class="settings-note" id="remap-help">STEP alone makes a valid groove. Add directions / X / Y / B for brush, drive, licks, and variation.</p>
+              <p class="settings-note" id="remap-help">Foot arrows respond immediately. Add Q/E/F/T within the short intent window to specialize one gesture.</p>
             </div>
           </section>
 
@@ -220,11 +222,14 @@
               <span class="touch-stick__nub"></span>
             </div>
             <div class="touch-buttons">
-              <button type="button" data-control="style" aria-label="Brush">BRUSH</button>
-              <button type="button" data-control="power" aria-label="Drive">DRIVE</button>
-              <button type="button" class="touch-legacy-lick" data-control="freeze" aria-label="Lick">LICK</button>
+              <button type="button" data-control="brush" aria-label="Brush family">Q · BRUSH</button>
+              <button type="button" data-control="articulation" aria-label="Heel toe family">E · HEEL/TOE</button>
+              <button type="button" data-control="drive" aria-label="Drive family">F · DRIVE</button>
+              <button type="button" class="touch-legacy-lick" data-control="turn" aria-label="Turn family">T · TURN</button>
               <button type="button" class="touch-jump" data-control="jump" aria-label="Hold and release jump">JUMP</button>
-              <button type="button" class="touch-action" data-control="action" aria-label="Step">STEP</button>
+              <button type="button" class="touch-foot" data-control="leftFoot" aria-label="Left foot">L FOOT</button>
+              <button type="button" class="touch-foot" data-control="rightFoot" aria-label="Right foot">R FOOT</button>
+              <button type="button" class="touch-action touch-measure-action" data-control="action" aria-label="Copy measure cell">PAW</button>
             </div>
             <div class="touch-modifiers" aria-label="Expression modifiers">
               <button type="button" data-control="leftArmModifier" aria-label="Shape left arm">L ARM</button>
