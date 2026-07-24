@@ -51,5 +51,7 @@ export async function createKakiDance({
     setFrolicReviewFoley: (value) => game.setFrolicReviewFoley(value),
     setFrolicReviewMix: (value) => game.setFrolicReviewMix(value),
     setFrolicReviewKey: (code, pressed) => game.setFrolicReviewKey(code, pressed),
+    setAppalachianRenderMode: (value) => game.setAppalachianRenderMode(value),
+    getAppalachianDiagnostics: () => game.getAppalachianDiagnostics(),
   });
 }

@@ -1,5 +1,32 @@
 # Move-authoring guide
 
+## Appalachian live-simulator contract
+
+The Appalachian simulator is Blender/GLB first. Author and clean the movement
+in `tools/blender/kaki-appalachian-frolic.blend`, preserve contacts and
+entrance/exit frames as action metadata, then export with
+`tools/blender/export_appalachian_simulator_glb.py`. The runtime loads the
+shared skeleton through `GLTFLoader` and layers it through `AnimationMixer`;
+the atlas is fallback evidence only.
+
+Every simulator movement in `js/appalachian/footwork-catalog.js` must declare
+entry/exit level and foot, support contacts, root velocity, facing and angular
+intent, duration range, beat/contact timeline, cancel windows, lean limits,
+arm-mask compatibility, jump and landing eligibility, difficulty, source
+references, entry-frame candidates, and valid successors. A candidate is not
+legal until the live transition solver returns a resolved entry and planted
+support.
+
+The authored right-stick samples live in the GLB manifest. Stick position
+blends nearby poses; it never maps directly to shoulder rotations. Add a pose
+sample only after checking both heroes, both arms, torso collision, jump safety
+weight, and the style-specific angle envelope.
+
+Status for all current simulator motion:
+**CANDIDATE — HUMAN REVIEW REQUIRED**
+
+## Legacy Measure Match and atlas contract
+
 Moves are data first. Add gameplay truth to `js/dance/move-catalog.js`, pose
 keys to `js/animation/move-clips.js`, and only then adjust drawing code if the
 existing rigs cannot express the silhouette.
@@ -95,9 +122,8 @@ costume volumes. His tail is not a contact-capable support.
 
 ## Offline Blender reference
 
-The authoritative Blender source uses one armature for both profiles and blocks
-the six golden-chain moves before broader content work. It exports five-phase
-joint keypoints, declared contact metadata, color passes, silhouettes and
-front/three-quarter/mirrored turnarounds. Runtime remains 2D, and final keys
-must still be hand-directed into Kaki proportions, held drawings, readable
-paws and pixel-stable anchors.
+The legacy Measure Match/atlas path exports five-phase joint keypoints,
+declared contact metadata, color passes, silhouettes and
+front/three-quarter/mirrored turnarounds. Its runtime remains 2D. The
+Appalachian simulator path above is live 3D and must not be authored through
+sprite deformation.

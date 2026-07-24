@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-07-24T19:25:30.434Z",
+  "capturedAt": "2026-07-24T21:45:33.765Z",
   "url": "http://127.0.0.1:4177",
   "immediate": {
     "mode": "frolic",
@@ -7,9 +7,9 @@
     "input": {
       "kind": "step",
       "tick": 1.012,
-      "audioTime": 4.2132217687194045,
-      "rawInputTimestamp": 4947.0999999940395,
-      "simulationReceiptTimestamp": 4948.399999976158,
+      "audioTime": 4.236941723338128,
+      "rawInputTimestamp": 4984.5999999940395,
+      "simulationReceiptTimestamp": 4985.5,
       "timingOffsetTicks": 1.012,
       "moveId": "walkingStep",
       "foot": "left",
@@ -28,15 +28,18 @@
       "/assets/heroes/kitty/frolic/flatfoot/atlas.json"
     ],
     "pages": [
-      "/assets/heroes/kitty/frolic/flatfoot/atlas-1.png",
-      "/assets/heroes/kitty/frolic/flatfoot/atlas-0.png"
+      "/assets/heroes/kitty/frolic/flatfoot/atlas-0.png",
+      "/assets/heroes/kitty/frolic/flatfoot/atlas-1.png"
+    ],
+    "liveModel": [
+      "/assets/models/appalachian/kaki-appalachian-simulator.glb"
     ]
   },
   "frameProfile": {
     "samples": 116,
-    "averageMs": 16.66551724137931,
+    "averageMs": 16.809482758620685,
     "p95Ms": 16.700000000000728,
-    "maxMs": 16.800000000000182
+    "maxMs": 33.399999999999636
   },
   "lab": {
     "state": {
@@ -45,9 +48,9 @@
       "moveId": "turnaround",
       "entryFoot": "left",
       "fromMoveId": "walkingStep",
-      "phase": 0.29640000000000005,
+      "phase": 0.3613000000238418,
       "speed": 1,
-      "lastTime": 662.7,
+      "lastTime": 714.2,
       "lastBeat": -1,
       "activePacks": [
         "soder:flatfoot"
@@ -69,12 +72,12 @@
       216
     ],
     "imageRendering": "pixelated",
-    "readout": "PACK       soder:flatfoot\nCLIP       turnaround\nFRAME      9 / 30\nTOPOLOGY   biped\nSUPPORT    right\nLEFT FOOT  local 53.3, 114.6 · world 198.7, 226.3\nRIGHT FOOT local 24, 113.1 · world 162, 224.4\nCENTER     40.2, 67.6\nCONTACTS   0:left:flat | 48:right:toe | 96:left:heel | 144:right:flat\nENTRY/EXIT left → left\nSUCCESSORS walkingStep, shuffle, chug, rockStep, controlledEnding\nACTIVE     soder:flatfoot",
+    "readout": "PACK       soder:flatfoot\nCLIP       turnaround\nFRAME      11 / 30\nTOPOLOGY   biped\nSUPPORT    right\nLEFT FOOT  local 45.5, 114.8 · world 188.8, 226.4\nRIGHT FOOT local 19, 112.5 · world 155.8, 223.6\nCENTER     37.1, 67.7\nCONTACTS   0:left:flat | 48:right:toe | 96:left:heel | 144:right:flat\nENTRY/EXIT left → left\nSUCCESSORS walkingStep, shuffle, chug, rockStep, turnaround, controlledEnding\nACTIVE     soder:flatfoot",
     "atlas": 1024,
     "renderProfile": {
       "samples": 600,
-      "elapsedMs": 113.19999998807907,
-      "averageMs": 0.18866666664679846
+      "elapsedMs": 112.19999998807907,
+      "averageMs": 0.18699999998013178
     }
   },
   "soder": {
@@ -101,8 +104,8 @@
         "right": 762
       },
       {
-        "label": "LICK",
-        "control": "freeze",
+        "label": "JUMP",
+        "control": "jump",
         "width": 66,
         "height": 40,
         "left": 768,
@@ -125,11 +128,11 @@
   "touchInput": {
     "lastInput": {
       "kind": "step",
-      "tick": 9.929,
-      "audioTime": 4.27138163263518,
-      "rawInputTimestamp": 4971.0999999940395,
-      "simulationReceiptTimestamp": 4983.9000000059605,
-      "timingOffsetTicks": 9.929,
+      "tick": 18.845,
+      "audioTime": 4.361581405901652,
+      "rawInputTimestamp": 5064.300000011921,
+      "simulationReceiptTimestamp": 5103.0999999940395,
+      "timingOffsetTicks": 18.845,
       "moveId": "walkingStep",
       "foot": "left",
       "articulation": "flat",

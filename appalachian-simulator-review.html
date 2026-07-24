@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#16283b">
+    <meta name="description" content="Human review surface for the Kaki-Dance live Appalachian simulator candidate.">
+    <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./appalachian-simulator-review.css">
+    <title>Kaki-Dance — Appalachian simulator review</title>
+  </head>
+  <body>
+    <main class="review-shell" id="sim-review">
+      <header class="review-mast">
+        <div>
+          <a class="back-link" href="./">← KAKI-DANCE</a>
+          <p class="section-mark">GATE 1 / LIVE RIG + PERFORMANCE CONTROL</p>
+          <h1>Work the board.</h1>
+        </div>
+        <div class="candidate-stamp" role="status">
+          CANDIDATE<br>HUMAN REVIEW REQUIRED
+        </div>
+      </header>
+
+      <section class="stage-bench" aria-label="Playable simulator candidate">
+        <div class="stage-frame">
+          <canvas id="simulator-canvas" width="384" height="216" tabindex="0"
+            aria-label="Live KittyKaki or Soter dances on the Appalachian Frolic board."></canvas>
+          <div class="stage-key">
+            <span><i class="key-dot key-dot--mint"></i> contact</span>
+            <span><i class="key-dot key-dot--gold"></i> center of mass</span>
+            <span><i class="key-line"></i> root trail</span>
+          </div>
+        </div>
+        <div class="now-strip">
+          <strong id="now-move">GROOVE</strong>
+          <span id="now-support">support · right</span>
+          <span id="now-region">center sweet spot</span>
+          <span id="now-backend">loading live rig…</span>
+        </div>
+      </section>
+
+      <aside class="control-ledger" aria-label="Review controls">
+        <section class="ledger-section">
+          <div class="ledger-heading">
+            <span>A</span>
+            <h2>Performer</h2>
+          </div>
+          <div class="segmented" role="group" aria-label="Character">
+            <button type="button" class="is-selected" data-hero="kitty">KittyKaki</button>
+            <button type="button" data-hero="soder">Soter</button>
+          </div>
+          <div class="segmented segmented--three" role="group" aria-label="Style">
+            <button type="button" class="is-selected" data-style="flatfoot">Flatfoot</button>
+            <button type="button" data-style="buck">Buck</button>
+            <button type="button" data-style="clog">Clog</button>
+          </div>
+          <label class="select-row">Move browser
+            <select id="move-browser">
+              <option value="walkingStep">Walking Step</option>
+              <option value="slidingWalk">Sliding Walk</option>
+              <option value="shuffle">Shuffle</option>
+              <option value="heelToeChange">Heel-Toe Change</option>
+              <option value="backstep">Backstep</option>
+              <option value="chug">Chug</option>
+              <option value="rockStep">Rock Step</option>
+              <option value="turnaround">Turnaround</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="ledger-section">
+          <div class="ledger-heading">
+            <span>B</span>
+            <h2>Arm field</h2>
+          </div>
+          <div class="arm-field" id="arm-field" aria-label="Current right-stick arm field">
+            <span class="arm-field__axis arm-field__axis--x"></span>
+            <span class="arm-field__axis arm-field__axis--y"></span>
+            <span class="arm-field__cursor" id="arm-cursor"></span>
+            <small class="arm-field__label arm-field__label--high">HIGH</small>
+            <small class="arm-field__label arm-field__label--low">LOW</small>
+            <small class="arm-field__label arm-field__label--left">SWEEP</small>
+            <small class="arm-field__label arm-field__label--right">OPEN</small>
+          </div>
+          <output id="arm-readout">both · relaxed low</output>
+        </section>
+
+        <section class="ledger-section">
+          <div class="ledger-heading">
+            <span>C</span>
+            <h2>Playback</h2>
+          </div>
+          <div class="transport-row">
+            <button type="button" id="pause-review">Pause</button>
+            <button type="button" id="frame-step">Frame +</button>
+            <button type="button" id="sound-review">Enable sound</button>
+          </div>
+          <div class="speed-row" role="group" aria-label="Playback speed">
+            <button type="button" data-speed="0.25">0.25×</button>
+            <button type="button" data-speed="0.5">0.5×</button>
+            <button type="button" class="is-selected" data-speed="1">1×</button>
+          </div>
+          <div class="mix-row">
+            <label><input type="checkbox" id="music-toggle" checked> Music</label>
+            <label><input type="checkbox" id="foley-toggle" checked> Foley</label>
+          </div>
+        </section>
+
+        <section class="ledger-section">
+          <div class="ledger-heading">
+            <span>D</span>
+            <h2>Diagnostics</h2>
+          </div>
+          <div class="check-grid">
+            <label><input type="checkbox" data-debug="skeleton"> Skeleton</label>
+            <label><input type="checkbox" data-debug="contacts"> Contacts</label>
+            <label><input type="checkbox" data-debug="centerOfMass"> Center of mass</label>
+            <label><input type="checkbox" data-debug="rootTrail"> Root trail</label>
+          </div>
+          <div class="segmented" role="group" aria-label="Dancer renderer">
+            <button type="button" class="is-selected" data-renderer="live">Live 3D</button>
+            <button type="button" data-renderer="atlas">Old atlas</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="test-tape" aria-labelledby="test-tape-title">
+        <div class="tape-title">
+          <p class="section-mark">AUTOMATED REVIEW MOTIONS</p>
+          <h2 id="test-tape-title">Caller’s tape</h2>
+          <p>These drive the same simulator state as live controls. They are capture aids, not approval.</p>
+        </div>
+        <div class="test-buttons">
+          <button type="button" data-demo="figureEight">Figure-eight travel</button>
+          <button type="button" data-demo="armCircle">Arm-circle test</button>
+          <button type="button" data-demo="independentArms">Independent arms</button>
+          <button type="button" data-demo="styleHop">Style hop</button>
+          <button type="button" data-demo="danceLine">Eight-move Dance Line</button>
+          <button type="button" data-demo="">Live control</button>
+        </div>
+      </section>
+
+      <section class="diagnostic-rack" aria-label="Live diagnostic readouts">
+        <article>
+          <h2>Input</h2>
+          <pre id="input-data">waiting for input…</pre>
+        </article>
+        <article>
+          <h2>Air + contact</h2>
+          <pre id="air-data">grounded</pre>
+        </article>
+        <article>
+          <h2>Layers</h2>
+          <div class="layer-bars" id="layer-bars"></div>
+        </article>
+        <article>
+          <h2>Transition candidates</h2>
+          <ol class="transition-list" id="transition-data"></ol>
+        </article>
+        <article>
+          <h2>Runtime</h2>
+          <pre id="runtime-data">loading GLB…</pre>
+        </article>
+        <article>
+          <h2>Source + approval</h2>
+          <p id="source-data">Reading simulator manifest…</p>
+        </article>
+      </section>
+
+      <section class="touch-review" id="review-touch-controls" aria-label="Touch play controls">
+        <div class="review-stick" data-touch-stick="travel" aria-label="Travel stick"><span></span></div>
+        <div class="review-stick review-stick--arms" data-touch-stick="arms" aria-label="Arm pad"><span></span></div>
+        <div class="review-actions">
+          <button type="button" data-control="action">STEP</button>
+          <button type="button" data-control="style">BRUSH</button>
+          <button type="button" data-control="power">DRIVE</button>
+          <button type="button" data-control="jump">JUMP</button>
+        </div>
+        <div class="review-modifiers">
+          <button type="button" data-control="leftArmModifier">L ARM</button>
+          <button type="button" data-control="rightArmModifier">R ARM</button>
+          <button type="button" data-control="bodyModifier">GROUND</button>
+          <button type="button" data-control="commitModifier">COMMIT</button>
+        </div>
+      </section>
+
+      <footer class="review-footer">
+        <p><strong>Keyboard:</strong> WASD travel · arrows arms · Q/E one arm · Ctrl body/ground · Shift commit · Space hop · Z/X/C feet · R accent.</p>
+        <p id="review-status" aria-live="polite">Loading the live candidate…</p>
+      </footer>
+      <audio id="review-music" src="./assets/audio/frolic/board-and-bow.wav" loop preload="auto"></audio>
+    </main>
+    <script type="module" src="./js/appalachian-simulator-review.js"></script>
+  </body>
+</html>

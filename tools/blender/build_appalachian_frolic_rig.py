@@ -904,6 +904,25 @@ def action_specs() -> dict[str, dict]:
                 {"frame": 31, "support": "left", "contact": "flat", "freeFoot": "right"},
             ],
         },
+        "slidingWalk": {
+            "display": "Forward-and-back sliding walk",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.15, 0, -0.17), pelvis_rot=(0, -2, -3), chest=(0, 3, 4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+                (6, pose(pelvis_shift=(-0.22, -0.03, -0.20), pelvis_rot=(0, -3, -4), chest=(0, 4, 5), foot_L=left_plant, **{"foot.R": (-0.51, -0.25, 0.40), "upperArm.L": (6, -6, -9), "forearm.L": (-10, 2, 3), "upperArm.R": (-5, 6, 8), "forearm.R": (9, -2, -3)})),
+                (11, pose(pelvis_shift=(-0.06, -0.08, -0.14), pelvis_rot=(0, -1, -1), chest=(0, 2, 2), foot_L=left_plant, **{"foot.R": (-0.52, -0.62, 0.39), "foot_rot.R": (7, 0, 0), **relaxed})),
+                (16, pose(pelvis_shift=(0.17, -0.05, -0.18), pelvis_rot=(0, 2, 3), chest=(0, -3, -4), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (-5, -6, 8), "forearm.L": (-9, 2, -3), "upperArm.R": (6, 6, -9), "forearm.R": (9, -2, 3)})),
+                (21, pose(pelvis_shift=(0.22, 0.02, -0.20), pelvis_rot=(0, 3, 4), chest=(0, -4, -5), foot_R=right_plant, **{"foot.L": (0.51, -0.24, 0.40), "upperArm.L": (-7, -6, 10), "forearm.L": (-10, 2, -4), "upperArm.R": (6, 6, -9), "forearm.R": (9, -2, 3)})),
+                (26, pose(pelvis_shift=(0.06, 0.06, -0.14), pelvis_rot=(0, 1, 1), chest=(0, -2, -2), foot_R=right_plant, **{"foot.L": (0.52, 0.32, 0.39), "foot_rot.L": (-6, 0, 0), **relaxed})),
+                (31, pose(pelvis_shift=(-0.15, 0, -0.17), pelvis_rot=(0, -2, -3), chest=(0, 3, 4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "left", "contact": "flat", "freeFoot": "right"},
+                {"frame": 11, "support": "left", "contact": "slide", "freeFoot": "right"},
+                {"frame": 16, "support": "right", "contact": "flat", "freeFoot": "left"},
+                {"frame": 26, "support": "right", "contact": "drag", "freeFoot": "left"},
+                {"frame": 31, "support": "left", "contact": "flat", "freeFoot": "right"},
+            ],
+        },
         "shuffle": {
             "display": "Shuffle and brush",
             "frames": [
@@ -965,6 +984,74 @@ def action_specs() -> dict[str, dict]:
                 {"frame": 1, "support": "both", "contact": "flat", "freeFoot": "both"},
                 {"frame": 5, "support": "none", "contact": "depart", "freeFoot": "both"},
                 {"frame": 10, "support": "both", "contact": "chug", "freeFoot": "both"},
+            ],
+        },
+        "rockStep": {
+            "display": "Rock step and ball change",
+            "frames": [
+                (1, pose(pelvis_shift=(0.13, 0, -0.16), pelvis_rot=(0, 2, 3), chest=(0, -3, -4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+                (4, pose(pelvis_shift=(0.23, 0.08, -0.20), pelvis_rot=(0, 3, 5), chest=(0, -4, -6), foot_R=right_plant, **{"foot.L": (0.53, 0.22, 0.49), "foot_rot.L": (-14, 0, 0), "upperArm.L": (-7, -6, 11), "forearm.L": (-11, 2, -4), "upperArm.R": (8, 6, -12), "forearm.R": (10, -2, 4)})),
+                (8, pose(pelvis_shift=(-0.08, 0.11, -0.15), pelvis_rot=(0, -1, -2), chest=(0, 2, 3), foot_L=(0.53, 0.16, 0.38), foot_R=right_plant, **{"upperArm.L": (4, -6, -6), "forearm.L": (-8, 2, 3), "upperArm.R": (-3, 5, 6), "forearm.R": (8, -2, -3)})),
+                (12, pose(pelvis_shift=(-0.21, -0.03, -0.20), pelvis_rot=(0, -3, -5), chest=(0, 4, 6), foot_L=left_plant, **{"foot.R": (-0.52, -0.19, 0.47), "foot_rot.R": (12, 0, 0), "upperArm.L": (7, -6, -10), "forearm.L": (-10, 2, 4), "upperArm.R": (-6, 6, 9), "forearm.R": (9, -2, -3)})),
+                (16, pose(pelvis_shift=(0.13, 0, -0.16), pelvis_rot=(0, 2, 3), chest=(0, -3, -4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "right", "contact": "flat", "freeFoot": "left"},
+                {"frame": 8, "support": "left", "contact": "toe", "freeFoot": "right"},
+                {"frame": 12, "support": "left", "contact": "ball-change", "freeFoot": "right"},
+                {"frame": 16, "support": "right", "contact": "flat", "freeFoot": "left"},
+            ],
+        },
+        "flatfootHop": {
+            "display": "Flatfoot compact weight-release hop",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.04, 0, -0.29), pelvis_rot=(0, -1, -1), chest=(0, 2, 2), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (5, -7, -8), "forearm.L": (-10, 2, 3), "upperArm.R": (-4, 7, 7), "forearm.R": (9, -2, -3)})),
+                (3, pose(pelvis_shift=(-0.02, 0, -0.34), pelvis_rot=(0, -1, -1), chest=(0, 2, 2), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (8, -8, -12), "forearm.L": (-12, 2, 4), "upperArm.R": (-7, 8, 11), "forearm.R": (11, -2, -4)})),
+                (6, pose(root=(0, -0.02, 0.15), pelvis_shift=(0.02, 0, -0.12), pelvis_rot=(0, 1, 1), chest=(0, -2, -2), **{"foot.L": (0.5, -0.03, 0.48), "foot.R": (-0.5, -0.03, 0.48), "upperArm.L": (-3, -7, 5), "forearm.L": (-8, 2, -2), "upperArm.R": (4, 7, -6), "forearm.R": (8, -2, 2)})),
+                (9, pose(root=(0, -0.04, 0.22), pelvis_shift=(0.03, 0, -0.08), pelvis_rot=(0, 1, 2), chest=(0, -2, -3), **{"foot.L": (0.5, -0.05, 0.56), "foot.R": (-0.5, -0.05, 0.56), "upperArm.L": (-5, -7, 8), "forearm.L": (-9, 2, -3), "upperArm.R": (6, 7, -9), "forearm.R": (9, -2, 3)})),
+                (12, pose(root=(0, -0.06, 0.08), pelvis_shift=(-0.02, 0, -0.18), pelvis_rot=(0, -1, -1), chest=(0, 2, 2), **{"foot.L": (0.5, -0.06, 0.43), "foot.R": (-0.5, -0.06, 0.43), **relaxed})),
+                (16, pose(root=(0, -0.08, 0), pelvis_shift=(-0.05, 0, -0.25), pelvis_rot=(0, -1, -2), chest=(0, 2, 3), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "both", "contact": "compression", "freeFoot": "both"},
+                {"frame": 4, "support": "none", "contact": "launch", "freeFoot": "both"},
+                {"frame": 13, "support": "both", "contact": "landing", "freeFoot": "both"},
+            ],
+        },
+        "buckSpringHop": {
+            "display": "Buck ball-of-foot spring hop",
+            "frames": [
+                (1, pose(pelvis_shift=(-0.15, 0, -0.27), pelvis_rot=(0, -3, -4), chest=(0, 4, 5), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (12, -10, -18), "forearm.L": (-15, 3, 6), "upperArm.R": (-10, 9, 16), "forearm.R": (14, -3, -5)})),
+                (4, pose(pelvis_shift=(-0.19, 0, -0.35), pelvis_rot=(0, -4, -6), chest=(0, 5, 7), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (18, -11, -27), "forearm.L": (-18, 3, 8), "upperArm.R": (-16, 10, 24), "forearm.R": (17, -3, -7)})),
+                (8, pose(root=(0, -0.10, 0.42), pelvis_shift=(-0.02, 0, -0.08), pelvis_rot=(0, -1, -2), chest=(0, 2, 3), **{"foot.L": (0.24, -0.24, 0.62), "foot.R": (-0.62, 0.03, 0.54), "foot_rot.L": (-12, 0, -8), "upperArm.L": (-14, -12, 24), "forearm.L": (-18, 3, -7), "upperArm.R": (16, 10, -26), "forearm.R": (18, -3, 8)})),
+                (11, pose(root=(0, -0.18, 0.64), pelvis_shift=(0.10, 0, -0.03), pelvis_rot=(0, 3, 5), chest=(0, -4, -6), **{"foot.L": (-0.02, -0.34, 0.76), "foot.R": (-0.58, -0.12, 0.61), "foot_rot.L": (-18, 0, -12), "upperArm.L": (-22, -13, 34), "forearm.L": (-20, 4, -10), "upperArm.R": (24, 12, -36), "forearm.R": (20, -4, 11)})),
+                (15, pose(root=(0, -0.25, 0.30), pelvis_shift=(0.16, 0, -0.13), pelvis_rot=(0, 4, 6), chest=(0, -5, -7), **{"foot.L": (0.46, -0.18, 0.52), "foot.R": (-0.52, -0.22, 0.48), "upperArm.L": (-12, -10, 20), "forearm.L": (-15, 3, -6), "upperArm.R": (14, 9, -22), "forearm.R": (15, -3, 7)})),
+                (20, pose(root=(0, -0.30, 0), pelvis_shift=(0.12, 0, -0.24), pelvis_rot=(0, 2, 3), chest=(0, -3, -4), foot_L=left_plant, foot_R=right_plant, **relaxed)),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "both", "contact": "compression", "freeFoot": "both"},
+                {"frame": 5, "support": "none", "contact": "ball-launch", "freeFoot": "both"},
+                {"frame": 16, "support": "right", "contact": "toe-landing", "freeFoot": "left"},
+                {"frame": 20, "support": "both", "contact": "settle", "freeFoot": "left"},
+            ],
+        },
+        "clogJumpPullback": {
+            "display": "Clog jump and pullback prototype",
+            "frames": [
+                (1, pose(pelvis_shift=(0, 0, -0.30), chest=(0, 0, 0), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (20, -12, -28), "forearm.L": (-17, 3, 9), "upperArm.R": (-20, 12, 28), "forearm.R": (17, -3, -9)})),
+                (4, pose(pelvis_shift=(0, 0, -0.42), chest=(0, 0, 0), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (32, -14, -42), "forearm.L": (-20, 4, 12), "upperArm.R": (-32, 14, 42), "forearm.R": (20, -4, -12)})),
+                (8, pose(root=(0, -0.08, 0.48), pelvis_shift=(0, 0, -0.08), chest=(0, 0, 0), **{"foot.L": (0.52, -0.12, 0.68), "foot.R": (-0.52, -0.12, 0.68), "foot_rot.L": (-18, 0, 0), "foot_rot.R": (-18, 0, 0), "upperArm.L": (48, -16, -58), "forearm.L": (-24, 4, 15), "upperArm.R": (-48, 16, 58), "forearm.R": (24, -4, -15)})),
+                (12, pose(root=(0, -0.17, 0.88), pelvis_shift=(0, 0, 0), chest=(0, 0, 0), **{"foot.L": (0.52, 0.34, 0.82), "foot.R": (-0.52, 0.34, 0.82), "foot_rot.L": (24, 0, 0), "foot_rot.R": (24, 0, 0), "toe_rot.L": (-22, 0, 0), "toe_rot.R": (-22, 0, 0), "upperArm.L": (62, -18, -70), "forearm.L": (-28, 5, 18), "upperArm.R": (-62, 18, 70), "forearm.R": (28, -5, -18)})),
+                (16, pose(root=(0, -0.27, 0.58), pelvis_shift=(0, 0, -0.08), chest=(0, 0, 0), **{"foot.L": (0.52, -0.20, 0.72), "foot.R": (-0.52, -0.20, 0.72), "foot_rot.L": (-12, 0, 0), "foot_rot.R": (-12, 0, 0), "upperArm.L": (48, -16, -58), "forearm.L": (-24, 4, 15), "upperArm.R": (-48, 16, 58), "forearm.R": (24, -4, -15)})),
+                (20, pose(root=(0, -0.34, 0.18), pelvis_shift=(0, 0, -0.20), chest=(0, 0, 0), **{"foot.L": (0.52, -0.06, 0.46), "foot.R": (-0.52, -0.06, 0.46), "upperArm.L": (34, -14, -44), "forearm.L": (-20, 4, 12), "upperArm.R": (-34, 14, 44), "forearm.R": (20, -4, -12)})),
+                (24, pose(root=(0, -0.38, 0), pelvis_shift=(0, 0, -0.32), chest=(0, 0, 0), foot_L=left_plant, foot_R=right_plant, **{"upperArm.L": (24, -12, -32), "forearm.L": (-17, 3, 9), "upperArm.R": (-24, 12, 32), "forearm.R": (17, -3, -9)})),
+            ],
+            "contacts": [
+                {"frame": 1, "support": "both", "contact": "compression", "freeFoot": "both"},
+                {"frame": 5, "support": "none", "contact": "launch", "freeFoot": "both"},
+                {"frame": 12, "support": "none", "contact": "air-pullback", "freeFoot": "both"},
+                {"frame": 21, "support": "both", "contact": "tap-landing", "freeFoot": "both"},
+                {"frame": 24, "support": "both", "contact": "settle", "freeFoot": "both"},
             ],
         },
         "recovery": {
@@ -1082,8 +1169,8 @@ def validate_production_source(
     actions: dict,
 ) -> dict:
     errors = []
-    if len(actions) != 8:
-        errors.append("exactly eight Flatfoot candidate actions are required")
+    if len(actions) != 13:
+        errors.append("thirteen simulator gate actions are required")
     required = {
         "pelvis", "spine", "chest", "clavicle.L", "clavicle.R",
         "upperArm.L", "upperArm.R", "forearm.L", "forearm.R",
@@ -1141,6 +1228,7 @@ def main() -> None:
         "candidateStatus": "human-review-required",
         "source": str(output.relative_to(root)),
         "publicSpriteSource": "actual Blender rendered character",
+        "liveRuntimeSource": "GLB export from this shared armature",
         "sharedArmature": rig.name,
         "topology": "weighted-biped",
         "characters": ["kitty", "soder"],
@@ -1159,7 +1247,11 @@ def main() -> None:
             "reason": "Aseprite and LibreSprite are not installed; retain toon-rendered candidate for human review.",
         },
     }
-    export_path.write_text(json.dumps(export, indent=2) + "\n", encoding="utf-8")
+    export_path.write_text(
+        json.dumps(export, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     bpy.ops.wm.save_as_mainfile(filepath=str(output))
     print(f"KAKI_FROLIC_BLEND={output}")
     print(f"KAKI_FROLIC_EXPORT={export_path}")

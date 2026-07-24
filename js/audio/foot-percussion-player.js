@@ -12,6 +12,30 @@ const CLOG_SAMPLE_MAP = Object.freeze({
   flatContact: "tapHeel",
 });
 
+export const CONTACT_SAMPLE_MAP = Object.freeze({
+  softSole: "softSole",
+  flatContact: "flatContact",
+  heel: "heel",
+  toeBall: "toeBall",
+  brush: "brush",
+  skuff: "scuff",
+  scuff: "scuff",
+  drag: "drag",
+  slide: "slide",
+  chug: "chug",
+  doubleTap: "tapToe",
+  metalHeelTap: "tapHeel",
+  metalToeTap: "tapToe",
+  hopLaunch: "softSole",
+  landing: "flatContact",
+  boardResonance: "chug",
+});
+
+export function resolveFootSampleGroup(sampleGroup, style = "flatfoot") {
+  const normalized = CONTACT_SAMPLE_MAP[sampleGroup] ?? sampleGroup;
+  return style === "clog" ? CLOG_SAMPLE_MAP[normalized] ?? normalized : normalized;
+}
+
 export class FootPercussionPlayer {
   constructor({
     transport,
@@ -89,9 +113,7 @@ export class FootPercussionPlayer {
     const context = this.transport?.context;
     const destination = this.transport?.effectsGain;
     if (!context?.createBufferSource || !destination) return false;
-    const requested = event.style === "clog"
-      ? CLOG_SAMPLE_MAP[event.sampleGroup] ?? event.sampleGroup
-      : event.sampleGroup;
+    const requested = resolveFootSampleGroup(event.sampleGroup, event.style);
     const group = this.buffers.has(requested) ? requested : event.sampleGroup;
     const variants = this.buffers.get(group);
     if (!variants?.length) {
@@ -116,7 +138,8 @@ export class FootPercussionPlayer {
     const gain = context.createGain();
     const baseGain = definition.baseGain ?? 0.7;
     const intensity = clamp(Number(event.intensity) || 0.55, 0.12, 1);
-    gain.gain.value = clamp(baseGain * (0.5 + intensity * 0.62), 0, 1.15);
+    const boardResonance = clamp(Number(event.boardResonance) || 1, 0.82, 1.18);
+    gain.gain.value = clamp(baseGain * (0.5 + intensity * 0.62) * boardResonance, 0, 1.15);
     source.playbackRate.value = 1;
     source.connect(gain);
 

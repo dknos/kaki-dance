@@ -1,41 +1,66 @@
+import { clamp } from "../core/math.js";
+import { smoothPoseVector } from "./arm-pose-field.js";
 import {
+  FROLIC_JUMP_PROFILES,
   getFootwork,
   normalizeFrolicStyle,
   resolvedContacts,
 } from "./footwork-catalog.js";
+import { FootworkTransitionGraph } from "./transition-graph.js";
+import { transitionRecipeFor } from "./transition-recipes.js";
 
 const GROOVE_TICKS = 96;
+const REQUEST_BUFFER_SECONDS = 0.12;
+const DEFAULT_DT = 1 / 120;
+const BOARD_BOUNDS = Object.freeze({ minX: -4.25, maxX: 4.25, minZ: -2.65, maxZ: 2.65 });
+const STYLE_TRAVEL = Object.freeze({
+  flatfoot: Object.freeze({ speed: 1.55, acceleration: 8.2, airControl: 0.42 }),
+  buck: Object.freeze({ speed: 1.82, acceleration: 9.4, airControl: 0.52 }),
+  clog: Object.freeze({ speed: 1.72, acceleration: 8.8, airControl: 0.46 }),
+});
+
+const RECOVERY_MOVE = Object.freeze({
+  id: "recovery",
+  displayName: "Weight-shift recovery",
+  family: "recovery",
+  durationTicks: 48,
+  exitRule: "opposite",
+  rootMotion: Object.freeze({ forward: 0, lateral: 0 }),
+  contacts: Object.freeze([]),
+});
 
 /**
- * Interruptible three-layer Flatfoot controller.
+ * Persistent performance controller.
  *
- * Base: a continuous groove with a known support/free-foot state.
- * Action: one atomic, immediately retargetable movement.
- * Phrase: the most recent intention, used only for follow-through context.
- *
- * There is deliberately no movement queue and no transition bridge on the
- * player-input path.
+ * The controller owns board-space motion, support state, short contact-aware
+ * handoffs, upper-body fields, and the complete compression/air/landing cycle.
+ * A foot action can change without clearing travel or arm state; arm input can
+ * change without creating a new lower-body action id.
  */
 export class AppalachianAnimationController {
   constructor({ style = "flatfoot" } = {}) {
     this.style = normalizeFrolicStyle(style);
+    this.graph = new FootworkTransitionGraph({ style: this.style });
     this.reset(0);
   }
 
   reset(tick = 0) {
+    const startTick = Number(tick) || 0;
     this.base = {
       clip: "groove",
-      startTick: Number(tick) || 0,
+      startTick,
       supportingFoot: "right",
       freeFoot: "left",
     };
     this.action = null;
-    // Compatibility alias for callers that inspect the active authored move.
     this.current = null;
+    this.lastMoveId = "";
     this.phrase = null;
     this.queued = null;
     this.bridge = null;
-    this.lastTick = Number(tick) || 0;
+    this.transition = null;
+    this.transitionCandidates = Object.freeze([]);
+    this.lastTick = startTick;
     this.entryFoot = "left";
     this.direction = "neutral";
     this.mirror = false;
@@ -43,6 +68,57 @@ export class AppalachianAnimationController {
     this.emittedContactIds = new Set();
     this.serial = 0;
     this.lastResponse = null;
+    this.bufferedRequest = null;
+    this.bufferAge = 0;
+    this.world = {
+      x: 0,
+      z: 0,
+      vx: 0,
+      vz: 0,
+      facing: 0,
+      angularVelocity: 0,
+      distance: 0,
+      directionChanges: 0,
+      lastTravelAngle: null,
+    };
+    this.upper = {
+      coordinated: Object.freeze({ x: 0, y: -0.18 }),
+      left: Object.freeze({ x: 0, y: -0.18 }),
+      right: Object.freeze({ x: 0, y: -0.18 }),
+      body: Object.freeze({ x: 0, y: 0 }),
+      leftOverride: false,
+      rightOverride: false,
+      bodyActive: false,
+      handAccent: "",
+      handAccentTime: 0,
+      inputDistance: 0,
+      intentionalSamples: 0,
+      previousInput: { x: 0, y: -0.18 },
+    };
+    this.jump = {
+      state: "grounded",
+      chargeSeconds: 0,
+      launchedAtTick: 0,
+      elapsedSeconds: 0,
+      airSeconds: 0,
+      height: 0,
+      maxHeight: 0,
+      progress: 0,
+      variation: "",
+      turnDirection: 0,
+      landingQuality: 1,
+      landingAge: 0,
+      actionId: 0,
+    };
+    this.metrics = {
+      jumps: 0,
+      cleanLandings: 0,
+      recoveries: 0,
+      transitionCount: 0,
+      transitionScoreTotal: 0,
+      armInputDistance: 0,
+      maxFootDriftMeters: 0,
+    };
   }
 
   request(moveId, {
@@ -51,6 +127,7 @@ export class AppalachianAnimationController {
     entryFoot = this.base.freeFoot,
     inputTimestamp = null,
     simulationReceiptTimestamp = null,
+    phrasePhase = 0,
   } = {}) {
     const move = getFootwork(moveId);
     const requestTick = Number(tick) || 0;
@@ -58,29 +135,93 @@ export class AppalachianAnimationController {
     if (!move.styles.includes(this.style)) {
       return rejected("style-unavailable", `${move.displayName} is not in the ${this.style} profile.`);
     }
+    if (this.jump.state === "airborne" && !move.landingEligibility) {
+      this.bufferedRequest = {
+        moveId,
+        direction,
+        entryFoot,
+        inputTimestamp,
+        simulationReceiptTimestamp,
+        phrasePhase,
+      };
+      this.bufferAge = 0;
+      return accepted({
+        status: "buffered-for-landing",
+        request: this.makeRequest(move, requestTick, direction, entryFoot, {
+          inputTimestamp,
+          simulationReceiptTimestamp,
+        }),
+        visibleActionStarted: false,
+        queued: true,
+      });
+    }
+
     const foot = entryFoot === "right" ? "right" : "left";
-    const exitFoot = resolveExitFoot(move.exitRule, foot);
-    const interrupted = Boolean(this.action);
-    const request = Object.freeze({
-      id: ++this.serial,
-      move,
-      requestedTick: requestTick,
-      startTick: requestTick,
-      direction,
+    const fromId = this.action?.move.id && this.action.move.id !== "recovery"
+      ? this.action.move.id
+      : this.lastMoveId;
+    const phase = this.actionPhase(requestTick);
+    const candidates = this.graph.rankCandidates({
+      fromId,
+      candidates: [move.id],
       entryFoot: foot,
-      exitFoot,
-      inputTimestamp: finiteOrNull(inputTimestamp),
-      simulationReceiptTimestamp: finiteOrNull(simulationReceiptTimestamp),
+      direction,
+      phrasePhase,
+      currentState: {
+        phase,
+        rootVelocity: { x: this.world.vx, z: this.world.vz },
+        facing: this.world.facing,
+        angularVelocity: this.world.angularVelocity,
+        supportingFoot: this.supportingFoot(),
+        centerOfMassOffset: this.centerOfMassOffset(),
+        bodyLevel: this.jump.state === "compression" ? "low" : "mid",
+      },
     });
+    this.transitionCandidates = Object.freeze(candidates.slice(0, 6));
+    if (!candidates.length) {
+      return this.beginRecovery(move, {
+        tick: requestTick,
+        direction,
+        entryFoot: foot,
+        inputTimestamp,
+        simulationReceiptTimestamp,
+      });
+    }
+
+    const best = candidates[0];
+    const interrupted = Boolean(this.action);
+    const request = this.makeRequest(move, requestTick, direction, best.entryFoot, {
+      inputTimestamp,
+      simulationReceiptTimestamp,
+      entryPhase: best.entryPhase,
+      exitFoot: best.exitFoot,
+    });
+    request.startTick = requestTick - best.entryPhase * move.durationTicks;
+    request.transition = best;
     this.action = request;
     this.current = request;
+    this.lastMoveId = move.id;
+    this.transition = Object.freeze({
+      id: best.transitionRecipe,
+      clip: best.transitionClip,
+      startTick: requestTick,
+      durationTicks: best.transitionTicks,
+      score: best.score,
+      scoreParts: best.scoreParts,
+      plantedFoot: this.supportingFoot(),
+      rootWarpLimitMeters: best.rootWarpLimitMeters,
+      resolved: true,
+    });
+    this.bridge = this.transition;
+    this.metrics.transitionCount += 1;
+    this.metrics.transitionScoreTotal += best.score;
     this.phrase = Object.freeze({
       moveId: move.id,
       direction,
       requestedTick: requestTick,
       actionId: request.id,
     });
-    this.entryFoot = foot;
+    this.entryFoot = best.entryFoot;
     this.direction = direction;
     this.mirror = false;
     this.lastResponse = Object.freeze({
@@ -89,16 +230,29 @@ export class AppalachianAnimationController {
       inputTimestamp: request.inputTimestamp,
       simulationReceiptTimestamp: request.simulationReceiptTimestamp,
       startTick: requestTick,
+      entryPhase: best.entryPhase,
+      transitionRecipe: best.transitionRecipe,
+      transitionScore: best.score,
     });
     return accepted({
       status: interrupted ? "retargeted" : "started",
       request,
       visibleActionStarted: true,
+      queued: false,
+      transition: this.transition,
     });
   }
 
-  update(tick) {
+  applyPerformanceInput(dt = DEFAULT_DT, input = {}, tick = this.lastTick) {
+    const safeDt = Math.max(0, Number(dt) || 0);
+    this.updateTravel(safeDt, input);
+    this.updateUpperBody(safeDt, input);
+    this.updateJump(safeDt, input, Number(tick) || 0);
+  }
+
+  update(tick, { dt = DEFAULT_DT, input = null } = {}) {
     const currentTick = Number(tick) || 0;
+    if (input) this.applyPerformanceInput(dt, input, currentTick);
     if (currentTick < this.lastTick) {
       this.lastTick = currentTick;
       this.pendingContacts.length = 0;
@@ -107,7 +261,23 @@ export class AppalachianAnimationController {
     if (this.action) {
       this.collectContacts(this.lastTick, currentTick);
       const endTick = this.action.startTick + this.action.move.durationTicks;
-      if (currentTick >= endTick) this.completeAction(endTick);
+      if (currentTick >= endTick && this.jump.state === "grounded") this.completeAction(endTick);
+    }
+    if (this.transition && currentTick >= this.transition.startTick + this.transition.durationTicks) {
+      this.transition = null;
+      this.bridge = null;
+    }
+    if (this.bufferedRequest) {
+      this.bufferAge += Math.max(0, Number(dt) || 0);
+      if (this.bufferAge > REQUEST_BUFFER_SECONDS) {
+        this.bufferedRequest = null;
+        this.bufferAge = 0;
+      } else if (this.jump.state === "landing" || this.jump.state === "grounded") {
+        const buffered = this.bufferedRequest;
+        this.bufferedRequest = null;
+        this.bufferAge = 0;
+        this.request(buffered.moveId, { ...buffered, tick: currentTick });
+      }
     }
     this.lastTick = currentTick;
   }
@@ -130,13 +300,11 @@ export class AppalachianAnimationController {
   }
 
   collectContacts(previousTick, currentTick) {
-    if (!this.action) return;
+    if (!this.action || this.action.move.id === "recovery") return;
     const contacts = resolvedContacts(this.action.move, this.action.entryFoot);
     for (let index = 0; index < contacts.length; index += 1) {
       const contact = contacts[index];
       const absoluteTick = this.action.startTick + contact.tick;
-      // The first authored contact is scheduled directly from the raw input
-      // path, even when its original phrase timing was slightly after frame 1.
       if (index === 0) continue;
       if (absoluteTick <= previousTick + 1e-8 || absoluteTick > currentTick + 1e-8) continue;
       const contactId = `${this.action.id}:${index}:${contact.tick}`;
@@ -150,70 +318,447 @@ export class AppalachianAnimationController {
         moveId: this.action.move.id,
         style: this.style,
         requested: false,
+        worldPosition: Object.freeze({ x: this.world.x, z: this.world.z }),
       }));
     }
   }
 
   getSnapshot(tick = this.lastTick) {
     const currentTick = Number(tick) || 0;
+    const transitionProgress = this.transition
+      ? clamp((currentTick - this.transition.startTick) / this.transition.durationTicks, 0, 1)
+      : 1;
+    const lower = this.lowerSnapshot(currentTick);
+    const jumpProfile = FROLIC_JUMP_PROFILES[this.style];
+    const jumpActive = this.jump.state !== "grounded";
+    const presentationClip = jumpActive ? jumpProfile.clip : lower.presentationClip;
+    const presentationPhase = jumpActive ? this.jumpPresentationPhase() : lower.presentationPhase;
+    const supportingFoot = this.supportingFoot();
+    const armSafety = this.jump.state === "airborne" ? 0.58 : this.jump.state === "landing" ? 0.72 : 1;
+    return freezeSnapshot({
+      ...lower,
+      presentationClip,
+      presentationPhase,
+      phase: presentationPhase,
+      supportingFoot,
+      rootX: this.world.x * 14,
+      worldPosition: Object.freeze({ x: this.world.x, y: this.jump.height, z: this.world.z }),
+      rootVelocity: Object.freeze({ x: this.world.vx, y: 0, z: this.world.vz }),
+      facing: this.world.facing,
+      angularVelocity: this.world.angularVelocity,
+      centerOfMass: Object.freeze({
+        x: this.world.x + this.centerOfMassOffset(),
+        y: 2.7 + this.jump.height,
+        z: this.world.z,
+      }),
+      upperBody: Object.freeze({
+        coordinated: this.upper.coordinated,
+        left: this.upper.left,
+        right: this.upper.right,
+        body: this.upper.body,
+        leftOverride: this.upper.leftOverride,
+        rightOverride: this.upper.rightOverride,
+        bodyActive: this.upper.bodyActive,
+        handAccent: this.upper.handAccent,
+        handAccentWeight: clamp(this.upper.handAccentTime / 0.28, 0, 1),
+        safetyWeight: armSafety,
+      }),
+      jump: Object.freeze({
+        ...this.jump,
+        profileId: jumpProfile.id,
+        displayName: jumpProfile.displayName,
+        chargeCapSeconds: jumpProfile.chargeCapSeconds,
+      }),
+      layers: Object.freeze({
+        locomotion: jumpActive ? 0.18 : 1,
+        footwork: this.action && !jumpActive ? 1 : 0,
+        aerial: jumpActive ? 1 : 0,
+        arms: armSafety,
+        leftArm: this.upper.leftOverride ? armSafety : 0,
+        rightArm: this.upper.rightOverride ? armSafety : 0,
+        bodyLine: this.upper.bodyActive ? armSafety : 0,
+        headGaze: 1,
+        costume: 1,
+        contactIK: this.jump.state === "airborne" ? 0 : 1,
+        inertialRecovery: this.transition ? 1 - transitionProgress : 0,
+      }),
+      transition: this.transition,
+      transitionCandidates: this.transitionCandidates,
+      queuedMove: this.bufferedRequest?.moveId ?? "",
+      transitionClip: this.transition?.clip ?? "",
+      contactIK: Object.freeze({
+        enabled: this.jump.state !== "airborne",
+        lockedFoot: supportingFoot,
+        maxDriftMeters: this.metrics.maxFootDriftMeters,
+        toleranceMeters: 0.01,
+      }),
+      performance: Object.freeze({
+        travelDistance: this.world.distance,
+        directionChanges: this.world.directionChanges,
+        armInputDistance: this.upper.inputDistance,
+        jumps: this.metrics.jumps,
+        cleanLandings: this.metrics.cleanLandings,
+        recoveries: this.metrics.recoveries,
+        transitionCount: this.metrics.transitionCount,
+        averageTransitionScore: this.metrics.transitionCount
+          ? this.metrics.transitionScoreTotal / this.metrics.transitionCount
+          : 0,
+      }),
+    });
+  }
+
+  lowerSnapshot(currentTick) {
     if (!this.action) {
-      const phase = positiveModulo(currentTick - this.base.startTick, GROOVE_TICKS) / GROOVE_TICKS;
-      return freezeSnapshot({
-        moveId: "groove",
-        moveName: "Musical Groove",
-        family: "groove",
-        presentationClip: "groove",
+      const travelling = Math.hypot(this.world.vx, this.world.vz) > 0.08;
+      const phase = travelling
+        ? positiveModulo(this.world.distance / 0.82, 1)
+        : positiveModulo(currentTick - this.base.startTick, GROOVE_TICKS) / GROOVE_TICKS;
+      return {
+        moveId: travelling ? "walkingStep" : "groove",
+        moveName: travelling ? "Travelling Groove" : "Musical Groove",
+        family: travelling ? "foundation" : "groove",
+        presentationClip: travelling ? "walkingStep" : "groove",
         presentationPhase: phase,
-        phase,
         entryFoot: this.base.freeFoot,
         exitFoot: this.base.supportingFoot,
-        supportingFoot: this.base.supportingFoot,
         direction: directionSign(this.direction),
         travelDirection: this.direction,
-        rootX: 0,
         actionId: 0,
         actionStartedAtTick: null,
         response: this.lastResponse,
-      });
+      };
     }
     const move = this.action.move;
-    const elapsed = Math.max(0, currentTick - this.action.startTick);
-    const phase = clamp01(elapsed / move.durationTicks);
-    return freezeSnapshot({
+    const phase = this.actionPhase(currentTick);
+    return {
       moveId: move.id,
       moveName: move.displayName,
       family: move.family,
       presentationClip: move.id,
       presentationPhase: phase,
-      phase,
       entryFoot: this.action.entryFoot,
       exitFoot: this.action.exitFoot,
-      supportingFoot: opposite(this.action.entryFoot),
       direction: directionSign(this.direction),
       travelDirection: this.direction,
-      rootX: rootOffset(move, phase, this.direction),
       actionId: this.action.id,
-      actionStartedAtTick: this.action.startTick,
+      actionStartedAtTick: this.action.requestedTick,
       response: this.lastResponse,
+    };
+  }
+
+  actionPhase(tick) {
+    if (!this.action) return 0;
+    return clamp((tick - this.action.startTick) / this.action.move.durationTicks, 0, 1);
+  }
+
+  supportingFoot() {
+    if (this.jump.state === "airborne") return "none";
+    if (this.action?.move.id === "recovery") return this.action.entryFoot === "right" ? "left" : "right";
+    if (this.action) {
+      const elapsed = Math.max(0, this.lastTick - this.action.startTick);
+      const contact = resolvedContacts(this.action.move, this.action.entryFoot)
+        .filter((value) => value.tick <= elapsed && value.foot !== "both")
+        .at(-1);
+      if (contact?.foot) return contact.foot;
+      return opposite(this.action.entryFoot);
+    }
+    if (Math.hypot(this.world.vx, this.world.vz) > 0.08) {
+      return positiveModulo(this.world.distance / 0.82, 1) < 0.5 ? "left" : "right";
+    }
+    return this.base.supportingFoot;
+  }
+
+  centerOfMassOffset() {
+    const speed = Math.hypot(this.world.vx, this.world.vz);
+    const travelBias = clamp(speed / 2.2, 0, 1) * 0.12;
+    return clamp(this.upper.body.x * 0.08 + Math.sin(this.world.facing) * travelBias, -0.18, 0.18);
+  }
+
+  updateTravel(dt, input) {
+    if (!(dt > 0)) return;
+    const profile = STYLE_TRAVEL[this.style];
+    let x = Number(input.travelX ?? input.x) || 0;
+    let z = -(Number(input.travelY ?? input.y) || 0);
+    const magnitude = Math.hypot(x, z);
+    if (magnitude > 1) {
+      x /= magnitude;
+      z /= magnitude;
+    }
+    const airScale = this.jump.state === "airborne" ? profile.airControl : 1;
+    const groundedScale = input.groundModifier ? 0.72 : input.commitModifier ? 1.08 : 1;
+    const targetVx = x * profile.speed * airScale * groundedScale;
+    const targetVz = z * profile.speed * airScale * groundedScale;
+    this.world.vx = approach(this.world.vx, targetVx, profile.acceleration * dt);
+    this.world.vz = approach(this.world.vz, targetVz, profile.acceleration * dt);
+    const previousX = this.world.x;
+    const previousZ = this.world.z;
+    this.world.x = clamp(this.world.x + this.world.vx * dt, BOARD_BOUNDS.minX, BOARD_BOUNDS.maxX);
+    this.world.z = clamp(this.world.z + this.world.vz * dt, BOARD_BOUNDS.minZ, BOARD_BOUNDS.maxZ);
+    if (this.world.x === BOARD_BOUNDS.minX || this.world.x === BOARD_BOUNDS.maxX) this.world.vx *= 0.2;
+    if (this.world.z === BOARD_BOUNDS.minZ || this.world.z === BOARD_BOUNDS.maxZ) this.world.vz *= 0.2;
+    this.world.distance += Math.hypot(this.world.x - previousX, this.world.z - previousZ);
+    if (Math.hypot(this.world.vx, this.world.vz) > 0.08) {
+      const targetFacing = Math.atan2(this.world.vx, this.world.vz);
+      const delta = signedAngle(this.world.facing, targetFacing);
+      const oldFacing = this.world.facing;
+      this.world.facing += delta * (1 - Math.exp(-dt * 9));
+      this.world.angularVelocity = signedAngle(oldFacing, this.world.facing) / dt;
+      if (this.world.lastTravelAngle !== null && Math.abs(signedAngle(this.world.lastTravelAngle, targetFacing)) > 0.72) {
+        this.world.directionChanges += 1;
+      }
+      this.world.lastTravelAngle = targetFacing;
+    } else {
+      this.world.angularVelocity *= Math.exp(-dt * 10);
+    }
+  }
+
+  updateUpperBody(dt, input) {
+    if (this.upper.handAccentTime > 0) {
+      this.upper.handAccentTime = Math.max(0, this.upper.handAccentTime - dt);
+      if (!this.upper.handAccentTime) this.upper.handAccent = "";
+    }
+    const rawTarget = {
+      x: clamp(Number(input.armX) || 0, -1, 1),
+      y: clamp(Number(input.armY) || 0, -1, 1),
+    };
+    const target = Math.hypot(rawTarget.x, rawTarget.y) < 0.02
+      ? { x: 0, y: -0.18 }
+      : rawTarget;
+    const delta = Math.hypot(target.x - this.upper.previousInput.x, target.y - this.upper.previousInput.y);
+    this.upper.inputDistance += delta;
+    if (delta > 0.015 && delta < 0.42) this.upper.intentionalSamples += 1;
+    this.upper.previousInput = target;
+    if (input.bodyModifier) {
+      this.upper.body = smoothPoseVector(this.upper.body, target, dt, 20);
+      this.upper.bodyActive = true;
+    } else if (input.leftArmModifier && !input.rightArmModifier) {
+      this.upper.left = smoothPoseVector(this.upper.left, target, dt, 22);
+      this.upper.leftOverride = true;
+    } else if (input.rightArmModifier && !input.leftArmModifier) {
+      this.upper.right = smoothPoseVector(this.upper.right, target, dt, 22);
+      this.upper.rightOverride = true;
+    } else {
+      this.upper.coordinated = smoothPoseVector(this.upper.coordinated, target, dt, 20);
+      this.upper.bodyActive = false;
+    }
+    if (input.handAccentPressed) {
+      this.upper.handAccent = Math.abs(target.y) > 0.62 ? "flourish" : "clap";
+      this.upper.handAccentTime = 0.28;
+    }
+  }
+
+  updateJump(dt, input, tick) {
+    const profile = FROLIC_JUMP_PROFILES[this.style];
+    if (input.jumpPressed && this.jump.state === "grounded") {
+      this.jump.state = "compression";
+      this.jump.chargeSeconds = 0;
+      this.jump.height = 0;
+      this.jump.progress = 0;
+      this.jump.variation = "";
+      this.jump.actionId = ++this.serial;
+    }
+    if (this.jump.state === "compression") {
+      if (input.jump) this.jump.chargeSeconds = Math.min(profile.chargeCapSeconds, this.jump.chargeSeconds + dt);
+      if (
+        input.jumpReleased
+        || (!input.jump && this.jump.chargeSeconds > 0)
+        || this.jump.chargeSeconds >= profile.chargeCapSeconds
+      ) this.launchJump(profile, tick, input);
+    } else if (this.jump.state === "airborne") {
+      this.jump.elapsedSeconds += dt;
+      this.jump.progress = clamp(this.jump.elapsedSeconds / this.jump.airSeconds, 0, 1);
+      this.jump.height = 4 * this.jump.maxHeight * this.jump.progress * (1 - this.jump.progress);
+      if (input.actionPressed) this.jump.variation = profile.allowedFollowUps[0];
+      if (input.stylePressed) this.jump.variation = profile.allowedFollowUps[1];
+      if (input.powerPressed) this.jump.variation = profile.allowedFollowUps[2];
+      if (Number(input.turnDirection)) this.jump.turnDirection = Math.sign(input.turnDirection);
+      if (this.jump.progress >= 1) this.landJump(profile, tick, input);
+    } else if (this.jump.state === "landing") {
+      this.jump.landingAge += dt;
+      this.jump.height = 0;
+      if (this.jump.landingAge >= 0.14) {
+        this.jump.state = "grounded";
+        this.jump.landingAge = 0;
+        this.jump.progress = 0;
+      }
+    }
+  }
+
+  launchJump(profile, tick, input) {
+    const charge = clamp(Math.max(0.04, this.jump.chargeSeconds) / profile.chargeCapSeconds, 0, 1);
+    const committed = input.commitModifier ? 1 : 0;
+    this.jump.maxHeight = lerp(profile.heightMeters[0], profile.heightMeters[1], clamp(charge * 0.82 + committed * 0.18, 0, 1));
+    this.jump.airSeconds = lerp(profile.airSeconds[0], profile.airSeconds[1], charge);
+    this.jump.elapsedSeconds = 0;
+    this.jump.launchedAtTick = tick;
+    this.jump.progress = 0;
+    this.jump.height = 0.001;
+    this.jump.state = "airborne";
+    this.jump.turnDirection = Number(input.turnDirection) || 0;
+    this.metrics.jumps += 1;
+    this.pendingContacts.push(Object.freeze({
+      contactId: `jump:${this.jump.actionId}:launch`,
+      actionId: this.jump.actionId,
+      tick,
+      moveId: profile.id,
+      style: this.style,
+      foot: "both",
+      articulation: "launch",
+      intensity: 0.42 + charge * 0.32,
+      sampleGroup: "softSole",
+      requested: true,
+      jumpEvent: "launch",
+      worldPosition: Object.freeze({ x: this.world.x, z: this.world.z }),
+    }));
+  }
+
+  landJump(profile, tick, input) {
+    const speed = Math.hypot(this.world.vx, this.world.vz);
+    const bodyDemand = Math.hypot(this.upper.body.x, this.upper.body.y);
+    const turnDemand = Math.abs(this.jump.turnDirection);
+    const quality = clamp(1 - speed * 0.08 - bodyDemand * 0.12 - turnDemand * 0.08 + (input.groundModifier ? 0.12 : 0), 0, 1);
+    this.jump.state = "landing";
+    this.jump.landingQuality = quality;
+    this.jump.landingAge = 0;
+    this.jump.height = 0;
+    if (quality >= 0.72) this.metrics.cleanLandings += 1;
+    else this.metrics.recoveries += 1;
+    this.pendingContacts.push(Object.freeze({
+      contactId: `jump:${this.jump.actionId}:landing`,
+      actionId: this.jump.actionId,
+      tick,
+      moveId: profile.id,
+      style: this.style,
+      foot: quality >= 0.72 ? "both" : this.base.supportingFoot,
+      articulation: quality >= 0.72 ? "landing" : "recovery",
+      intensity: clamp(0.54 + this.jump.maxHeight * 0.34, 0, 1),
+      sampleGroup: profile.landingContact,
+      requested: false,
+      jumpEvent: "landing",
+      landingQuality: quality,
+      contactVelocity: this.jump.maxHeight / Math.max(0.01, this.jump.airSeconds / 2),
+      worldPosition: Object.freeze({ x: this.world.x, z: this.world.z }),
+    }));
+    if (quality < 0.48) {
+      this.beginRecovery(getFootwork("walkingStep"), {
+        tick,
+        direction: "neutral",
+        entryFoot: this.base.freeFoot,
+        inputTimestamp: null,
+        simulationReceiptTimestamp: null,
+      });
+    }
+  }
+
+  jumpPresentationPhase() {
+    if (this.jump.state === "compression") {
+      const cap = FROLIC_JUMP_PROFILES[this.style].chargeCapSeconds;
+      return clamp(this.jump.chargeSeconds / cap, 0, 1) * 0.18;
+    }
+    if (this.jump.state === "airborne") return 0.18 + this.jump.progress * 0.68;
+    if (this.jump.state === "landing") return 0.86 + clamp(this.jump.landingAge / 0.14, 0, 1) * 0.14;
+    return 0;
+  }
+
+  beginRecovery(requestedMove, {
+    tick,
+    direction,
+    entryFoot,
+    inputTimestamp,
+    simulationReceiptTimestamp,
+  }) {
+    const recipe = transitionRecipeFor({
+      fromFamily: this.action?.move.family ?? "recovery",
+      toFamily: "foundation",
+      support: this.supportingFoot(),
+      recovery: true,
     });
+    const request = this.makeRequest(requestedMove, tick, direction, entryFoot, {
+      inputTimestamp,
+      simulationReceiptTimestamp,
+    });
+    const recovery = {
+      ...request,
+      move: RECOVERY_MOVE,
+      requestedMove,
+      exitFoot: opposite(entryFoot),
+    };
+    this.action = recovery;
+    this.current = recovery;
+    this.lastMoveId = "";
+    this.transition = Object.freeze({
+      id: recipe.id,
+      clip: recipe.clip,
+      startTick: tick,
+      durationTicks: Math.round(recipe.durationMs * 0.192),
+      score: 1,
+      scoreParts: Object.freeze({ recovery: 1 }),
+      plantedFoot: this.supportingFoot(),
+      rootWarpLimitMeters: recipe.rootWarpLimitMeters,
+      resolved: true,
+      recovery: true,
+    });
+    this.bridge = this.transition;
+    this.metrics.recoveries += 1;
+    this.metrics.transitionCount += 1;
+    this.metrics.transitionScoreTotal += 1;
+    this.lastResponse = Object.freeze({
+      actionId: request.id,
+      moveId: requestedMove.id,
+      inputTimestamp: request.inputTimestamp,
+      simulationReceiptTimestamp: request.simulationReceiptTimestamp,
+      startTick: tick,
+      transitionRecipe: recipe.id,
+      recovered: true,
+    });
+    return accepted({
+      status: "recovered",
+      request,
+      visibleActionStarted: true,
+      queued: false,
+      transition: this.transition,
+    });
+  }
+
+  makeRequest(move, tick, direction, entryFoot, {
+    inputTimestamp,
+    simulationReceiptTimestamp,
+    entryPhase = 0,
+    exitFoot = null,
+  }) {
+    const foot = entryFoot === "right" ? "right" : "left";
+    return {
+      id: ++this.serial,
+      move,
+      requestedTick: tick,
+      startTick: tick,
+      direction,
+      entryFoot: foot,
+      exitFoot: exitFoot ?? resolveExit(move.exitRule, foot),
+      entryPhase,
+      inputTimestamp: finiteOrNull(inputTimestamp),
+      simulationReceiptTimestamp: finiteOrNull(simulationReceiptTimestamp),
+    };
   }
 }
 
 function freezeSnapshot(value) {
   return Object.freeze({
     ...value,
-    queuedMove: "",
-    transitionClip: "",
     mirror: false,
     microResponse: 0,
     microFoot: "both",
     contacts: Object.freeze({ contacts: [], error: 0 }),
     stamina: 100,
-    balance: Object.freeze({ offset: 0, wobble: 0, failed: false }),
+    balance: Object.freeze({
+      offset: value.centerOfMass?.x ?? 0,
+      wobble: value.jump?.landingQuality < 0.48 ? 0.4 : 0,
+      failed: false,
+    }),
   });
 }
 
-function resolveExitFoot(rule, entryFoot) {
+function resolveExit(rule, entryFoot) {
   return rule === "opposite" ? opposite(entryFoot) : entryFoot;
 }
 
@@ -221,21 +766,20 @@ function opposite(foot) {
   return foot === "right" ? "left" : "right";
 }
 
-function rootOffset(move, phase, direction) {
-  const motion = move?.rootMotion ?? {};
-  if (direction === "left") return -Math.abs(motion.lateral ?? 0) * phase;
-  if (direction === "right") return Math.abs(motion.lateral ?? 0) * phase;
-  if (direction === "forward") return Math.abs(motion.forward ?? 0) * phase * 0.35;
-  if (direction === "back") return -Math.abs(motion.forward ?? 0) * phase * 0.35;
-  return 0;
-}
-
 function directionSign(direction) {
   return direction === "left" || direction === "turn-left" ? -1 : 1;
 }
 
-function clamp01(value) {
-  return Math.max(0, Math.min(1, Number(value) || 0));
+function approach(value, target, amount) {
+  if (value < target) return Math.min(target, value + amount);
+  return Math.max(target, value - amount);
+}
+
+function signedAngle(from, to) {
+  let value = (to - from) % (Math.PI * 2);
+  if (value > Math.PI) value -= Math.PI * 2;
+  if (value < -Math.PI) value += Math.PI * 2;
+  return value;
 }
 
 function positiveModulo(value, divisor) {
@@ -245,6 +789,10 @@ function positiveModulo(value, divisor) {
 function finiteOrNull(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function lerp(left, right, amount) {
+  return left + (right - left) * amount;
 }
 
 function accepted(detail) {

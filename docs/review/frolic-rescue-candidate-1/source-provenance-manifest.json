@@ -4,7 +4,7 @@
   "candidateId": "frolic-rescue-candidate-1",
   "auditDate": "2026-07-24",
   "rejectedBaselineCommit": "0c82fe75eacf5e412a5a8e51a587932e9cc80e9d",
-  "workingHead": "0c82fe75eacf5e412a5a8e51a587932e9cc80e9d",
+  "workingHead": "5431cdddaa32c7356cfeac1439fd31f8a450e989",
   "deployment": "not-deployed",
   "reviewPage": "frolic-rescue-review.html",
   "scope": {
@@ -46,14 +46,14 @@
   "productionArt": {
     "publicSpriteSource": "actual Blender rendered character",
     "blenderScene": {
-      "path": "tools/blender/kaki-appalachian-frolic.blend",
+      "path": "tools/blender/kaki-appalachian-frolic-atlas-candidate-1.blend",
       "bytes": 387185,
       "sha256": "4662b8251d05a246c948868c9ab4183538598919b7e53a8d0280538bddc55178"
     },
     "exportContract": {
       "path": "tools/blender/exports/kaki-appalachian-frolic-production.json",
-      "bytes": 7903,
-      "sha256": "0793ea640a9f58d2f367c8d6ac94370b95b1722f6ecd1be70d68c0562adff3b9"
+      "bytes": 12788,
+      "sha256": "1df896da97e952df5f4b0f0c4da482de7bc0da604ac7ad6abde36e73e10f3783"
     },
     "armature": "KakiFrolicProductionBiped",
     "topology": "weighted-biped",
@@ -123,11 +123,11 @@
           },
           {
             "path": "assets/heroes/kitty/frolic/flatfoot/atlas.json",
-            "bytes": 642437,
-            "sha256": "f5c255ea2bd7ace77b1b45c670fbe627786fcb70f541f5a884e77dfce74d1acb"
+            "bytes": 642455,
+            "sha256": "f4e4bf4c0d545b00a1b5b44be6d8376c19217866eb9a67f58547a326c0fcc185"
           }
         ],
-        "compressedBytes": 834567
+        "compressedBytes": 834585
       },
       "soder": {
         "sourceFrames": 181,
@@ -144,11 +144,11 @@
           },
           {
             "path": "assets/heroes/soder/frolic/flatfoot/atlas.json",
-            "bytes": 642437,
-            "sha256": "482bbee632a500536ada1c7cb6a90428c07b55f477606ab3cdbb3acfc5b23ff5"
+            "bytes": 642455,
+            "sha256": "6bba3502d90286b017e1b20f6beddadf5122e53c471f3e225e3b05fc914e29c7"
           }
         ],
-        "compressedBytes": 895298
+        "compressedBytes": 895316
       }
     }
   },
@@ -209,22 +209,22 @@
       "inputToSimulation": {
         "p50": 0.1,
         "p95": 0.2,
-        "max": 0.3
+        "max": 0.7
       },
       "inputToAudioSchedulingCall": {
-        "p50": 0.3,
-        "p95": 0.5,
-        "max": 1.1
+        "p50": 0.4,
+        "p95": 0.6,
+        "max": 2.4
       },
       "inputToFirstChangedHeroPixel": {
-        "p50": 1.4,
-        "p95": 18.7,
-        "max": 20.6
+        "p50": 1.6,
+        "p95": 18.8,
+        "max": 20.4
       },
       "inputToFirstActionFrame": {
-        "p50": 0.7,
+        "p50": 0.8,
         "p95": 1,
-        "max": 1.9
+        "max": 2.9
       }
     },
     "audioContext": {
@@ -234,9 +234,9 @@
         "max": 0.012
       },
       "outputLatencySeconds": {
-        "p50": 0.384,
-        "p95": 0.472,
-        "max": 0.496
+        "p50": 0.432,
+        "p95": 0.504,
+        "max": 0.528
       },
       "note": "Browser/device values are reported separately from scheduling-call latency."
     },
@@ -293,179 +293,7 @@
   "changedFiles": [
     {
       "status": " M",
-      "path": ".gitignore"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/brush-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/brush-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/brush-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/chug-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/chug-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/chug-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/drag-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/drag-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/drag-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/flatContact-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/flatContact-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/flatContact-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/heavyAccent-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/heavyAccent-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/heavyAccent-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/heel-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/heel-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/heel-3.wav"
-    },
-    {
-      "status": " M",
-      "path": "assets/audio/frolic/feet/manifest.json"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/rivalBoard-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/rivalBoard-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/rivalBoard-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/scuff-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/scuff-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/scuff-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/slide-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/slide-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/slide-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/softSole-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/softSole-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/softSole-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/tapHeel-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/tapHeel-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/tapHeel-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/tapToe-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/tapToe-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/tapToe-3.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/toeBall-1.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/toeBall-2.wav"
-    },
-    {
-      "status": " D",
-      "path": "assets/audio/frolic/feet/toeBall-3.wav"
-    },
-    {
-      "status": " M",
-      "path": "assets/heroes/kitty/frolic/flatfoot/atlas-0.png"
-    },
-    {
-      "status": " M",
       "path": "assets/heroes/kitty/frolic/flatfoot/atlas.json"
-    },
-    {
-      "status": " M",
-      "path": "assets/heroes/soder/frolic/flatfoot/atlas-0.png"
     },
     {
       "status": " M",
@@ -473,11 +301,11 @@
     },
     {
       "status": " M",
-      "path": "docs/ASSET-PROVENANCE.md"
+      "path": "docs/KNOWN-LIMITATIONS.md"
     },
     {
       "status": " M",
-      "path": "docs/KNOWN-LIMITATIONS.md"
+      "path": "docs/MOVE-AUTHORING.md"
     },
     {
       "status": " M",
@@ -485,7 +313,27 @@
     },
     {
       "status": " M",
-      "path": "docs/appalachian-audio.md"
+      "path": "docs/review/frolic-rescue-candidate-1/reports/frolic-browser-report.json"
+    },
+    {
+      "status": " M",
+      "path": "docs/review/frolic-rescue-candidate-1/reports/frolic-touch-controls.png"
+    },
+    {
+      "status": " M",
+      "path": "docs/review/frolic-rescue-candidate-1/reports/latency-report.json"
+    },
+    {
+      "status": " M",
+      "path": "docs/review/frolic-rescue-candidate-1/reports/latency-report.md"
+    },
+    {
+      "status": " M",
+      "path": "docs/review/frolic-rescue-candidate-1/review-page.png"
+    },
+    {
+      "status": " M",
+      "path": "docs/review/frolic-rescue-candidate-1/source-provenance-manifest.json"
     },
     {
       "status": " M",
@@ -501,15 +349,19 @@
     },
     {
       "status": " M",
+      "path": "js/appalachian/phrase-judge.js"
+    },
+    {
+      "status": " M",
       "path": "js/appalachian/simulation.js"
     },
     {
       "status": " M",
-      "path": "js/audio/foot-percussion-player.js"
+      "path": "js/appalachian/transition-graph.js"
     },
     {
       "status": " M",
-      "path": "js/config.js"
+      "path": "js/audio/foot-percussion-player.js"
     },
     {
       "status": " M",
@@ -525,15 +377,11 @@
     },
     {
       "status": " M",
-      "path": "js/render/frolic-atlas.js"
-    },
-    {
-      "status": " M",
       "path": "js/render/renderer.js"
     },
     {
       "status": " M",
-      "path": "js/render/stage.js"
+      "path": "package-lock.json"
     },
     {
       "status": " M",
@@ -545,7 +393,19 @@
     },
     {
       "status": " M",
-      "path": "scripts/build-appalachian-audio.mjs"
+      "path": "scripts/build-frolic-review-manifest.mjs"
+    },
+    {
+      "status": " M",
+      "path": "scripts/frolic-latency-qa.mjs"
+    },
+    {
+      "status": " M",
+      "path": "scripts/frolic-motion-qa.mjs"
+    },
+    {
+      "status": " M",
+      "path": "styles.css"
     },
     {
       "status": " M",
@@ -557,15 +417,11 @@
     },
     {
       "status": " M",
-      "path": "tests/foot-percussion.test.js"
-    },
-    {
-      "status": " M",
-      "path": "tests/input.test.js"
-    },
-    {
-      "status": " M",
       "path": "tools/blender/build_appalachian_frolic_rig.py"
+    },
+    {
+      "status": " M",
+      "path": "tools/blender/exports/kaki-appalachian-frolic-production.json"
     },
     {
       "status": " M",
@@ -573,959 +429,179 @@
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/brush-medium-1.wav"
+      "path": "appalachian-simulator-review.css"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/brush-medium-2.wav"
+      "path": "appalachian-simulator-review.html"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/brush-soft-1.wav"
+      "path": "assets/models/appalachian/kaki-appalachian-simulator.glb"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/brush-soft-2.wav"
+      "path": "assets/models/appalachian/simulator-manifest.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/brush-strong-1.wav"
+      "path": "docs/APPALACHIAN-SIMULATOR-AUDIT.md"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/brush-strong-2.wav"
+      "path": "docs/APPALACHIAN-SIMULATOR-HANDOFF.md"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/chug-medium-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/README.md"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/chug-medium-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/buck-style-hop.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/chug-soft-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/clog-style-hop.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/chug-soft-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/contact-skeleton-diagnostics.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/chug-strong-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/figure-eight-travel.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/chug-strong-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/flatfoot-style-hop.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/drag-medium-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/gamepad-play.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/drag-medium-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/half-speed-move-review.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/drag-soft-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/independent-left-right-arms.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/drag-soft-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/keyboard-play.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/drag-strong-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/kitty-eight-move-dance-line.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/drag-strong-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/right-stick-arm-circle.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/flatContact-medium-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/soder-eight-move-dance-line.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/flatContact-medium-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/captures/touch-play.png"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/flatContact-soft-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/arms-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/flatContact-soft-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/audio-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/flatContact-strong-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/capture-browser-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/flatContact-strong-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/jumps-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/heel-medium-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/latency-browser-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/heel-medium-2.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/motion-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/heel-soft-1.wav"
+      "path": "docs/review/appalachian-simulator-gate-1/reports/smoke-browser-report.json"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/heel-soft-2.wav"
+      "path": "js/appalachian-simulator-review.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/heel-strong-1.wav"
+      "path": "js/appalachian/arm-pose-field.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/heel-strong-2.wav"
+      "path": "js/appalachian/board-lines.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/scuff-medium-1.wav"
+      "path": "js/appalachian/transition-recipes.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/scuff-medium-2.wav"
+      "path": "js/render/appalachian-three-renderer.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/scuff-soft-1.wav"
+      "path": "js/vendor/THREE-LICENSE.txt"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/scuff-soft-2.wav"
+      "path": "js/vendor/three-addons/effects/OutlineEffect.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/scuff-strong-1.wav"
+      "path": "js/vendor/three-addons/loaders/GLTFLoader.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/scuff-strong-2.wav"
+      "path": "js/vendor/three-addons/utils/BufferGeometryUtils.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/slide-medium-1.wav"
+      "path": "js/vendor/three-addons/utils/SkeletonUtils.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/slide-medium-2.wav"
+      "path": "js/vendor/three.core.min.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/slide-soft-1.wav"
+      "path": "js/vendor/three.module.min.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/slide-soft-2.wav"
+      "path": "scripts/appalachian-simulator-browser.mjs"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/slide-strong-1.wav"
+      "path": "scripts/appalachian-simulator-qa.mjs"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/slide-strong-2.wav"
+      "path": "tests/appalachian-simulator.test.js"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/softSole-medium-1.wav"
+      "path": "tools/blender/export_appalachian_simulator_glb.py"
     },
     {
       "status": "??",
-      "path": "assets/audio/frolic/feet/softSole-medium-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/softSole-soft-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/softSole-soft-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/softSole-strong-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/softSole-strong-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/sources/bigsoundbank-0376-shoe-on-parquet-cc0.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/sources/bigsoundbank-1515-shoes-on-wood-cc0.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/sources/freesound-273380-trekking-shoe-shuffle-cc0-derived.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/sources/freesound-273380-trekking-shoe-shuffle-cc0-hq.mp3"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapHeel-medium-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapHeel-medium-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapHeel-soft-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapHeel-soft-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapHeel-strong-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapHeel-strong-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapToe-medium-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapToe-medium-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapToe-soft-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapToe-soft-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapToe-strong-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/tapToe-strong-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/toeBall-medium-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/toeBall-medium-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/toeBall-soft-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/toeBall-soft-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/toeBall-strong-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/audio/frolic/feet/toeBall-strong-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "assets/heroes/kitty/frolic/flatfoot/atlas-1.png"
-    },
-    {
-      "status": "??",
-      "path": "assets/heroes/soder/frolic/flatfoot/atlas-1.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/HERO-AUDIO-LATENCY-RESCUE-AUDIT.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/art-source/frolic-rescue-candidate-1/imagegen/README.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/art-source/frolic-rescue-candidate-1/imagegen/kittykaki-model-sheet-source.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/art-source/frolic-rescue-candidate-1/imagegen/soter-model-sheet-source.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/README.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/audio/README.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/audio/rejected-then-candidate-heel.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/capture-report.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/comparisons/kitty-rejected-vs-candidate.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/comparisons/soder-rejected-vs-candidate.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/diagnostics/kitty-contact-diagnostic.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/diagnostics/soder-contact-diagnostic.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/model-sheets/kittykaki-model-sheet-candidate.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/model-sheets/soter-model-sheet-candidate.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/foley-report.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/foley-report.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/frolic-browser-report.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/frolic-touch-controls.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/latency-report.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/latency-report.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/motion-report.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/motion-report.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/music-audit.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/reports/review-page-smoke.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/review-page.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/source-provenance-manifest.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/stills/kitty-4x-1536x864.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/stills/kitty-native-384x216.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/stills/soder-4x-1536x864.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/stills/soder-native-384x216.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/strips/kitty-flatfoot-movement-strip.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/strips/soder-flatfoot-movement-strip.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-half-speed.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-normal.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/video/kitty-flatfoot-runtime.webm"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/video/soder-flatfoot-half-speed.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/video/soder-flatfoot-normal.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/frolic-rescue-candidate-1/video/soder-flatfoot-runtime.webm"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/README.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/board-and-bow.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/brush-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/brush-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/brush-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/chug-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/chug-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/chug-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/drag-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/drag-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/drag-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/flatContact-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/flatContact-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/flatContact-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/heavyAccent-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/heavyAccent-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/heavyAccent-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/heel-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/heel-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/heel-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/manifest.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/rivalBoard-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/rivalBoard-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/rivalBoard-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/scuff-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/scuff-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/scuff-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/slide-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/slide-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/slide-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/softSole-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/softSole-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/softSole-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/tapHeel-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/tapHeel-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/tapHeel-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/tapToe-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/tapToe-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/tapToe-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/toeBall-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/toeBall-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/feet/toeBall-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/stems/board-and-bow-banjo.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/stems/board-and-bow-bass.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/stems/board-and-bow-fiddle.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/frolic/stems/board-and-bow-guitar.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/brush-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/brush-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/brush-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/chug-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/chug-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/chug-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/drag-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/drag-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/drag-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/flatContact-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/flatContact-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/flatContact-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/heavyAccent-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/heavyAccent-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/heavyAccent-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/heel-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/heel-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/heel-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/rivalBoard-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/rivalBoard-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/rivalBoard-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/scuff-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/scuff-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/scuff-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/slide-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/slide-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/slide-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/softSole-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/softSole-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/softSole-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/tapHeel-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/tapHeel-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/tapHeel-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/tapToe-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/tapToe-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/tapToe-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/toeBall-1.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/toeBall-2.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/audio/retired-runtime-wavs/toeBall-3.wav"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/kitty-frolic/buck/atlas-0.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/kitty-frolic/buck/atlas.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/kitty-frolic/clog/atlas-0.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/kitty-frolic/clog/atlas.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/kitty-frolic/flatfoot/atlas-0.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/kitty-frolic/flatfoot/atlas.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/soder-frolic/buck/atlas-0.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/soder-frolic/buck/atlas.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/soder-frolic/clog/atlas-0.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/soder-frolic/clog/atlas.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/soder-frolic/flatfoot/atlas-0.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/assets/heroes/soder-frolic/flatfoot/atlas.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/frolic-gameplay-native.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/kitty-buck.gif"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/kitty-buck.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/kitty-clog.gif"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/kitty-clog.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/kitty-flatfoot.gif"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/kitty-flatfoot.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/soder-buck.gif"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/soder-buck.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/soder-clog.gif"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/soder-clog.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/soder-flatfoot.gif"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/loops/soder-flatfoot.mp4"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/native/kitty-buck.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/native/kitty-clog.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/native/kitty-flatfoot.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/native/soter-buck.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/native/soter-clog.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/media/native/soter-flatfoot.png"
-    },
-    {
-      "status": "??",
-      "path": "docs/review/rejected-0c82fe7/runtime-observations.json"
-    },
-    {
-      "status": "??",
-      "path": "frolic-rescue-review.css"
-    },
-    {
-      "status": "??",
-      "path": "frolic-rescue-review.html"
-    },
-    {
-      "status": "??",
-      "path": "frolic-rescue-review.js"
-    },
-    {
-      "status": "??",
-      "path": "scripts/build-frolic-review-manifest.mjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/capture-frolic-rescue-candidate.mjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/frolic-foley-qa.mjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/frolic-latency-qa.mjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/frolic-motion-qa.mjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/frolic-review-smoke.mjs"
-    },
-    {
-      "status": "??",
-      "path": "tools/art/build_frolic_blender_atlases.py"
-    },
-    {
-      "status": "??",
-      "path": "tools/blender/exports/kaki-appalachian-frolic-production.json"
-    },
-    {
-      "status": "??",
-      "path": "tools/blender/render_appalachian_frolic_candidate.py"
+      "path": "tools/blender/kaki-appalachian-frolic-atlas-candidate-1.blend"
     }
   ],
   "media": [
@@ -1591,23 +667,23 @@
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/reports/frolic-browser-report.json",
-      "bytes": 3601,
-      "sha256": "4c6bd1b7a39ae23c6cc5d36277b9b18f222eb6e6e702830040b736eae247cd3f"
+      "bytes": 3696,
+      "sha256": "f7681b417af54c526c5bdb1a10a46120529211f82cad95659db308c35ead2ef6"
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/reports/frolic-touch-controls.png",
-      "bytes": 98094,
-      "sha256": "e16657770cc7ef56a49760abe82c6278537f8d20bbfbb88a82feb6b43b948362"
+      "bytes": 102046,
+      "sha256": "9103c1ed1166f38d8b494a529e1371c7efa722c9eeb83713982d0ffeb30d75c1"
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/reports/latency-report.json",
-      "bytes": 223406,
-      "sha256": "137fcc8378c690cf722184d1dba519aa2964a67c62b42b0d076d638db7089126"
+      "bytes": 222769,
+      "sha256": "306d519cd62b72cf1403173e76d3d901912e9a6a436971352489089cf6a65985"
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/reports/latency-report.md",
-      "bytes": 773,
-      "sha256": "a559f29851c62fb0472afd01a54b2212b4ab9db97f26b602a66ed9ca91fda4be"
+      "bytes": 771,
+      "sha256": "cdccd994618eea34bd4bb2aa8c43b168435b763df63519ce14fd103d14ac08cc"
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/reports/motion-report.json",
@@ -1631,8 +707,8 @@
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/review-page.png",
-      "bytes": 436473,
-      "sha256": "c2fac737956dde4f55ce7c8472828fd850c58d90a521709fd7a07533fcea5bba"
+      "bytes": 435565,
+      "sha256": "98500e012492af3357e349ba53dbd5248f8ea4429c987a3ff8b714b55b1feb9c"
     },
     {
       "path": "docs/review/frolic-rescue-candidate-1/stills/kitty-4x-1536x864.png",

@@ -41,6 +41,42 @@ export const FROLIC_STYLE_PROFILES = deepFreeze({
   },
 });
 
+export const FROLIC_JUMP_PROFILES = deepFreeze({
+  flatfoot: {
+    id: "flatfootHop",
+    displayName: "Compact weight release",
+    clip: "flatfootHop",
+    heightMeters: [0.16, 0.32],
+    airSeconds: [0.28, 0.38],
+    chargeCapSeconds: 0.34,
+    allowedFollowUps: ["step-line", "brush-detail", "landing-accent"],
+    landingContact: "flatContact",
+    movementLanguage: "low, compact, and close to the board",
+  },
+  buck: {
+    id: "buckSpringHop",
+    displayName: "Ball-of-foot spring hop",
+    clip: "buckSpringHop",
+    heightMeters: [0.42, 0.72],
+    airSeconds: [0.38, 0.52],
+    chargeCapSeconds: 0.36,
+    allowedFollowUps: ["step-line", "scissor", "turn-accent"],
+    landingContact: "toeBall",
+    movementLanguage: "springing, freestyle, and ball-of-foot led",
+  },
+  clog: {
+    id: "clogJumpPullback",
+    displayName: "Jump and pullback prototype",
+    clip: "clogJumpPullback",
+    heightMeters: [0.62, 0.94],
+    airSeconds: [0.48, 0.64],
+    chargeCapSeconds: 0.38,
+    allowedFollowUps: ["kick-line", "air-pullback", "turn-accent"],
+    landingContact: "tapHeel",
+    movementLanguage: "projected jump, articulated pullback, authored landing",
+  },
+});
+
 const ALL_STYLES = [...FROLIC_STYLE_IDS];
 const FLAT_BUCK = ["flatfoot", "buck"];
 const BUCK_CLOG = ["buck", "clog"];
@@ -482,12 +518,37 @@ export function validateFootworkCatalog(catalog = FOOTWORK_CATALOG) {
 }
 
 function movement(value) {
-  return {
+  const result = {
     entryFoot: "either",
+    entryLevel: "low",
+    exitLevel: "low",
+    supportingContacts: ["opposite-entry-foot"],
+    rootVelocity: Object.freeze({
+      x: Number(value.rootMotion?.lateral) || 0,
+      z: Number(value.rootMotion?.forward) || 0,
+    }),
+    facingIntent: "follow-travel",
+    preferredFacing: 0,
+    angularMomentum: value.id === "turnaround" ? 2.8 : 0,
+    durationRangeTicks: Object.freeze([
+      Math.round((Number(value.durationTicks) || FROLIC_PPQ) * 0.86),
+      Math.round((Number(value.durationTicks) || FROLIC_PPQ) * 1.14),
+    ]),
+    beatContactTimeline: value.contacts,
+    cancelWindows: Object.freeze([[0.08, 0.28], [0.62, 0.88]]),
+    leanLimits: Object.freeze({ lateralDegrees: 12, forwardDegrees: 10 }),
+    armMaskCompatibility: Object.freeze(["coordinated", "left", "right", "body-line"]),
+    jumpEligibility: value.id !== "turnaround" && value.id !== "controlledEnding",
+    landingEligibility: ["walkingStep", "rockStep", "chug", "controlledEnding"].includes(value.id),
+    entryFrames: Object.freeze([0, 0.08, 0.16, 0.24]),
+    sourceReferences: Object.freeze([...(value.sourceNotes ?? [])]),
+    validSuccessors: Object.freeze(["walkingStep", "shuffle", "backstep", "rockStep", "turnaround"]),
     balanceRequirements: ["supporting-leg-under-pelvis", "free-foot-clear"],
     requiredTransitionClips: ["weightShift"],
     ...value,
   };
+  result.beatContactTimeline = result.contacts;
+  return result;
 }
 
 function contact(tick, foot, articulation, intensity, sampleGroup) {

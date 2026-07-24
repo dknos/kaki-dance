@@ -141,8 +141,9 @@ test("production Blender source models and weights both candidate heroes on one 
     resolve(ROOT, "assets/heroes/kitty/frolic/flatfoot/atlas.json"),
     "utf8",
   ));
+  const atlasBlend = readFileSync(resolve(ROOT, atlas.productionSource.blenderScene));
   assert.equal(
-    createHash("sha256").update(blend).digest("hex"),
+    createHash("sha256").update(atlasBlend).digest("hex"),
     atlas.productionSource.blenderSceneSha256,
   );
   assert.equal(exportValue.topology, "weighted-biped");
@@ -168,7 +169,13 @@ test("production Blender source models and weights both candidate heroes on one 
   ]) {
     assert.ok(exportValue.controls.includes(name), name);
   }
-  assert.equal(Object.keys(exportValue.actions).length, 8);
+  assert.equal(Object.keys(exportValue.actions).length, 13);
+  for (const action of [
+    "slidingWalk", "rockStep",
+    "flatfootHop", "buckSpringHop", "clogJumpPullback",
+  ]) {
+    assert.ok(exportValue.actions[action], action);
+  }
 });
 
 test("lazy library releases inactive hero/style packs", async () => {
