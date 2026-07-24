@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-24T23:28:38.475Z",
+  "generatedAt": "2026-07-24T23:37:10.003Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -17,10 +17,10 @@
     "forced": false,
     "reason": "WebGPU remains capability-gated until animation and capture parity pass."
   },
-  "maximumPlantedFootDriftMeters": 3.1401849173675503e-16,
+  "maximumPlantedFootDriftMeters": 4.440892098500626e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 786,
+    "maximumOpaquePixels": 785,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -191,7 +191,7 @@
     "action": 1,
     "arm": {
       "x": 0,
-      "y": -0.1365031553856742
+      "y": -0.12780378646280904
     },
     "renderer": {
       "ready": true,
@@ -255,37 +255,37 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 0,
+      "plantedFootDriftMeters": 1.3597399555105182e-16,
       "footBasis": {
         "intendedForward": [
-          0.9294821711763092,
+          0.9610903688216749,
           0,
-          0.3688670403619363
+          0.27623414517075373
         ],
-        "facingRadians": 1.1930065162241472,
+        "facingRadians": 1.2909227515361907,
         "left": {
           "vector": [
-            0.9555168821321054,
+            0.9734871197210369,
             0,
-            0.29493641341913035
+            0.22874183643846094
           ],
-          "dot": 0.9969282281126459,
+          "dot": 0.9987954005892078,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.9402676506144175,
+            0.9663861380736704,
             0,
-            0.3404361103174041
+            0.2570949866081736
           ],
-          "dot": 0.9995376778250465,
+          "dot": 0.999802823718773,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.9969282281126459
+        "minimumDot": 0.9987954005892078
       },
-      "renderP95Milliseconds": 1.800000011920929,
+      "renderP95Milliseconds": 5.600000023841858,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"
     }
