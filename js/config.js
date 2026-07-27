@@ -87,7 +87,7 @@ export const FROLIC_STAGE = Object.freeze({
   displayName: "Cedar Ridge Frolic Hall",
   boardLeft: 118,
   boardRight: 266,
-  boardTop: 151,
+  boardTop: 128,
   boardBottom: 187,
   floorY: 178,
 });

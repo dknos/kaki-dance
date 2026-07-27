@@ -6,7 +6,7 @@ Status: implementation checklist, not a quality claim
 
 ## What was actually run
 
-- `npm run verify`: 102 JavaScript modules passed syntax checking and all 115
+- `npm run verify`: 103 JavaScript modules passed syntax checking and all 127
   deterministic assertions passed.
 - Local forced-WebGL2 browser smoke: passed with no console or request errors.
 - Public Pages forced-WebGL2 browser smoke: passed with no console or request
@@ -21,6 +21,12 @@ Status: implementation checklist, not a quality claim
   p95 at the internal 192×108 target, 88 skinned meshes, 39 bones, 23 actions,
   20 independent foot-layer actions, and no measurable planted-foot drift in
   the automated figure-eight.
+- The 30-second sustained-flow browser run completed all 120 expected
+  left/right contacts while travelling and shaping the upper body, used every
+  articulation and movement family, landed both jumps, entered In the Pocket
+  and Cooking, spent no sampled time Scrambling, triggered no generic recovery
+  fallbacks, held the stage to a zero-pixel vertical range, and rendered at
+  1.4 ms p95 in headless WebGL2.
 
 ## Ruthless findings
 
@@ -56,6 +62,11 @@ Status: implementation checklist, not a quality claim
 - [x] **Added:** a performance-state controller (Cold, Settling In, In the
   Pocket, Cooking, Scrambling, Recovery) driven by recent timing, clarity,
   transitions, conflicts, and recoveries rather than raw button count.
+- [x] **Strengthened:** multi-contact brushes count as one player action for
+  density and independence, and a requested articulation can ride a compatible
+  base-motion handoff instead of collapsing into generic recovery.
+- [x] **Bounded:** travel steering and low-pivot accents share a single
+  five-radian-per-second facing budget.
 - [ ] **Inspect visually:** the automatic basis and drift checks pass, but
   aesthetics, knee arcs, costume intersections, and perceived weight still
   require full/half/quarter-speed human review for both heroes.
@@ -83,6 +94,9 @@ Status: implementation checklist, not a quality claim
 - [x] **Preserve:** stage geometry is stable, board flex is fixed at zero, the
   3D camera presets are fixed, and body/world/camera vertical movement are
   separate.
+- [x] **Fixed:** the visible resonant-board footprint now covers the full
+  projected travel depth, so the dancer does not appear to step behind it at
+  the far board bound.
 - [x] **Reduced:** ordinary contacts cannot visibly move the horizon at the
   new 12% default; camera position, body bounce, and stage geometry remain
   separate.
@@ -121,6 +135,9 @@ Status: implementation checklist, not a quality claim
 - [x] **Fixed QA ergonomics:** browser QA starts an isolated local server,
   reports each native/browser stage, and terminates reliably after aggregate
   smoke and latency runs.
+- [x] **Added:** deterministic 30-second real-key endurance QA with contact,
+  support, recovery, travel, arm, jump, facing, pelvis, stage, score, state,
+  render-time, and planted-drift evidence plus three shipping captures.
 
 ## Implementation order from this audit
 

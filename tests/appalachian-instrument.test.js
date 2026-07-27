@@ -364,6 +364,32 @@ test("golden gesture contacts are authored, footwear-mapped, and transition vali
   assert.deepEqual(contacts.slice(0, 2).map((contact) => contact.sampleGroup), ["heel", "toeBall"]);
 });
 
+test("incompatible foot families retain their articulation over a legal base handoff", () => {
+  const controller = new AppalachianAnimationController({ style: "flatfoot" });
+  const intent = (id, foot, family) => ({
+    id,
+    foot,
+    family,
+    modifiers: { grounded: false, committed: false },
+    rawTimeStamp: id,
+    sourceCodes: [foot === "left" ? "ArrowLeft" : "ArrowRight"],
+  });
+  assert.equal(
+    controller.requestFootGesture(intent(1, "left", "turn"), { tick: 0 }).ok,
+    true,
+  );
+  controller.update(48, { dt: DT, input: {} });
+  const articulation = controller.requestFootGesture(
+    intent(2, "right", "articulation"),
+    { tick: 48 },
+  );
+  assert.equal(articulation.ok, true);
+  assert.ok(articulation.contextualFallback);
+  assert.notEqual(articulation.transition?.recovery, true);
+  assert.equal(articulation.gesture.family, "articulation");
+  assert.equal(controller.getSnapshot(48).performance.recoveries, 0);
+});
+
 test("exported foot basis, mirrored shoes, shared heroes, and support exclusions are explicit", () => {
   const manifest = JSON.parse(readFileSync(
     resolve(ROOT, "assets/models/appalachian/simulator-manifest.json"),
@@ -480,6 +506,67 @@ test("musical variety reaches cooking while dense one-foot mashing scrambles", (
     mash.update(240, { averageTransitionScore: 0.8 }).id,
     PERFORMANCE_STATES.SCRAMBLING,
   );
+});
+
+test("authored multi-contact brushes count as one intentional foot action", () => {
+  const performance = new AppalachianPerformanceState();
+  for (let actionId = 1; actionId <= 10; actionId += 1) {
+    const foot = actionId % 2 ? "left" : "right";
+    for (let contact = 0; contact < 3; contact += 1) {
+      performance.recordContact({
+        actionId,
+        tick: actionId * 36 + contact * 8,
+        foot,
+        articulation: contact < 2 ? "brush" : "toe",
+        moveId: "shuffle",
+        timingOffsetTicks: contact - 1,
+      });
+    }
+  }
+  const state = performance.update(384, { averageTransitionScore: 0.88 });
+  assert.equal(state.actionCount, 10);
+  assert.equal(state.repeatedFootRuns, 0);
+  assert.equal(state.mash, false);
+  assert.notEqual(state.id, PERFORMANCE_STATES.SCRAMBLING);
+});
+
+test("travel facing changes are responsive without snapping", () => {
+  const controller = new AppalachianAnimationController({ style: "flatfoot" });
+  controller.update(1, { dt: DT, input: { travelX: 1, travelY: 0 } });
+  const snapshot = controller.getSnapshot(1);
+  assert.ok(Math.abs(snapshot.angularVelocity) <= 5.01);
+  assert.ok(snapshot.facing > 0);
+  assert.ok(snapshot.facing < Math.PI / 2);
+});
+
+test("travel and a low pivot share one bounded facing-rate budget", () => {
+  const controller = new AppalachianAnimationController({ style: "flatfoot" });
+  const turn = controller.requestFootGesture({
+    id: 1,
+    foot: "right",
+    family: "turn",
+    modifiers: { grounded: false, committed: false },
+    rawTimeStamp: 1,
+    sourceCodes: ["KeyT", "ArrowRight"],
+  }, {
+    tick: 0,
+    direction: "turn-right",
+  });
+  assert.equal(turn.ok, true);
+  let previousFacing = controller.getSnapshot(0).facing;
+  for (let step = 1; step <= 48; step += 1) {
+    const tick = step * 192 / 120;
+    controller.update(tick, { dt: DT, input: { travelX: 1, travelY: 0 } });
+    const snapshot = controller.getSnapshot(tick);
+    const delta = Math.atan2(
+      Math.sin(snapshot.facing - previousFacing),
+      Math.cos(snapshot.facing - previousFacing),
+    );
+    assert.ok(Math.abs(delta / DT) <= 5.01);
+    assert.ok(Math.abs(snapshot.angularVelocity) <= 5.01);
+    previousFacing = snapshot.facing;
+  }
+  assert.ok(previousFacing > 0.5);
 });
 
 function edgeMeta(value) {

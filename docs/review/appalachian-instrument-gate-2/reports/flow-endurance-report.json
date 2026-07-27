@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
+  "generatedAt": "2026-07-27T23:13:34.935Z",
+  "url": "http://127.0.0.1:4177",
+  "errors": [],
+  "failedRequests": [],
+  "durationSeconds": 30.348484374999998,
+  "tickRange": [
+    2.196,
+    5762.196
+  ],
+  "phraseInputs": 118,
+  "expectedFootInputs": 120,
+  "contacts": {
+    "records": 145,
+    "completed": 120,
+    "completionShare": 1,
+    "airborneWeightBearingFrames": 0
+  },
+  "motion": {
+    "travelDistanceMeters": 38.710978103148676,
+    "armInputDistance": 10.966420150435582,
+    "jumps": 2,
+    "cleanLandings": 2,
+    "recoveries": 0,
+    "transitions": 120,
+    "averageTransitionScore": 0.5055583333333331,
+    "maximumBoardSpeedMetersPerSecond": 1.55,
+    "maximumObservedBoardSpeedMetersPerSecond": 1.7079889807162563,
+    "maximumBoardSpeedSegment": {
+      "seconds": 0.121,
+      "previous": {
+        "wallTimeMilliseconds": 30054,
+        "tick": 5525.945,
+        "world": {
+          "x": -1.6544666666666394,
+          "y": 0,
+          "z": 1.6017638888888965
+        },
+        "rootVelocity": {
+          "x": 0,
+          "y": 0,
+          "z": -1.55
+        },
+        "facing": -9.419591910771606,
+        "angularVelocity": -0.04846933206259507,
+        "pelvis": -0.0089,
+        "support": "right",
+        "leftWeightBearing": false,
+        "rightWeightBearing": true,
+        "jumpState": "grounded",
+        "performanceState": "in-the-pocket",
+        "score": 76,
+        "boardTop": 130
+      },
+      "current": {
+        "wallTimeMilliseconds": 30175,
+        "tick": 5548.236,
+        "world": {
+          "x": -1.6544666666666394,
+          "y": 0,
+          "z": 1.3950972222222295
+        },
+        "rootVelocity": {
+          "x": 0,
+          "y": 0,
+          "z": -1.55
+        },
+        "facing": -9.423215952527364,
+        "angularVelocity": -0.014598682272435326,
+        "pelvis": -0.0045,
+        "support": "left",
+        "leftWeightBearing": true,
+        "rightWeightBearing": false,
+        "jumpState": "grounded",
+        "performanceState": "in-the-pocket",
+        "score": 76,
+        "boardTop": 130
+      }
+    },
+    "maximumFacingSpeedRadiansPerSecond": 5.0000000000000355,
+    "maximumObservedFacingSpeedRadiansPerSecond": 5.292872265794606,
+    "maximumFacingSpeedSegment": {
+      "seconds": 0.14169999998807908,
+      "previous": {
+        "wallTimeMilliseconds": 1293.1000000238419,
+        "tick": 2.196,
+        "world": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rootVelocity": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "facing": 0,
+        "angularVelocity": 0,
+        "pelvis": 0.0002,
+        "support": "right",
+        "leftWeightBearing": false,
+        "rightWeightBearing": true,
+        "jumpState": "grounded",
+        "performanceState": "cold",
+        "score": 11,
+        "boardTop": 130
+      },
+      "current": {
+        "wallTimeMilliseconds": 1434.800000011921,
+        "tick": 28.946,
+        "world": {
+          "x": 0.09737500000000002,
+          "y": 0,
+          "z": 0
+        },
+        "rootVelocity": {
+          "x": 1.2300000000000002,
+          "y": 0,
+          "z": 0
+        },
+        "facing": 0.7499999999999998,
+        "angularVelocity": 4.999999999999996,
+        "pelvis": 0.0016,
+        "support": "left",
+        "leftWeightBearing": true,
+        "rightWeightBearing": false,
+        "jumpState": "grounded",
+        "performanceState": "cold",
+        "score": 11,
+        "boardTop": 130
+      }
+    },
+    "maximumPelvisDeltaMeters": 0.028,
+    "maximumAbsoluteX": 4.25,
+    "maximumAbsoluteZ": 2.65
+  },
+  "stage": {
+    "boardTopSamples": 241,
+    "boardTopRangePixels": 0
+  },
+  "performance": {
+    "score": 75,
+    "statesSeen": [
+      "cold",
+      "settling-in",
+      "in-the-pocket",
+      "cooking"
+    ],
+    "stateSamples": {
+      "cold": 5,
+      "settling-in": 8,
+      "in-the-pocket": 220,
+      "cooking": 8
+    },
+    "scramblingShare": 0,
+    "finalState": "in-the-pocket"
+  },
+  "renderer": {
+    "requested": "auto",
+    "actual": "webgl2",
+    "forced": false,
+    "reason": "WebGPU remains capability-gated until animation and capture parity pass.",
+    "p95Milliseconds": 1.4000000357627869,
+    "plantedFootDriftMeters": 2.220446049250313e-16
+  },
+  "captures": [
+    "docs/review/appalachian-instrument-gate-2/captures/flow-endurance-01.png",
+    "docs/review/appalachian-instrument-gate-2/captures/flow-endurance-02.png",
+    "docs/review/appalachian-instrument-gate-2/captures/flow-endurance-03.png"
+  ]
+}

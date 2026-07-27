@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "arms",
-  "generatedAt": "2026-07-27T09:40:50.353Z",
+  "generatedAt": "2026-07-27T23:09:26.082Z",
   "authoredPoseSamples": 9,
   "evaluatedBlendSamples": 243,
   "maximumValidationErrors": 0,
@@ -11,5 +11,5 @@
   "independentRightArm": true,
   "bodyLineLayer": true,
   "directStickToBoneRotation": false,
-  "elapsedMilliseconds": 8.533
+  "elapsedMilliseconds": 7.829
 }

@@ -66,6 +66,7 @@ export class AppalachianPerformanceState {
   recordContact(value = {}) {
     this.contacts.push(Object.freeze({
       tick: finite(value.tick),
+      actionId: finiteOrNull(value.actionId),
       foot: ["left", "right", "both"].includes(value.foot) ? value.foot : "left",
       articulation: String(value.articulation ?? "flat"),
       moveId: String(value.moveId ?? ""),
@@ -118,33 +119,34 @@ export function performanceDiagnostics(
   performance = {},
 ) {
   const ordered = [...contacts].sort((left, right) => left.tick - right.tick);
+  const actions = collapseContactsByAction(ordered);
   const timing = average(ordered.map((value) => (
     clamp(1 - Math.abs(value.timingOffsetTicks) / (FROLIC_PPQ * 0.42), 0, 1)
   )));
   let alternations = 0;
   let repeatedFootRuns = 0;
-  for (let index = 1; index < ordered.length; index += 1) {
-    if (ordered[index].foot === "both" || ordered[index - 1].foot === "both") continue;
-    if (ordered[index].foot !== ordered[index - 1].foot) alternations += 1;
+  for (let index = 1; index < actions.length; index += 1) {
+    if (actions[index].foot === "both" || actions[index - 1].foot === "both") continue;
+    if (actions[index].foot !== actions[index - 1].foot) alternations += 1;
     else repeatedFootRuns += 1;
   }
-  const independence = ordered.length > 1 ? alternations / (ordered.length - 1) : 0;
+  const independence = actions.length > 1 ? alternations / (actions.length - 1) : 0;
   const articulationVariety = uniqueRatio(ordered.map((value) => value.articulation), 4);
-  const moveVariety = uniqueRatio(ordered.map((value) => value.moveId), 5);
-  const spanBeats = ordered.length > 1
-    ? Math.max(1, (ordered.at(-1).tick - ordered[0].tick) / FROLIC_PPQ)
+  const moveVariety = uniqueRatio(actions.map((value) => value.moveId), 5);
+  const spanBeats = actions.length > 1
+    ? Math.max(1, (actions.at(-1).tick - actions[0].tick) / FROLIC_PPQ)
     : 1;
-  const density = ordered.length / spanBeats;
-  const dominantFoot = dominantRatio(ordered.map((value) => value.foot));
-  const dominantMove = dominantRatio(ordered.map((value) => value.moveId));
-  const mash = ordered.length >= 6 && (
+  const density = actions.length / spanBeats;
+  const dominantFoot = dominantRatio(actions.map((value) => value.foot));
+  const dominantMove = dominantRatio(actions.map((value) => value.moveId));
+  const mash = actions.length >= 6 && (
     density > 3.15
     || dominantFoot > 0.82
     || (dominantMove > 0.78 && articulationVariety < 0.4)
   );
   const transitionQuality = clamp(Number(performance.averageTransitionScore) || 0, 0, 1);
   const cleanLanding = landings.length ? average(landings.map((value) => value.quality)) : 0.72;
-  const conflictRate = conflicts.length / Math.max(1, ordered.length);
+  const conflictRate = conflicts.length / Math.max(1, actions.length);
   const vocabulary = articulationVariety * 0.55 + moveVariety * 0.45;
   const quality = clamp(
     timing * 0.36
@@ -159,6 +161,7 @@ export function performanceDiagnostics(
   );
   return Object.freeze({
     contactCount: ordered.length,
+    actionCount: actions.length,
     timing: round(timing),
     independence: round(independence),
     vocabulary: round(vocabulary),
@@ -176,21 +179,34 @@ function selectState(previous, stateAge, value) {
   const unstable = value.conflictRate >= 0.28 || value.mash || value.repeatedFootRuns >= 5;
   if (unstable) return PERFORMANCE_STATES.SCRAMBLING;
   if (previous === PERFORMANCE_STATES.SCRAMBLING) {
-    return value.contactCount >= 3 && value.quality >= 0.46
+    return value.actionCount >= 3 && value.quality >= 0.46
       ? PERFORMANCE_STATES.RECOVERY
       : PERFORMANCE_STATES.SCRAMBLING;
   }
   if (previous === PERFORMANCE_STATES.RECOVERY && stateAge < FROLIC_PPQ * 2) {
     return PERFORMANCE_STATES.RECOVERY;
   }
-  if (value.contactCount < 2) return PERFORMANCE_STATES.COLD;
-  if (value.contactCount >= 10 && value.quality >= 0.76 && value.vocabulary >= 0.42) {
+  if (value.actionCount < 2) return PERFORMANCE_STATES.COLD;
+  if (value.actionCount >= 10 && value.quality >= 0.76 && value.vocabulary >= 0.42) {
     return PERFORMANCE_STATES.COOKING;
   }
-  if (value.contactCount >= 6 && value.quality >= 0.58) {
+  if (value.actionCount >= 6 && value.quality >= 0.58) {
     return PERFORMANCE_STATES.IN_THE_POCKET;
   }
   return PERFORMANCE_STATES.SETTLING_IN;
+}
+
+function collapseContactsByAction(contacts) {
+  const values = [];
+  const seen = new Set();
+  for (let index = 0; index < contacts.length; index += 1) {
+    const contact = contacts[index];
+    const key = contact.actionId ?? `contact:${index}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    values.push(Object.freeze({ ...contact, key }));
+  }
+  return values;
 }
 
 function stateSnapshot(state, ageTicks, diagnostics) {
@@ -222,6 +238,11 @@ function average(values) {
 function finite(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
+}
+
+function finiteOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function round(value) {

@@ -51,8 +51,8 @@
   authoritative taxonomy. Movement names, distinctions, contextual notes, and
   stage framing still require review by Appalachian percussive dancers from
   more than one community.
-- Free Frolic and the embedded Trade Licks / Measure Echo activity share one
-  solo 32-bar chorus, one tune, and one community-hall stage. Calls encode
+- Free Frolic and the separate Trade Licks mode share one solo 32-bar chorus,
+  one tune, and one community-hall stage. Calls encode
   timing/emphasis/subdivision rather than a required animation. Additional
   tunes, partner/team forms, and named archival unlockables remain outside
   scope.
@@ -64,6 +64,9 @@
   pacing. Headless Chromium measured input-to-simulation p95 0.2 ms,
   input-to-first-changed-pixel p95 21.9 ms, and contact-to-Web-Audio-call p95
   0.4 ms. These are browser scheduling results, not physical speaker latency.
+  A separate 30-second keyboard endurance run completed 120 of 120 expected
+  contacts with no generic recovery fallback, no sampled Scrambling time, two
+  clean jump landings, zero stage-height drift, and 1.4 ms render p95.
   Lower-end Android/iOS latency, haptics, thermal, and speaker-mix review
   remain required.
 - Cultural-history PDFs supplied with the brief were not copied into the

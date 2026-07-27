@@ -676,7 +676,7 @@ export class AppalachianJamSimulation {
       foot: contact.foot,
       inputKind: intent.family,
     });
-    this.performanceState.recordContact(judged);
+    this.performanceState.recordContact({ ...judged, actionId: contact.actionId });
     this.liveScore = this.judge.getResult();
     this.lastInput = Object.freeze({
       ...(this.lastInput ?? {}),

@@ -81,13 +81,31 @@ export function drawAppalachianStage(ctx, snapshot, presentation = {}) {
     { x: 277, y: FROLIC_STAGE.boardBottom },
     { x: 107, y: FROLIC_STAGE.boardBottom },
   ], palette.board);
-  pixelLine(ctx, { x: 118, y: 151 + boardFlex }, { x: 266, y: 151 + boardFlex }, 2, palette.boardLight);
-  for (let y = 157; y < 185; y += 7) {
-    const inset = Math.round((y - 151) * 0.26);
-    pixelLine(ctx, { x: 118 - inset, y }, { x: 266 + inset, y }, 1, y % 2 ? "#8f5335" : "#ca8150");
+  pixelLine(
+    ctx,
+    { x: FROLIC_STAGE.boardLeft, y: FROLIC_STAGE.boardTop + boardFlex },
+    { x: FROLIC_STAGE.boardRight, y: FROLIC_STAGE.boardTop + boardFlex },
+    2,
+    palette.boardLight,
+  );
+  for (let y = FROLIC_STAGE.boardTop + 6; y < FROLIC_STAGE.boardBottom - 2; y += 7) {
+    const inset = Math.round((y - FROLIC_STAGE.boardTop) * 0.19);
+    pixelLine(
+      ctx,
+      { x: FROLIC_STAGE.boardLeft - inset, y },
+      { x: FROLIC_STAGE.boardRight + inset, y },
+      1,
+      y % 2 ? "#8f5335" : "#ca8150",
+    );
   }
-  for (let x = 132; x < 266; x += 22) {
-    pixelLine(ctx, { x, y: 153 }, { x: x + (x < 192 ? -5 : 5), y: 185 }, 1, "#6e3f2d");
+  for (let x = 132; x < FROLIC_STAGE.boardRight; x += 22) {
+    pixelLine(
+      ctx,
+      { x, y: FROLIC_STAGE.boardTop + 2 },
+      { x: x + (x < 192 ? -8 : 8), y: FROLIC_STAGE.boardBottom - 2 },
+      1,
+      "#6e3f2d",
+    );
   }
   pixelLine(ctx, { x: 114, y: 190 }, { x: 270, y: 190 }, 1, "#ca8150");
 }

@@ -13,6 +13,7 @@ import { transitionRecipeFor } from "./transition-recipes.js";
 const GROOVE_TICKS = 96;
 const REQUEST_BUFFER_SECONDS = 0.12;
 const DEFAULT_DT = 1 / 120;
+const MAXIMUM_FACING_SPEED = 5;
 const BOARD_BOUNDS = Object.freeze({ minX: -4.25, maxX: 4.25, minZ: -2.65, maxZ: 2.65 });
 const STYLE_TRAVEL = Object.freeze({
   flatfoot: Object.freeze({ speed: 1.55, acceleration: 8.2, airControl: 0.42 }),
@@ -82,6 +83,8 @@ export class AppalachianAnimationController {
       directionChanges: 0,
       lastTravelAngle: null,
     };
+    this.facingStepStart = 0;
+    this.facingStepSeconds = DEFAULT_DT;
     this.upper = {
       coordinated: Object.freeze({ x: 0, y: -0.18 }),
       left: Object.freeze({ x: 0, y: -0.18 }),
@@ -145,14 +148,15 @@ export class AppalachianAnimationController {
     inputTimestamp = null,
     simulationReceiptTimestamp = null,
     phrasePhase = 0,
+    contextualFootLayer = false,
   } = {}) {
-    const move = getFootwork(moveId);
+    const requestedMove = getFootwork(moveId);
     const requestTick = Number(tick) || 0;
-    if (!move) return rejected("unknown-move", `Unknown movement ${moveId}.`);
-    if (!move.styles.includes(this.style)) {
-      return rejected("style-unavailable", `${move.displayName} is not in the ${this.style} profile.`);
+    if (!requestedMove) return rejected("unknown-move", `Unknown movement ${moveId}.`);
+    if (!requestedMove.styles.includes(this.style)) {
+      return rejected("style-unavailable", `${requestedMove.displayName} is not in the ${this.style} profile.`);
     }
-    if (this.jump.state === "airborne" && !move.landingEligibility) {
+    if (this.jump.state === "airborne" && !requestedMove.landingEligibility) {
       this.bufferedRequest = {
         moveId,
         direction,
@@ -164,7 +168,7 @@ export class AppalachianAnimationController {
       this.bufferAge = 0;
       return accepted({
         status: "buffered-for-landing",
-        request: this.makeRequest(move, requestTick, direction, entryFoot, {
+        request: this.makeRequest(requestedMove, requestTick, direction, entryFoot, {
           inputTimestamp,
           simulationReceiptTimestamp,
         }),
@@ -178,25 +182,37 @@ export class AppalachianAnimationController {
       ? this.action.move.id
       : this.lastMoveId;
     const phase = this.actionPhase(requestTick);
-    const candidates = this.graph.rankCandidates({
+    const currentState = {
+      phase,
+      rootVelocity: { x: this.world.vx, z: this.world.vz },
+      facing: this.world.facing,
+      angularVelocity: this.world.angularVelocity,
+      supportingFoot: this.supportingFoot(),
+      centerOfMassOffset: this.centerOfMassOffset(),
+      bodyLevel: this.jump.state === "compression" ? "low" : "mid",
+    };
+    let move = requestedMove;
+    let candidates = this.graph.rankCandidates({
       fromId,
       candidates: [move.id],
       entryFoot: foot,
       direction,
       phrasePhase,
-      currentState: {
-        phase,
-        rootVelocity: { x: this.world.vx, z: this.world.vz },
-        facing: this.world.facing,
-        angularVelocity: this.world.angularVelocity,
-        supportingFoot: this.supportingFoot(),
-        centerOfMassOffset: this.centerOfMassOffset(),
-        bodyLevel: this.jump.state === "compression" ? "low" : "mid",
-      },
+      currentState,
     });
+    if (!candidates.length && contextualFootLayer) {
+      candidates = this.graph.rankCandidates({
+        fromId,
+        entryFoot: foot,
+        direction: "neutral",
+        phrasePhase,
+        currentState,
+      });
+      if (candidates.length) move = candidates[0].move;
+    }
     this.transitionCandidates = Object.freeze(candidates.slice(0, 6));
     if (!candidates.length) {
-      return this.beginRecovery(move, {
+      return this.beginRecovery(requestedMove, {
         tick: requestTick,
         direction,
         entryFoot: foot,
@@ -257,6 +273,7 @@ export class AppalachianAnimationController {
       visibleActionStarted: true,
       queued: false,
       transition: this.transition,
+      contextualFallback: move.id === requestedMove.id ? "" : move.id,
     });
   }
 
@@ -295,6 +312,7 @@ export class AppalachianAnimationController {
       inputTimestamp: intent.rawTimeStamp,
       simulationReceiptTimestamp: now(),
       phrasePhase,
+      contextualFootLayer: true,
     });
     if (!transitionRequest.ok) return transitionRequest;
     transitionRequest.request.contactSource = "foot-layer";
@@ -363,6 +381,9 @@ export class AppalachianAnimationController {
 
   update(tick, { dt = DEFAULT_DT, input = null } = {}) {
     const currentTick = Number(tick) || 0;
+    const safeDt = Math.max(0, Number(dt) || 0);
+    this.facingStepStart = this.world.facing;
+    this.facingStepSeconds = safeDt || DEFAULT_DT;
     if (input) this.applyPerformanceInput(dt, input, currentTick);
     if (currentTick < this.lastTick) {
       this.lastTick = currentTick;
@@ -375,6 +396,8 @@ export class AppalachianAnimationController {
       if (currentTick >= endTick && this.jump.state === "grounded") this.completeAction(endTick);
     }
     this.updateFootLayers(this.lastTick, currentTick);
+    this.world.angularVelocity = signedAngle(this.facingStepStart, this.world.facing)
+      / this.facingStepSeconds;
     if (this.transition && currentTick >= this.transition.startTick + this.transition.durationTicks) {
       this.transition = null;
       this.bridge = null;
@@ -654,11 +677,13 @@ export class AppalachianAnimationController {
     if (this.world.x === BOARD_BOUNDS.minX || this.world.x === BOARD_BOUNDS.maxX) this.world.vx *= 0.2;
     if (this.world.z === BOARD_BOUNDS.minZ || this.world.z === BOARD_BOUNDS.maxZ) this.world.vz *= 0.2;
     this.world.distance += Math.hypot(this.world.x - previousX, this.world.z - previousZ);
-    if (Math.hypot(this.world.vx, this.world.vz) > 0.08) {
+    if (Math.hypot(this.world.vx, this.world.vz) > 0.02) {
       const targetFacing = Math.atan2(this.world.vx, this.world.vz);
       const delta = signedAngle(this.world.facing, targetFacing);
       const oldFacing = this.world.facing;
-      this.world.facing += delta * (1 - Math.exp(-dt * 9));
+      const easedTurn = delta * (1 - Math.exp(-dt * 9));
+      const maximumTurn = MAXIMUM_FACING_SPEED * dt;
+      this.world.facing += clamp(easedTurn, -maximumTurn, maximumTurn);
       this.world.angularVelocity = signedAngle(oldFacing, this.world.facing) / dt;
       if (this.world.lastTravelAngle !== null && Math.abs(signedAngle(this.world.lastTravelAngle, targetFacing)) > 0.72) {
         this.world.directionChanges += 1;
@@ -761,11 +786,18 @@ export class AppalachianAnimationController {
             : layer.gesture.foot === "left" ? -1 : 1;
         const turnProgress = Math.sin(layer.phase * Math.PI / 2);
         const applied = turnSign * layer.gesture.facingChangeRadians * turnProgress;
-        const delta = applied - layer.appliedFacingRadians;
-        this.world.facing += delta;
-        const elapsedSeconds = Math.max(1 / 192, (currentTick - previousTick) / 192);
-        this.world.angularVelocity = delta / elapsedSeconds;
-        layer.appliedFacingRadians = applied;
+        const intendedDelta = applied - layer.appliedFacingRadians;
+        const stepSeconds = this.facingStepSeconds;
+        const usedDelta = signedAngle(this.facingStepStart, this.world.facing);
+        const cappedTotal = clamp(
+          usedDelta + intendedDelta,
+          -MAXIMUM_FACING_SPEED * stepSeconds,
+          MAXIMUM_FACING_SPEED * stepSeconds,
+        );
+        const appliedDelta = cappedTotal - usedDelta;
+        this.world.facing += appliedDelta;
+        this.world.angularVelocity = cappedTotal / stepSeconds;
+        layer.appliedFacingRadians += appliedDelta;
       }
       state.phase = layer.phase;
       state.stage = layer.phase < 0.24

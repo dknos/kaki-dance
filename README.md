@@ -112,6 +112,7 @@ npm run verify
 node scripts/appalachian-simulator-browser.mjs smoke
 npm run qa:appalachian-sim:latency
 npm run qa:appalachian-sim:capture
+npm run qa:frolic:flow
 ```
 
 The native suite covers rapid and simultaneous feet, key repeat, direct
@@ -119,7 +120,10 @@ articulations, remapping, controller disconnect/reconnect, deterministic
 fixed-step replay, musical-clock pause/resume, contact/audio scheduling,
 round-robin Foley, foot orientation, plant drift, ground penetration, rig
 limits, scoring resistance to mashing, Trade Licks listening/response scoring,
-save migration, and static Pages paths.
+save migration, and static Pages paths. The 30-second browser endurance run
+plays 120 real keyboard foot inputs while travelling, shaping the arms, using
+all articulation modifiers and movement families, turning, double-stomping,
+and jumping.
 
 Browser evidence is stored under
 `docs/review/appalachian-instrument-gate-2/`. Automated evidence never

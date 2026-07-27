@@ -24,6 +24,7 @@
     "qa:frolic:candidate:capture": "node scripts/capture-frolic-rescue-candidate.mjs",
     "qa:frolic:review": "node scripts/frolic-review-smoke.mjs",
     "qa:frolic:latency": "node scripts/frolic-latency-qa.mjs",
+    "qa:frolic:flow": "node scripts/frolic-flow-endurance-qa.mjs",
     "qa:frolic:motion": "node scripts/frolic-motion-qa.mjs",
     "qa:frolic:foley": "node scripts/frolic-foley-qa.mjs",
     "qa:frolic:manifest": "node scripts/build-frolic-review-manifest.mjs",
@@ -34,7 +35,7 @@
     "qa:appalachian-sim:audio": "node scripts/appalachian-simulator-qa.mjs audio",
     "qa:appalachian-sim:latency": "node scripts/appalachian-simulator-browser.mjs latency",
     "qa:appalachian-sim:capture": "node scripts/appalachian-simulator-browser.mjs capture",
-    "qa:appalachian-sim": "npm run check && npm test && npm run qa:appalachian-sim:motion && npm run qa:appalachian-sim:arms && npm run qa:appalachian-sim:jumps && npm run qa:appalachian-sim:audio && node scripts/appalachian-simulator-browser.mjs smoke && npm run qa:appalachian-sim:latency && npm run qa:frolic:latency",
+    "qa:appalachian-sim": "npm run check && npm test && npm run qa:appalachian-sim:motion && npm run qa:appalachian-sim:arms && npm run qa:appalachian-sim:jumps && npm run qa:appalachian-sim:audio && node scripts/appalachian-simulator-browser.mjs smoke && npm run qa:appalachian-sim:latency && npm run qa:frolic:latency && npm run qa:frolic:flow",
     "verify": "npm run check && npm test"
   },
   "devDependencies": {
