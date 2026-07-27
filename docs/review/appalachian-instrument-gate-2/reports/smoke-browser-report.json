@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-27T09:44:19.017Z",
+  "url": "https://dknos.github.io/kaki-dance",
+  "generatedAt": "2026-07-27T09:47:22.497Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -17,10 +18,10 @@
     "forced": false,
     "reason": "WebGPU remains capability-gated until animation and capture parity pass."
   },
-  "maximumPlantedFootDriftMeters": 2.482534153247273e-16,
+  "maximumPlantedFootDriftMeters": 4.965068306494546e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 790,
+    "maximumOpaquePixels": 850,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -195,7 +196,7 @@
       "actionId": 4,
       "timeline": 3
     },
-    "recordedFrames": 22
+    "recordedFrames": 20
   },
   "atlasFallback": true,
   "bothHeroes": true,
@@ -269,7 +270,7 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 0,
+      "plantedFootDriftMeters": 1.2412670766236366e-16,
       "footBasis": {
         "intendedForward": [
           0.9294821711763092,
@@ -279,27 +280,27 @@
         "facingRadians": 1.1930065162241472,
         "left": {
           "vector": [
-            0.933411742132209,
+            0.9576783183189208,
             0,
-            0.35880707859477146
+            0.28784064796662034
           ],
-          "dot": 0.9999416778206729,
+          "dot": 0.9963198505108563,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.9155509701233112,
+            0.9155373215137961,
             0,
-            0.4022019655673801
+            0.40223303309815833
           ],
-          "dot": 0.9993473521993843,
+          "dot": 0.9993461258483083,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.9993473521993843
+        "minimumDot": 0.9963198505108563
       },
-      "renderP95Milliseconds": 5.700000047683716,
+      "renderP95Milliseconds": 3.199999988079071,
       "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"

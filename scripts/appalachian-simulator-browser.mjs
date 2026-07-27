@@ -36,6 +36,7 @@ try {
     schemaVersion: 1,
     candidateStatus: "CANDIDATE — HUMAN REVIEW REQUIRED",
     mode: MODE,
+    url: BASE_URL,
     generatedAt: new Date().toISOString(),
     errors,
     failedRequests,
