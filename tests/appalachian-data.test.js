@@ -232,44 +232,65 @@ test("turnaround credit is recorded only inside the final beat window", () => {
   assert.equal(result.validTurnarounds, 1);
 });
 
-test("Step Shed exposes and completes ten learn-by-doing simulator lessons", () => {
+test("Step Shed exposes and completes the seven learn-by-doing fundamentals", () => {
   const simulation = new AppalachianJamSimulation({ mode: "stepShed", style: "flatfoot" });
   simulation.begin(snapshotAtTick(-768));
   let tick = 0;
-  const update = (input, dt = 1 / 120, advance = 1.6) => {
-    simulation.update(dt, snapshotAtTick(tick), input);
+  const update = (input, advance = 1.6) => {
+    simulation.update(1 / 120, snapshotAtTick(tick), input);
     tick += advance;
   };
-  for (let index = 0; index < 120; index += 1) {
-    update({ ...frolicInput(), x: 1, travelX: 1 });
-  }
-  tick = Math.ceil(tick / 96) * 96;
+
+  // Pulse: four unquantized anatomical taps, each flushed inside the assist window.
   for (let index = 0; index < 4; index += 1) {
-    update(frolicInput("step"));
-    tick += 100;
-  }
-  for (let index = 0; index < 2; index += 1) {
-    update(frolicInput("brush"));
-    tick += 100;
-  }
-  update({ ...frolicInput("drive"), y: 1 });
-  tick += 110;
-  update({ ...frolicInput("drive"), groundModifier: true });
-  tick += 110;
-  for (let index = 0; index < 20; index += 1) {
+    tick = index * 96;
     update({
       ...frolicInput(),
+      performanceEdges: [{
+        action: index % 2 ? "rightFoot" : "leftFoot",
+        rawTimeStamp: tick,
+        receivedTimeStamp: tick,
+      }],
+    }, 16);
+    update(frolicInput(), 80);
+  }
+
+  // Articulations: direct modifiers resolve without waiting for a family chord.
+  for (const [index, articulationModifier] of ["brush", "heel", "toe"].entries()) {
+    update({
+      ...frolicInput(),
+      performanceEdges: [{
+        action: index % 2 ? "rightFoot" : "leftFoot",
+        rawTimeStamp: tick,
+        receivedTimeStamp: tick,
+        articulationModifier,
+      }],
+    }, 24);
+  }
+
+  for (let index = 0; index < 180 && simulation.practiceLesson === 2; index += 1) {
+    update({ ...frolicInput(), travelX: 1, travelY: index % 40 < 20 ? 0.3 : -0.3 });
+  }
+  for (let index = 0; index < 90 && simulation.practiceLesson === 3; index += 1) {
+    update({
+      ...frolicInput(),
+      armActive: true,
+      armInputMode: "rate",
       armX: index % 2 ? 1 : -1,
       armY: index % 3 ? 1 : -1,
     });
   }
-  update({ ...frolicInput(), armX: 1, armY: 0.5, leftArmModifier: true });
+
   update({ ...frolicInput(), jump: true, jumpPressed: true });
-  for (let index = 0; index < 20; index += 1) update({ ...frolicInput(), jump: true });
+  for (let index = 0; index < 18; index += 1) update({ ...frolicInput(), jump: true });
   update({ ...frolicInput(), jumpReleased: true });
-  update(frolicInput("brush"));
-  for (let index = 0; index < 100; index += 1) update(frolicInput());
+  for (let index = 0; index < 90 && simulation.practiceLesson === 4; index += 1) {
+    update(frolicInput());
+  }
+  for (let index = 0; index < 90; index += 1) update(frolicInput());
+
   tick = Math.ceil(tick / 384) * 384 + 288;
+  update(frolicInput(), 0);
   update({
     ...frolicInput(),
     turnDirection: 1,
@@ -278,10 +299,26 @@ test("Step Shed exposes and completes ten learn-by-doing simulator lessons", () 
       { action: "turn", rawTimeStamp: tick, receivedTimeStamp: tick },
     ],
   });
-  for (let index = 0; index < 5; index += 1) update(frolicInput());
-  assert.equal(PRACTICE_LESSONS.length, 10);
-  assert.equal(simulation.complete, true);
-  assert.ok(simulation.result.player.eventCount >= 8);
+  tick = 9 * 384;
+  update({
+    ...frolicInput(),
+    performanceEdges: [{
+      action: "rightFoot",
+      rawTimeStamp: tick,
+      receivedTimeStamp: tick,
+      articulationModifier: "heel",
+    }],
+  });
+
+  assert.deepEqual(PRACTICE_LESSONS.map((lesson) => lesson.id), [
+    "pulse", "articulations", "travel", "arms", "small-hop", "beat-one", "answer",
+  ]);
+  assert.equal(
+    simulation.complete,
+    true,
+    `stopped on ${PRACTICE_LESSONS[simulation.practiceLesson]?.id ?? "results"}`,
+  );
+  assert.ok(simulation.result.player.eventCount >= 7);
 });
 
 test("seeded Frolic simulation is deterministic and STEP alone is not elite", () => {

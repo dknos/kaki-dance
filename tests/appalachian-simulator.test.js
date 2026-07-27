@@ -55,8 +55,8 @@ test("both gamepad sticks use independent radial dead zones and semantic buttons
   assert.deepEqual({ x: value.x, y: value.y }, travel);
   assert.deepEqual({ x: value.armX, y: value.armY }, { x: arms.x, y: -arms.y });
   assert.equal(value.jump, true);
-  assert.equal(value.leftArmModifier, true);
-  assert.equal(value.commitModifier, true);
+  assert.equal(value.brushModifier, true);
+  assert.equal(value.toeModifier, true);
   assert.notDeepEqual([value.x, value.y], [value.armX, value.armY]);
 });
 
@@ -81,9 +81,9 @@ test("keyboard travel, anatomical foot, persistent arms, and family chord surviv
   const value = input.consumeStep();
   assert.deepEqual([value.travelX, value.travelY], [1, -1]);
   assert.deepEqual([value.armX, value.armY], [0, 1]);
-  assert.equal(value.leftArmModifier, true);
+  assert.equal(value.brushModifier, true);
   assert.deepEqual(value.performanceEdges.map((edge) => edge.action), ["leftFoot", "brush"]);
-  assert.equal(value.performanceEdges[0].committed, true);
+  assert.equal(value.performanceEdges[0].articulationModifier, "brush");
   input.destroy();
 });
 
@@ -325,7 +325,9 @@ test("review surface and Pages-safe runtime paths expose all required control fa
   ]) {
     assert.match(page, new RegExp(token));
   }
-  assert.equal(PRACTICE_LESSONS.length, 10);
+  assert.deepEqual(PRACTICE_LESSONS.map((lesson) => lesson.id), [
+    "pulse", "articulations", "travel", "arms", "small-hop", "beat-one", "answer",
+  ]);
   const runtime = readFileSync(resolve(ROOT, "js/render/appalachian-three-renderer.js"), "utf8");
   assert.ok(runtime.includes('new URL("../../assets/models/appalachian/'));
   assert.doesNotMatch(runtime, /https?:\/\//);

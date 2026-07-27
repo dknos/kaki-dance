@@ -556,10 +556,9 @@ function selectButtons(selector, selected) {
 
 function modifierText(input) {
   return [
-    input.leftArmModifier ? "LB/Shift arm" : "",
-    input.rightArmModifier ? "RB/Ctrl arm" : "",
-    input.groundModifier ? "LT/Ctrl move" : "",
-    input.commitModifier ? "RT/Shift move" : "",
+    input.brushModifier ? "brush" : "",
+    input.heelModifier ? "heel" : "",
+    input.toeModifier ? "toe" : "",
   ].filter(Boolean).join(" ") || "—";
 }
 

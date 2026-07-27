@@ -160,7 +160,13 @@
                 <button type="button" class="close-button" data-close-layer aria-label="Close controls">×</button>
               </div>
               <div class="control-map">
-                <div><kbd>← / →</kbd><span>Anatomical left / right foot percussion · one gesture per tap</span></div>
+                <div>
+                  <span class="movement-keycaps">
+                    <button type="button" class="keycap" data-remap="leftFoot">←</button>
+                    <button type="button" class="keycap" data-remap="rightFoot">→</button>
+                  </span>
+                  <span>Anatomical left / right foot percussion · one gesture per tap</span>
+                </div>
                 <div>
                   <span class="movement-keycaps">
                     <button type="button" class="keycap" data-remap="up">W</button>
@@ -170,19 +176,24 @@
                   </span>
                   <span>Travel freely across the full board</span>
                 </div>
-                <div><kbd>↑ / ↓</kbd><span>Raise / lower persistent authored arm pose</span></div>
-                <div><kbd>Shift + ↑/↓</kbd><span>Shape the anatomical left arm only</span></div>
-                <div><kbd>Ctrl + ↑/↓</kbd><span>Shape the anatomical right arm only</span></div>
-                <div><kbd>Space hold / release</kbd><span>Compress, then launch the style-specific hop</span></div>
-                <div><kbd>Q</kbd><span>BRUSH / SHUFFLE family · chord with a foot for exact side</span></div>
-                <div><kbd>E</kbd><span>HEEL–TOE / SCUFF / articulation family</span></div>
-                <div><kbd>F</kbd><span>DRIVE / BACKSTEP / CHUG / ROCK family</span></div>
-                <div><kbd>T + A/D</kbd><span>TURN / LICK / phrase ending toward that side</span></div>
-                <div><kbd>Ctrl</kbd><span>Grounded, heel-led, dragged, compact movement modifier</span></div>
-                <div><kbd>Shift</kbd><span>Lifted, ball/toe-led, doubled, committed movement modifier</span></div>
+                <div>
+                  <span class="movement-keycaps">
+                    <button type="button" class="keycap" data-remap="armUp">↑</button>
+                    <button type="button" class="keycap" data-remap="armDown">↓</button>
+                  </span>
+                  <span>Raise / lower the persistent upper-body shape while the feet continue</span>
+                </div>
+                <div><button type="button" class="keycap" data-remap="brushModifier">Shift</button><span>Hold with either foot for a brush-return</span></div>
+                <div><button type="button" class="keycap" data-remap="heelModifier">Ctrl</button><span>Hold with either foot for one heel strike</span></div>
+                <div><button type="button" class="keycap" data-remap="toeModifier">Z</button><span>Hold with either foot for one toe strike</span></div>
+                <div><button type="button" class="keycap" data-remap="jump">Space</button><span>Compress, then release a style-specific hop</span></div>
+                <div><button type="button" class="keycap" data-remap="familyQ">Q</button><span>Brush / shuffle movement family</span></div>
+                <div><button type="button" class="keycap" data-remap="familyE">E</button><span>Heel-toe / cross-step movement family</span></div>
+                <div><button type="button" class="keycap" data-remap="familyF">F</button><span>Rock / backstep / drive movement family</span></div>
+                <div><button type="button" class="keycap" data-remap="familyT">T</button><span>Turn / phrase-ending family, shaped by travel direction</span></div>
                 <div><kbd>Esc / P</kbd><span>Pause</span></div>
               </div>
-              <p class="settings-note" id="remap-help">Foot arrows respond immediately. Add Q/E/F/T within the short intent window to specialize one gesture.</p>
+              <p class="settings-note" id="remap-help">Select a keycap, then press a new key. Arrow-foot aliases always remain available.</p>
             </div>
           </section>
 
@@ -222,8 +233,8 @@
               <span class="touch-stick__nub"></span>
             </div>
             <div class="touch-buttons">
-              <button type="button" data-control="brush" aria-label="Brush family">Q · BRUSH</button>
-              <button type="button" data-control="articulation" aria-label="Heel toe family">E · HEEL/TOE</button>
+              <button type="button" data-control="brush" aria-label="Brush family">Q · SHUFFLE</button>
+              <button type="button" data-control="articulation" aria-label="Heel toe family">E · CROSS</button>
               <button type="button" data-control="drive" aria-label="Drive family">F · DRIVE</button>
               <button type="button" class="touch-legacy-lick" data-control="turn" aria-label="Turn family">T · TURN</button>
               <button type="button" class="touch-jump" data-control="jump" aria-label="Hold and release jump">JUMP</button>
@@ -232,10 +243,9 @@
               <button type="button" class="touch-action touch-measure-action" data-control="action" aria-label="Copy measure cell">PAW</button>
             </div>
             <div class="touch-modifiers" aria-label="Expression modifiers">
-              <button type="button" data-control="leftArmModifier" aria-label="Shape left arm">L ARM</button>
-              <button type="button" data-control="rightArmModifier" aria-label="Shape right arm">R ARM</button>
-              <button type="button" data-control="bodyModifier" aria-label="Ground and body line">GROUND</button>
-              <button type="button" data-control="commitModifier" aria-label="Commit and spring">COMMIT</button>
+              <button type="button" data-control="brushModifier" aria-label="Brush articulation">BRUSH</button>
+              <button type="button" data-control="heelModifier" aria-label="Heel articulation">HEEL</button>
+              <button type="button" data-control="toeModifier" aria-label="Toe articulation">TOE</button>
             </div>
             <button type="button" class="touch-pause" data-control="pause" aria-label="Pause">Ⅱ</button>
           </div>

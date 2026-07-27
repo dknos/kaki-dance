@@ -26,32 +26,25 @@ import {
 const TURNAROUND_BARS = new Set([8, 16, 24, 32]);
 export const PRACTICE_LESSONS = Object.freeze([
   Object.freeze({
-    id: "travel",
-    title: "Work the board",
-    instruction: "Travel away from neutral and cross the board.",
-    inputKind: "travel",
-    required: 1,
-  }),
-  Object.freeze({
     id: "pulse",
-    title: "Step joins the band",
+    title: "Two feet, one pulse",
     instruction: "Alternate Left and Right Arrow four times with the pulse.",
     inputKind: "basic",
     required: 4,
   }),
   Object.freeze({
-    id: "brush",
-    title: "Brush between steps",
-    instruction: "Use Q with either foot for two brush-return sounds.",
-    inputKind: "brush",
-    required: 2,
+    id: "articulations",
+    title: "Change the shoe sound",
+    instruction: "Add Shift brush, Control heel, then Z toe to either foot.",
+    inputKind: "articulations",
+    required: 3,
   }),
   Object.freeze({
-    id: "drive",
-    title: "Build a backstep",
-    instruction: "Use F twice for a backstep or chug phrase.",
-    inputKind: "drive",
-    required: 2,
+    id: "travel",
+    title: "Carry the rhythm",
+    instruction: "Travel with WASD while the feet keep tapping.",
+    inputKind: "travel",
+    required: 1,
   }),
   Object.freeze({
     id: "arms",
@@ -61,38 +54,24 @@ export const PRACTICE_LESSONS = Object.freeze([
     required: 1,
   }),
   Object.freeze({
-    id: "one-arm",
-    title: "Lead with one arm",
-    instruction: "Hold Shift for left or Control for right while using Up/Down.",
-    inputKind: "one-arm",
-    required: 1,
-  }),
-  Object.freeze({
     id: "small-hop",
-    title: "Release the weight",
-    instruction: "Hold and release JUMP for a compact style-appropriate hop.",
+    title: "Hop and settle",
+    instruction: "Hold and release Space, then settle cleanly on the board.",
     inputKind: "small-hop",
     required: 1,
   }),
   Object.freeze({
-    id: "aerial-detail",
-    title: "Shape the air",
-    instruction: "During a hop, add a documented Q, E, F, or T detail.",
-    inputKind: "aerial-detail",
+    id: "beat-one",
+    title: "Bring it to one",
+    instruction: "Use T in the final beat, or land cleanly on the next beat one.",
+    inputKind: "beat-one",
     required: 1,
   }),
   Object.freeze({
-    id: "turnaround",
-    title: "Travel into a turnaround",
-    instruction: "Keep travelling and use T at the end of the bar.",
-    inputKind: "turnaround",
-    required: 1,
-  }),
-  Object.freeze({
-    id: "bank",
-    title: "Bank a Dance Line",
-    instruction: "Resolve the phrase with a controlled ending or clean landing.",
-    inputKind: "bank",
+    id: "answer",
+    title: "Answer the caller",
+    instruction: "Listen through the call, then answer during the response bar.",
+    inputKind: "answer",
     required: 1,
   }),
 ]);
@@ -141,6 +120,7 @@ export class AppalachianJamSimulation {
     this.practiceLesson = 0;
     this.practiceProgress = 0;
     this.practiceAnchorHits = new Set();
+    this.practiceArticulations = new Set();
     this.lastBar = 0;
     this.boardLines = new BoardLineTracker();
     this.lastBoardLineCount = 0;
@@ -170,6 +150,7 @@ export class AppalachianJamSimulation {
     this.practiceLesson = 0;
     this.practiceProgress = 0;
     this.practiceAnchorHits.clear();
+    this.practiceArticulations.clear();
     this.boardLines.reset();
     this.lastBoardLineCount = 0;
     this.bankHistory = [];
@@ -328,7 +309,9 @@ export class AppalachianJamSimulation {
       modifiers: intent.modifiers,
       contactPending: true,
     });
-    this.advancePractice(intent.family === "basic" ? "basic" : intent.family, tick);
+    this.advancePractice(intent.family === "basic" ? "basic" : intent.family, tick, {
+      articulation: intent.modifiers?.articulation || request.gesture.contacts[0]?.articulation,
+    });
   }
 
   handleStateChange(tick) {
@@ -675,7 +658,7 @@ export class AppalachianJamSimulation {
     });
   }
 
-  advancePractice(kind, tick) {
+  advancePractice(kind, tick, detail = {}) {
     if (this.mode !== "stepShed" || this.complete) return;
     const lesson = PRACTICE_LESSONS[this.practiceLesson];
     if (!lesson) return;
@@ -685,9 +668,20 @@ export class AppalachianJamSimulation {
       const offset = Math.abs(tick - nearestPulseTick(tick, FROLIC_PPQ));
       accepted = offset <= 24;
     }
-    if (lesson.id === "turnaround") accepted = kind === "turn" && isAnyBarTurnaround(tick);
-    if (lesson.id === "aerial-detail") accepted = this.animation.jump.state === "airborne"
-      && ["brush", "articulation", "drive", "turn"].includes(kind);
+    if (lesson.id === "articulations") {
+      const articulation = String(detail.articulation ?? "");
+      if (["brush", "heel", "toe"].includes(articulation)) {
+        this.practiceArticulations.add(articulation);
+        this.practiceProgress = this.practiceArticulations.size;
+      }
+    }
+    if (lesson.id === "beat-one") {
+      accepted = kind === "turn" && isAnyBarTurnaround(tick);
+    }
+    if (lesson.id === "answer") {
+      accepted = frolicStateAtTick(tick) === FROLIC_STATES.TRADE_RESPONSE
+        && ["basic", "brush", "articulation", "drive", "turn"].includes(kind);
+    }
     if (accepted) this.practiceProgress += 1;
     this.completePracticeLesson(lesson);
   }
@@ -700,9 +694,12 @@ export class AppalachianJamSimulation {
     let complete = false;
     if (lesson.id === "travel") complete = dancer.performance.travelDistance >= 1;
     if (lesson.id === "arms") complete = dancer.performance.armInputDistance >= 1.2;
-    if (lesson.id === "one-arm") complete = dancer.upperBody.leftOverride || dancer.upperBody.rightOverride;
     if (lesson.id === "small-hop") complete = dancer.performance.jumps >= 1;
-    if (lesson.id === "bank") complete = this.bankHistory.length >= 1;
+    if (lesson.id === "beat-one") {
+      complete = dancer.jump.state === "landing"
+        && dancer.jump.landingQuality >= 0.72
+        && localTickInBar(tick) <= 20;
+    }
     if (!complete) return;
     this.practiceProgress = lesson.required;
     this.completePracticeLesson(lesson);
@@ -718,6 +715,7 @@ export class AppalachianJamSimulation {
     this.practiceLesson += 1;
     this.practiceProgress = 0;
     this.practiceAnchorHits.clear();
+    this.practiceArticulations.clear();
     if (this.practiceLesson >= PRACTICE_LESSONS.length) {
       this.finish();
       return;

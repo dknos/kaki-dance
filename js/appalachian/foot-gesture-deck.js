@@ -30,7 +30,7 @@ function authoringMetadata({
     entryFrameCandidates: [0, 4, 8],
     cancelWindow: { startPhase: 0, endPhase: cancelEnd },
     commitmentWindow: { startPhase: cancelEnd, endPhase: commitmentEnd },
-    legalModifiers: ["none", "control", "shift"],
+    legalModifiers: ["none", "brush", "heel", "toe"],
     armMaskCompatibility: ["coordinated", "left-isolated", "right-isolated"],
     validSuccessors: ALL_GOLDEN_SUCCESSORS,
     airborneCompatibility: false,
@@ -122,6 +122,28 @@ export const GOLDEN_FOOT_GESTURES = deepFreeze({
       commitmentEnd: 0.66,
     }),
     variants: {
+      heel: {
+        displayName: "Single heel strike",
+        durationTicks: 30,
+        contacts: [
+          { phase: 0.46, articulation: "heel", sampleGroup: "heel", intensity: 0.64 },
+        ],
+        articulation: "heel",
+        sampleGroup: "heel",
+        intensity: 0.64,
+        supportingFootLegal: true,
+      },
+      toe: {
+        displayName: "Single toe strike",
+        durationTicks: 28,
+        contacts: [
+          { phase: 0.44, articulation: "toe", sampleGroup: "toeBall", intensity: 0.61 },
+        ],
+        articulation: "toe",
+        sampleGroup: "toeBall",
+        intensity: 0.61,
+        supportingFootLegal: false,
+      },
       grounded: {
         displayName: "Heel dig and drop",
         articulation: "heel",
@@ -216,7 +238,12 @@ export function resolveFootGesture(intent, {
   if (modifiers.grounded && modifiers.committed) {
     return rejected("combined-variant-unavailable", "Shift+Control has no authored variation for this gesture.");
   }
-  const variantId = modifiers.grounded ? "grounded" : modifiers.committed ? "committed" : "standard";
+  const directArticulation = ["heel", "toe"].includes(modifiers.articulation)
+    && family === GOLDEN_FOOT_GESTURES.articulation
+    ? modifiers.articulation
+    : "";
+  const variantId = directArticulation
+    || (modifiers.grounded ? "grounded" : modifiers.committed ? "committed" : "standard");
   const variation = variantId === "standard" ? {} : family.variants?.[variantId];
   if (variantId !== "standard" && !variation) {
     return rejected("modifier-unavailable", `${family.displayName} has no ${variantId} variation.`);
@@ -228,7 +255,7 @@ export function resolveFootGesture(intent, {
   const supporting = foot === supportingFoot;
   const durationTicks = variation?.durationTicks ?? family.durationTicks;
   const contacts = [
-    ...family.contacts,
+    ...(variation?.contacts ?? family.contacts),
     ...(variation?.extraContacts ?? []),
   ].map((contact, index) => Object.freeze({
     ...contact,

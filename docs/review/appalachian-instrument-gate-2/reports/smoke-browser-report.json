@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-27T01:39:52.312Z",
+  "generatedAt": "2026-07-27T01:51:06.604Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -195,7 +195,7 @@
       "actionId": 4,
       "timeline": 3
     },
-    "recordedFrames": 20
+    "recordedFrames": 22
   },
   "atlasFallback": true,
   "bothHeroes": true,
@@ -205,7 +205,7 @@
     "action": 1,
     "arm": {
       "x": 0,
-      "y": -0.14085283984710678
+      "y": -0.1365031553856742
     },
     "renderer": {
       "ready": true,
@@ -269,37 +269,37 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 2.7755575615628914e-17,
+      "plantedFootDriftMeters": 0,
       "footBasis": {
         "intendedForward": [
-          0.9052072665585318,
+          0.9294821711763092,
           0,
-          0.4249703572834599
+          0.3688670403619363
         ],
-        "facingRadians": 1.1318671883199685,
+        "facingRadians": 1.1930065162241472,
         "left": {
           "vector": [
-            0.9120231250297319,
+            0.9555168821321053,
             0,
-            0.4101387806718619
+            0.29493641341913096
           ],
-          "dot": 0.9998667842042575,
+          "dot": 0.996928228112646,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.9194726902730516,
+            0.9402676506144175,
             0,
-            0.3931538780707079
+            0.3404361103174041
           ],
-          "dot": 0.9993921046683751,
+          "dot": 0.9995376778250465,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.9993921046683751
+        "minimumDot": 0.996928228112646
       },
-      "renderP95Milliseconds": 1.699999988079071,
+      "renderP95Milliseconds": 1.800000011920929,
       "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"

@@ -690,7 +690,7 @@ export class KakiDanceGame {
       this.remapAction = "";
       this.syncRemapLabels();
       for (const button of this.elements.remapButtons) button.classList.remove("is-listening");
-      this.elements.remapHelp.textContent = "Select a keycap, then press a new key. Gamepad: A / X / Y / B.";
+      this.elements.remapHelp.textContent = "Select a keycap, then press a new key. Arrow-foot aliases always remain available.";
     }, { capture: true, signal });
   }
 
@@ -763,10 +763,13 @@ export class KakiDanceGame {
       ? {
           leftFoot: "L FOOT",
           rightFoot: "R FOOT",
-          brush: "Q · BRUSH",
-          articulation: "E · HEEL/TOE",
+          brush: "Q · SHUFFLE",
+          articulation: "E · CROSS",
           drive: "F · DRIVE",
           turn: "T · TURN",
+          brushModifier: "BRUSH",
+          heelModifier: "HEEL",
+          toeModifier: "TOE",
           jump: "JUMP",
         }
       : { action: "PAW", style: "S", power: "P", freeze: "F" };

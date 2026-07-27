@@ -22,6 +22,26 @@ const DEFAULT_BINDINGS = Object.freeze({
   pause: ["Escape", "KeyP"],
 });
 
+export const APPALACHIAN_DEFAULT_BINDINGS = Object.freeze({
+  travelLeft: Object.freeze(["KeyA"]),
+  travelRight: Object.freeze(["KeyD"]),
+  travelUp: Object.freeze(["KeyW"]),
+  travelDown: Object.freeze(["KeyS"]),
+  leftFoot: Object.freeze(["ArrowLeft"]),
+  rightFoot: Object.freeze(["ArrowRight"]),
+  armUp: Object.freeze(["ArrowUp"]),
+  armDown: Object.freeze(["ArrowDown"]),
+  brushModifier: Object.freeze(["ShiftLeft", "ShiftRight"]),
+  heelModifier: Object.freeze(["ControlLeft", "ControlRight"]),
+  toeModifier: Object.freeze(["KeyZ"]),
+  familyQ: Object.freeze(["KeyQ"]),
+  familyE: Object.freeze(["KeyE"]),
+  familyF: Object.freeze(["KeyF"]),
+  familyT: Object.freeze(["KeyT"]),
+  jump: Object.freeze(["Space"]),
+  pause: Object.freeze(["Escape", "KeyP"]),
+});
+
 const ACTIONS = Object.freeze([
   "action", "style", "power", "freeze", "toprock", "footwork", "jump", "handAccent",
 ]);
@@ -30,6 +50,7 @@ export const APPALACHIAN_ACTIONS = Object.freeze([
 ]);
 const SIMULATOR_HELD_CONTROLS = Object.freeze([
   "leftArmModifier", "rightArmModifier", "bodyModifier", "commitModifier",
+  "brushModifier", "heelModifier", "toeModifier",
 ]);
 const SIMULATOR_KEYS = new Set([
   "KeyW", "KeyA", "KeyS", "KeyD",
@@ -60,6 +81,10 @@ export function createInputStep() {
     bodyModifier: false,
     groundModifier: false,
     commitModifier: false,
+    brushModifier: false,
+    heelModifier: false,
+    toeModifier: false,
+    articulationModifier: "",
     turnDirection: 0,
     paletteDirection: 0,
     pausePressed: false,
@@ -95,6 +120,7 @@ export class InputManager {
     this.controlMode = normalizeControlMode(controlMode);
     this.profile = normalizeInputProfile(profile);
     this.bindings = mergeBindings(bindings);
+    this.appalachianBindings = mergeAppalachianBindings(bindings);
     this.keys = new Set();
     this.previous = booleanRecord([...ACTIONS, "pause"]);
     this.buffers = bufferRecord(ACTIONS);
@@ -258,13 +284,13 @@ export class InputManager {
     this.gamepad = pollGamepad(this.getGamepads);
     const simulator = this.profile === "appalachian";
     const keyboardX = simulator
-      ? Number(this.keys.has("KeyD")) - Number(this.keys.has("KeyA"))
+      ? Number(this.appalachianKeyHeld("travelRight")) - Number(this.appalachianKeyHeld("travelLeft"))
       : Number(this.keyHeld("right")) - Number(this.keyHeld("left"));
     const keyboardY = simulator
-      ? Number(this.keys.has("KeyS")) - Number(this.keys.has("KeyW"))
+      ? Number(this.appalachianKeyHeld("travelDown")) - Number(this.appalachianKeyHeld("travelUp"))
       : Number(this.keyHeld("down")) - Number(this.keyHeld("up"));
     const keyboardArmX = 0;
-    const keyboardArmY = Number(this.keys.has("ArrowUp")) - Number(this.keys.has("ArrowDown"));
+    const keyboardArmY = Number(this.appalachianKeyHeld("armUp")) - Number(this.appalachianKeyHeld("armDown"));
     const gamepadActive = this.gamepad.active;
     const touchActive = this.touchSticks.travel.pointerId !== null;
     const armTouchActive = this.touchSticks.arms.pointerId !== null;
@@ -317,20 +343,16 @@ export class InputManager {
     this.step.armActive = simulator && (
       armTouchActive
       || gamepadArmActive
-      || this.keys.has("ArrowUp")
-      || this.keys.has("ArrowDown")
+      || this.appalachianKeyHeld("armUp")
+      || this.appalachianKeyHeld("armDown")
     );
     this.step.armInputMode = armTouchActive || gamepadArmActive ? "absolute" : "rate";
     this.step.leftArmModifier = simulator && (
-      ((this.keys.has("ShiftLeft") || this.keys.has("ShiftRight"))
-        && (this.keys.has("ArrowUp") || this.keys.has("ArrowDown")))
-      || this.touchButtons.has("leftArmModifier")
+      this.touchButtons.has("leftArmModifier")
       || this.gamepad.leftArmModifier
     );
     this.step.rightArmModifier = simulator && (
-      ((this.keys.has("ControlLeft") || this.keys.has("ControlRight"))
-        && (this.keys.has("ArrowUp") || this.keys.has("ArrowDown")))
-      || this.touchButtons.has("rightArmModifier")
+      this.touchButtons.has("rightArmModifier")
       || this.gamepad.rightArmModifier
     );
     this.step.bodyModifier = simulator && (
@@ -338,17 +360,29 @@ export class InputManager {
       || this.gamepad.bodyModifier
     );
     this.step.groundModifier = simulator && (
-      this.keys.has("ControlLeft")
-      || this.keys.has("ControlRight")
-      || this.touchButtons.has("bodyModifier")
+      this.touchButtons.has("bodyModifier")
       || this.gamepad.bodyModifier
     );
     this.step.commitModifier = simulator && (
-      this.keys.has("ShiftLeft")
-      || this.keys.has("ShiftRight")
-      || this.touchButtons.has("commitModifier")
+      this.touchButtons.has("commitModifier")
       || this.gamepad.commitModifier
     );
+    this.step.brushModifier = simulator && (
+      this.appalachianKeyHeld("brushModifier")
+      || this.touchButtons.has("brushModifier")
+      || this.gamepad.brushModifier
+    );
+    this.step.heelModifier = simulator && (
+      this.appalachianKeyHeld("heelModifier")
+      || this.touchButtons.has("heelModifier")
+      || this.gamepad.heelModifier
+    );
+    this.step.toeModifier = simulator && (
+      this.appalachianKeyHeld("toeModifier")
+      || this.touchButtons.has("toeModifier")
+      || this.gamepad.toeModifier
+    );
+    this.step.articulationModifier = articulationFromHeld(this.step);
     this.step.turnDirection = simulator
       ? Number(this.keys.has("KeyD")) - Number(this.keys.has("KeyA"))
         || (this.gamepad.turn ? Math.sign(this.gamepad.x) : 0)
@@ -401,6 +435,7 @@ export class InputManager {
 
   setBindings(bindings = {}) {
     this.bindings = mergeBindings(bindings);
+    this.appalachianBindings = mergeAppalachianBindings(bindings);
     this.clear();
   }
 
@@ -476,18 +511,13 @@ export class InputManager {
 
   keyHeld(action) {
     if (this.profile === "appalachian") {
-      const direct = {
-        action: [],
-        style: [],
-        power: [],
-        freeze: [],
-        toprock: [],
-        footwork: [],
-        jump: ["Space"],
-        handAccent: ["KeyR"],
-        pause: ["Escape", "KeyP"],
-      }[action];
-      if (direct) return direct.some((code) => this.keys.has(code));
+      if (action === "jump" || action === "pause") {
+        return this.appalachianKeyHeld(action);
+      }
+      if (action === "handAccent") return this.keys.has("KeyR");
+      if (["action", "style", "power", "freeze", "toprock", "footwork"].includes(action)) {
+        return false;
+      }
     }
     if (this.controlMode === "advanced") {
       const direct = {
@@ -525,12 +555,15 @@ export class InputManager {
 
   isBound(code) {
     return Object.values(this.bindings).some((codes) => codes.includes(code))
-      || (this.profile === "appalachian" && SIMULATOR_KEYS.has(code));
+      || (this.profile === "appalachian" && (
+        SIMULATOR_KEYS.has(code)
+        || Object.values(this.appalachianBindings).some((codes) => codes.includes(code))
+      ));
   }
 
   bufferCode(code, pressedEdge, metadata = {}) {
     if (this.profile === "appalachian") {
-      const action = appalachianActionForCode(code);
+      const action = this.appalachianActionForCode(code);
       if (action) {
         this.bufferAction(action, pressedEdge, metadata);
         return;
@@ -552,15 +585,14 @@ export class InputManager {
         device: metadata.device ?? this.lastDevice,
         code: metadata.code ?? "",
         pointerType: metadata.pointerType ?? "",
+        articulationModifier: normalizeArticulationModifier(
+          metadata.articulationModifier || this.activeArticulationModifier(),
+        ),
         grounded: metadata.grounded === undefined
-          ? Boolean(this.step.groundModifier
-            || this.keys.has("ControlLeft")
-            || this.keys.has("ControlRight"))
+          ? Boolean(this.step.groundModifier)
           : Boolean(metadata.grounded),
         committed: metadata.committed === undefined
-          ? Boolean(this.step.commitModifier
-            || this.keys.has("ShiftLeft")
-            || this.keys.has("ShiftRight"))
+          ? Boolean(this.step.commitModifier)
           : Boolean(metadata.committed),
       });
       this.performancePrevious[action] = pressedEdge;
@@ -594,16 +626,9 @@ export class InputManager {
 
   actionsForCode(code) {
     if (this.profile === "appalachian") {
-      const direct = {
-        KeyZ: "action",
-        KeyX: "style",
-        KeyC: "power",
-        Space: "jump",
-        KeyR: "handAccent",
-        Escape: "pause",
-        KeyP: "pause",
-      }[code];
-      return direct ? [direct] : [];
+      if (this.appalachianBindings.jump.includes(code)) return ["jump"];
+      if (this.appalachianBindings.pause.includes(code)) return ["pause"];
+      return code === "KeyR" ? ["handAccent"] : [];
     }
     if (this.controlMode === "advanced") {
       const direct = {
@@ -633,12 +658,9 @@ export class InputManager {
 
   modifierSnapshot(event = {}) {
     return {
-      grounded: Boolean(
-        event.ctrlKey || this.keys.has("ControlLeft") || this.keys.has("ControlRight")
-      ),
-      committed: Boolean(
-        event.shiftKey || this.keys.has("ShiftLeft") || this.keys.has("ShiftRight")
-      ),
+      grounded: false,
+      committed: false,
+      articulationModifier: this.activeArticulationModifier(event),
     };
   }
 
@@ -661,8 +683,49 @@ export class InputManager {
         code: gamepadCodeForAction(action),
         grounded: this.gamepad.bodyModifier,
         committed: this.gamepad.commitModifier,
+        articulationModifier: articulationFromHeld(this.gamepad),
       });
     }
+  }
+
+  appalachianKeyHeld(binding) {
+    return (this.appalachianBindings[binding] ?? []).some((code) => this.keys.has(code));
+  }
+
+  appalachianActionForCode(code) {
+    const action = {
+      leftFoot: "leftFoot",
+      rightFoot: "rightFoot",
+      familyQ: "brush",
+      familyE: "articulation",
+      familyF: "drive",
+      familyT: "turn",
+    };
+    for (const [binding, mapped] of Object.entries(action)) {
+      if (this.appalachianBindings[binding]?.includes(code)) return mapped;
+    }
+    return "";
+  }
+
+  activeArticulationModifier(event = {}) {
+    if (
+      this.appalachianKeyHeld("brushModifier")
+      || this.touchButtons.has("brushModifier")
+      || this.gamepad.brushModifier
+      || event.shiftKey
+    ) return "brush";
+    if (
+      this.appalachianKeyHeld("heelModifier")
+      || this.touchButtons.has("heelModifier")
+      || this.gamepad.heelModifier
+      || event.ctrlKey
+    ) return "heel";
+    if (
+      this.appalachianKeyHeld("toeModifier")
+      || this.touchButtons.has("toeModifier")
+      || this.gamepad.toeModifier
+    ) return "toe";
+    return "";
   }
 }
 
@@ -731,10 +794,13 @@ export function pollGamepad(getGamepads) {
       articulation: pressed(pad, 3),
       drive: pressed(pad, 1),
       turn: pressed(pad, 11),
-      leftArmModifier: pressed(pad, 4),
-      rightArmModifier: pressed(pad, 5),
-      bodyModifier: pressed(pad, 6),
-      commitModifier: pressed(pad, 7),
+      leftArmModifier: false,
+      rightArmModifier: false,
+      bodyModifier: false,
+      commitModifier: false,
+      brushModifier: pressed(pad, 4) || pressed(pad, 5),
+      heelModifier: pressed(pad, 6),
+      toeModifier: pressed(pad, 7),
       handAccent: pressed(pad, 11),
       dpadUp: pressed(pad, 12),
       dpadDown: pressed(pad, 13),
@@ -802,6 +868,7 @@ function disconnectedGamepad() {
     leftFoot: false, rightFoot: false, brush: false, articulation: false,
     drive: false, turn: false, leftArmModifier: false,
     rightArmModifier: false, bodyModifier: false, commitModifier: false,
+    brushModifier: false, heelModifier: false, toeModifier: false,
     handAccent: false, dpadUp: false, dpadDown: false,
     dpadLeft: false, dpadRight: false, pause: false,
   };
@@ -812,6 +879,7 @@ function copyContinuousFields(target, source) {
     "x", "y", "travelX", "travelY", "armX", "armY", "armActive", "armInputMode",
     "leftArmModifier", "rightArmModifier", "bodyModifier",
     "groundModifier", "commitModifier", "turnDirection",
+    "brushModifier", "heelModifier", "toeModifier", "articulationModifier",
     "paletteDirection", "profile", "device",
   ]) {
     target[key] = source[key];
@@ -828,22 +896,6 @@ function addSimulatorAliases(result) {
   }
 }
 
-function appalachianActionForCode(code) {
-  return {
-    ArrowLeft: "leftFoot",
-    ArrowRight: "rightFoot",
-    KeyQ: "brush",
-    KeyE: "articulation",
-    KeyF: "drive",
-    KeyT: "turn",
-    // Compatibility bindings remain secondary and are deliberately absent
-    // from the Appalachian HUD/tutorial.
-    KeyZ: "basic",
-    KeyX: "brush",
-    KeyC: "drive",
-  }[code] ?? "";
-}
-
 function gamepadCodeForAction(action) {
   return {
     leftFoot: "DPadLeft",
@@ -853,6 +905,36 @@ function gamepadCodeForAction(action) {
     drive: "ButtonB",
     turn: "ButtonR3",
   }[action] ?? "";
+}
+
+function mergeAppalachianBindings(overrides = {}) {
+  const aliases = {
+    travelLeft: overrides.travelLeft ?? overrides.left,
+    travelRight: overrides.travelRight ?? overrides.right,
+    travelUp: overrides.travelUp ?? overrides.up,
+    travelDown: overrides.travelDown ?? overrides.down,
+  };
+  const result = {};
+  for (const [action, defaults] of Object.entries(APPALACHIAN_DEFAULT_BINDINGS)) {
+    const custom = overrides[action] ?? aliases[action];
+    const values = Array.isArray(custom) ? custom : typeof custom === "string" ? [custom] : [];
+    const mandatory = ["leftFoot", "rightFoot", "armUp", "armDown", "jump", "pause"].includes(action)
+      ? defaults
+      : [];
+    result[action] = Object.freeze([...new Set([...values, ...mandatory, ...(values.length ? [] : defaults)])]);
+  }
+  return Object.freeze(result);
+}
+
+function articulationFromHeld(value = {}) {
+  if (value.brushModifier) return "brush";
+  if (value.heelModifier) return "heel";
+  if (value.toeModifier) return "toe";
+  return "";
+}
+
+function normalizeArticulationModifier(value) {
+  return ["brush", "heel", "toe"].includes(value) ? value : "";
 }
 
 function isTextControl(target) {

@@ -55,6 +55,17 @@ test("rapid 16 Hz alternation retains every edge and preserves order", () => {
   );
 });
 
+test("same-frame left and right strikes remain two independent contacts", () => {
+  const buffer = new AppalachianIntentBuffer();
+  const resolved = [
+    ...buffer.accept(performanceEdge("leftFoot", 1, { articulationModifier: "heel" }), 96).intents,
+    ...buffer.accept(performanceEdge("rightFoot", 2, { articulationModifier: "toe" }), 96).intents,
+  ];
+  assert.deepEqual(resolved.map((intent) => intent.foot), ["left", "right"]);
+  assert.deepEqual(resolved.map((intent) => intent.modifiers.articulation), ["heel", "toe"]);
+  assert.equal(new Set(resolved.map((intent) => intent.id)).size, 2);
+});
+
 test("same-foot doubles retrigger after release and operating-system repeat is ignored", () => {
   const target = new FakeEventTarget();
   const input = new InputManager({ target, profile: "appalachian" });
@@ -113,17 +124,51 @@ test("modifier state is captured from the original keydown", () => {
   assert.equal(reverseResult.intents[0].originalModifiersFrom, "family");
 });
 
-test("Shift plus Control rejects undeclared combined variants", () => {
-  const result = resolveFootGesture({
-    foot: "left",
-    family: "brush",
-    modifiers: { grounded: true, committed: true },
-  }, {
-    style: "buck",
-    supportingFoot: "right",
+test("Shift brush, Control heel, and Z toe resolve immediately per foot", () => {
+  const expected = {
+    brush: { family: "brush", contacts: 3, articulation: "brush" },
+    heel: { family: "articulation", contacts: 1, articulation: "heel" },
+    toe: { family: "articulation", contacts: 1, articulation: "toe" },
+  };
+  for (const [modifier, contract] of Object.entries(expected)) {
+    const buffer = new AppalachianIntentBuffer();
+    const accepted = buffer.accept(
+      performanceEdge("leftFoot", 1, { articulationModifier: modifier }),
+      100,
+    );
+    assert.equal(accepted.intents.length, 1);
+    assert.equal(accepted.intents[0].resolvedTick, 100);
+    assert.equal(accepted.intents[0].family, contract.family);
+    const gesture = resolveFootGesture(accepted.intents[0], {
+      style: "flatfoot",
+      supportingFoot: "right",
+    });
+    assert.equal(gesture.ok, true);
+    assert.equal(gesture.contacts.length, contract.contacts);
+    assert.equal(gesture.contacts[0].articulation, contract.articulation);
+  }
+});
+
+test("Appalachian bindings are remappable while mandatory arrows stay playable", () => {
+  const input = new InputManager({
+    target: null,
+    profile: "appalachian",
+    bindings: {
+      leftFoot: ["KeyJ"],
+      brushModifier: ["KeyU"],
+      jump: ["KeyN"],
+    },
   });
-  assert.equal(result.ok, false);
-  assert.equal(result.reason, "combined-variant-unavailable");
+  input.keys.add("KeyU");
+  input.bufferCode("KeyJ", true, edgeMeta(1));
+  input.bufferCode("ArrowRight", true, edgeMeta(2));
+  input.bufferCode("KeyN", true, edgeMeta(3));
+  input.update(DT);
+  const step = input.consumeStep();
+  assert.deepEqual(step.performanceEdges.map((edge) => edge.action), ["leftFoot", "rightFoot"]);
+  assert.equal(step.performanceEdges[0].articulationModifier, "brush");
+  assert.equal(step.jumpPressed, true);
+  input.destroy();
 });
 
 test("gamepad parity maps feet, families, arms, modifiers, jump, and pause", () => {
@@ -142,11 +187,12 @@ test("gamepad parity maps feet, families, arms, modifiers, jump, and pause", () 
     step.performanceEdges.map((edge) => edge.action),
     ["leftFoot", "rightFoot", "brush", "articulation", "drive", "turn"],
   );
-  assert.equal(step.performanceEdges.every((edge) => edge.grounded && edge.committed), true);
+  assert.equal(step.performanceEdges.every((edge) => edge.articulationModifier === "brush"), true);
   assert.ok(step.travelX > 0 && step.travelY < 0);
   assert.ok(step.armX > 0 && step.armY > 0);
-  assert.equal(step.leftArmModifier, true);
-  assert.equal(step.rightArmModifier, true);
+  assert.equal(step.brushModifier, true);
+  assert.equal(step.heelModifier, true);
+  assert.equal(step.toeModifier, true);
   assert.equal(step.jumpPressed, true);
   assert.equal(step.pausePressed, true);
   input.destroy();
@@ -356,6 +402,7 @@ function performanceEdge(action, sequence, modifiers = {}) {
     code: action,
     grounded: Boolean(modifiers.grounded),
     committed: Boolean(modifiers.committed),
+    articulationModifier: modifiers.articulationModifier ?? "",
   });
 }
 

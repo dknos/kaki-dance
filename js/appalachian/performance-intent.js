@@ -44,6 +44,22 @@ export class AppalachianIntentBuffer {
   acceptFoot(edge, tick) {
     const foot = edge.action === "rightFoot" ? "right" : "left";
     const footRequest = pending(++this.serial, "foot", tick, edge, this.windowTicks, { foot });
+    const directArticulation = normalizeArticulation(edge.articulationModifier);
+    if (directArticulation) {
+      const family = directArticulation === "brush" ? "brush" : "articulation";
+      const familyRequest = pending(
+        ++this.serial,
+        "family",
+        tick,
+        { ...edge, action: family, directModifier: true },
+        this.windowTicks,
+        { family },
+      );
+      return frozenResult(
+        [freezeAnticipation(footRequest)],
+        [this.resolve(footRequest, familyRequest, tick)],
+      );
+    }
     const familyIndex = nearestWithin(this.pendingFamilies, tick, this.windowTicks);
     const anticipations = [freezeAnticipation(footRequest)];
     if (familyIndex < 0) {
@@ -109,6 +125,10 @@ export class AppalachianIntentBuffer {
     const modifiers = Object.freeze({
       grounded: Boolean(original.edge.grounded ?? original.edge.groundModifier),
       committed: Boolean(original.edge.committed ?? original.edge.commitModifier),
+      articulation: normalizeArticulation(
+        footRequest.edge.articulationModifier
+        || familyRequest?.edge.articulationModifier,
+      ),
     });
     const chord = Object.freeze([
       foot === "left" ? "leftFoot" : "rightFoot",
@@ -132,6 +152,7 @@ export class AppalachianIntentBuffer {
         ...(familyRequest ? [familyRequest.edge.code ?? ""] : []),
       ]),
       originalModifiersFrom: original.kind,
+      directModifier: Boolean(familyRequest?.edge.directModifier),
     });
     this.lastChord = value;
     this.autoFoot = oppositeFoot(foot);
@@ -197,9 +218,10 @@ function freezeAnticipation(value) {
     foot: value.foot,
     tick: value.tick,
     deadlineTick: value.deadlineTick,
-    modifiers: Object.freeze({
-      grounded: Boolean(value.edge.grounded ?? value.edge.groundModifier),
-      committed: Boolean(value.edge.committed ?? value.edge.commitModifier),
+      modifiers: Object.freeze({
+        grounded: Boolean(value.edge.grounded ?? value.edge.groundModifier),
+        committed: Boolean(value.edge.committed ?? value.edge.commitModifier),
+        articulation: normalizeArticulation(value.edge.articulationModifier),
     }),
     rawTimeStamp: finiteOrNull(value.edge.rawTimeStamp),
   });
@@ -229,4 +251,8 @@ function normalizeFoot(value) {
 function finiteOrNull(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function normalizeArticulation(value) {
+  return ["brush", "heel", "toe"].includes(value) ? value : "";
 }
