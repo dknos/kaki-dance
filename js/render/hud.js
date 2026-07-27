@@ -78,7 +78,7 @@ function drawFrolicHud(ctx, snapshot, settings) {
   } else {
     drawMoveBadge(ctx, snapshot, palette);
     drawFootInstrument(ctx, snapshot, palette);
-    drawRestraintMeter(ctx, frolic.restraint, palette);
+    drawPerformanceMeter(ctx, frolic.performanceState, frolic.restraint, palette);
   }
   if (snapshot.callout && settings.timingLabels) drawCallout(ctx, snapshot.callout, snapshot.calloutAge, 59);
   if (settings.frolicDebug) drawFrolicDebug(ctx, snapshot, palette, settings);
@@ -134,13 +134,25 @@ function drawMoveBadge(ctx, snapshot, palette) {
   if (queued) drawPixelText(ctx, `NEXT ${queued.toUpperCase()}`, 12, 54, { color: palette.amber, scale: 1 });
 }
 
-function drawRestraintMeter(ctx, value, palette) {
-  const normalized = clamp(Number(value) || 0, 0, 1);
+function drawPerformanceMeter(ctx, state, restraint, palette) {
+  const normalized = clamp(Number(state?.quality) || 0, 0, 1);
   pixelRect(ctx, 309, 35, 68, 17, palette.ink);
   pixelRect(ctx, 310, 36, 66, 15, palette.panel);
-  drawPixelText(ctx, "AIR IN THE TUNE", 372, 39, { align: "right", color: palette.chalk, scale: 1 });
+  drawPixelText(ctx, state?.label ?? "FINDING PULSE", 372, 39, {
+    align: "right",
+    color: state?.id === "scrambling" ? palette.cedar : state?.id === "cooking" ? palette.amber : palette.chalk,
+    scale: 1,
+  });
   pixelRect(ctx, 316, 47, 55, 2, palette.indigo);
-  pixelRect(ctx, 316, 47, Math.round(55 * normalized), 2, normalized < 0.55 ? palette.cedar : palette.mint);
+  const restraintScale = clamp(Number(restraint) || 0, 0, 1);
+  pixelRect(
+    ctx,
+    316,
+    47,
+    Math.round(55 * normalized * (0.7 + restraintScale * 0.3)),
+    2,
+    state?.id === "scrambling" ? palette.cedar : state?.id === "cooking" ? palette.amber : palette.mint,
+  );
 }
 
 function drawStepShedCoach(ctx, lesson, palette) {

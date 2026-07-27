@@ -326,9 +326,11 @@ class AppalachianSimulatorReview {
       `contact ${dancer.contactIK.lockedFoot} · ${fixed(diagnostics.plantedFootDriftMeters * 100)} cm`,
     ].join("\n");
     document.getElementById("feet-data").textContent = [
-      `L  ${dancer.feet.left.stage} · ${dancer.feet.left.contact}/${dancer.feet.left.articulation} · q${dancer.feet.left.queueDepth}`,
-      `R  ${dancer.feet.right.stage} · ${dancer.feet.right.contact}/${dancer.feet.right.articulation} · q${dancer.feet.right.queueDepth}`,
+      `L  ${dancer.feet.left.motionState} · ${dancer.feet.left.contact}/${dancer.feet.left.articulation} · q${dancer.feet.left.queueDepth}`,
+      `R  ${dancer.feet.right.motionState} · ${dancer.feet.right.contact}/${dancer.feet.right.articulation} · q${dancer.feet.right.queueDepth}`,
       `weight ${Math.round(dancer.weightDistribution.left * 100)} / ${Math.round(dancer.weightDistribution.right * 100)}`,
+      `feel   ${frolic.performanceState.label} · ${Math.round(frolic.performanceState.quality * 100)}%`,
+      `pelvis ${fixed(dancer.bodyDynamics.pelvisVerticalMeters)} m · contact ${fixed(dancer.bodyDynamics.contactCompression)}`,
       `buffer ${frolic.inputBuffers.left.length}L ${frolic.inputBuffers.right.length}R ${frolic.inputBuffers.families.length} family`,
       `chord  ${frolic.modifierChord
         ? `${frolic.modifierChord.foot} ${frolic.modifierChord.family} ${frolic.modifierChord.variant}`

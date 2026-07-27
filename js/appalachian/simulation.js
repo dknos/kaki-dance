@@ -10,6 +10,7 @@ import { AppalachianAnimationController } from "./animation-controller.js";
 import { AppalachianIntentBuffer } from "./performance-intent.js";
 import { boardRegion, BoardLineTracker } from "./board-lines.js";
 import { AppalachianPhraseJudge } from "./phrase-judge.js";
+import { AppalachianPerformanceState } from "./performance-state.js";
 import {
   APPALACHIAN_TUNE_MAP,
   FROLIC_PPQ,
@@ -99,6 +100,7 @@ export class AppalachianJamSimulation {
       style: this.style,
       difficulty: this.difficulty,
     });
+    this.performanceState = new AppalachianPerformanceState();
     this.events = [];
     this.replay = [];
     this.started = false;
@@ -155,6 +157,7 @@ export class AppalachianJamSimulation {
     this.lastBoardLineCount = 0;
     this.bankHistory = [];
     this.intents.clear();
+    this.performanceState.reset();
     this.lastBar = Math.floor(Math.max(0, tick) / FROLIC_TICKS_PER_BAR) + 1;
     this.animation = new AppalachianAnimationController({ style: this.style });
     this.animation.reset(Math.max(0, tick));
@@ -185,6 +188,19 @@ export class AppalachianJamSimulation {
     this.flushPerformanceIntents(tick, input, beatSnapshot);
     this.animation.update(Math.max(0, tick), { dt, input });
     this.animation.consumeContacts((contact) => this.emitScheduledContact(contact, beatSnapshot));
+    const expression = this.performanceState.update(tick, this.animation.getSnapshot(Math.max(0, tick)).performance);
+    this.animation.setPerformanceState(expression);
+    const scoreHeat = (this.liveScore?.total ?? 0) * 0.52;
+    const stateLift = expression.id === "cooking"
+      ? 14
+      : expression.id === "in-the-pocket"
+        ? 7
+        : expression.id === "scrambling"
+          ? -10
+          : 0;
+    const targetHeat = clamp(8 + scoreHeat + expression.quality * 28 + stateLift, 4, 100);
+    this.crowdHeat += (targetHeat - this.crowdHeat) * (1 - Math.exp(-Math.max(0, dt) * 2.4));
+    this.maxCrowdHeat = Math.max(this.maxCrowdHeat, this.crowdHeat);
     this.updateBoardPerformance(input, tick);
     this.advancePracticeContinuous(input, tick);
     this.handleInput(input, tick, beatSnapshot);
@@ -259,6 +275,7 @@ export class AppalachianJamSimulation {
       phrasePhase: (tick % FROLIC_PPQ) / FROLIC_PPQ,
     });
     if (!request.ok) {
+      this.performanceState.recordConflict(tick, request.reason);
       this.emit("frolicInputRejected", {
         inputKind: intent.family,
         foot: intent.foot,
@@ -606,6 +623,12 @@ export class AppalachianJamSimulation {
       message: "",
     };
     if (contact.inputIntent) this.recordPerformanceContact(event);
+    if (contact.jumpEvent === "landing") {
+      this.performanceState.recordLanding({
+        tick: contact.tick,
+        quality: contact.landingQuality,
+      });
+    }
     this.emit("footContact", event);
   }
 
@@ -623,6 +646,7 @@ export class AppalachianJamSimulation {
       foot: contact.foot,
       inputKind: intent.family,
     });
+    this.performanceState.recordContact(judged);
     this.liveScore = this.judge.getResult();
     this.lastInput = Object.freeze({
       ...(this.lastInput ?? {}),
@@ -856,6 +880,7 @@ export class AppalachianJamSimulation {
         lastInput: this.lastInput,
         restraint: liveScore.restraint,
         score: liveScore,
+        performanceState: this.performanceState.getSnapshot(),
         board,
         boardRegion: board.region,
         boardLines: board.completed,

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-27T01:51:06.604Z",
+  "generatedAt": "2026-07-27T01:58:28.160Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -17,10 +17,10 @@
     "forced": false,
     "reason": "WebGPU remains capability-gated until animation and capture parity pass."
   },
-  "maximumPlantedFootDriftMeters": 5.578801654593729e-16,
+  "maximumPlantedFootDriftMeters": 2.482534153247273e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 853,
+    "maximumOpaquePixels": 790,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -195,7 +195,7 @@
       "actionId": 4,
       "timeline": 3
     },
-    "recordedFrames": 22
+    "recordedFrames": 20
   },
   "atlasFallback": true,
   "bothHeroes": true,
@@ -269,7 +269,7 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 0,
+      "plantedFootDriftMeters": 1.2412670766236366e-16,
       "footBasis": {
         "intendedForward": [
           0.9294821711763092,
@@ -279,27 +279,27 @@
         "facingRadians": 1.1930065162241472,
         "left": {
           "vector": [
-            0.9555168821321053,
+            0.9576783183189206,
             0,
-            0.29493641341913096
+            0.28784064796662084
           ],
-          "dot": 0.996928228112646,
+          "dot": 0.9963198505108563,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.9402676506144175,
+            0.9155373215137961,
             0,
-            0.3404361103174041
+            0.40223303309815833
           ],
-          "dot": 0.9995376778250465,
+          "dot": 0.9993461258483083,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.996928228112646
+        "minimumDot": 0.9963198505108563
       },
-      "renderP95Milliseconds": 1.800000011920929,
+      "renderP95Milliseconds": 1.699999988079071,
       "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"

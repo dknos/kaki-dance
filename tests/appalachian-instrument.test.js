@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
-import { AppalachianAnimationController } from "../js/appalachian/animation-controller.js";
+import {
+  AppalachianAnimationController,
+  deriveBodyDynamics,
+} from "../js/appalachian/animation-controller.js";
 import {
   GOLDEN_FOOT_GESTURES,
   resolveFootGesture,
@@ -14,6 +17,10 @@ import {
   AppalachianIntentBuffer,
 } from "../js/appalachian/performance-intent.js";
 import { AppalachianJamSimulation } from "../js/appalachian/simulation.js";
+import {
+  AppalachianPerformanceState,
+  PERFORMANCE_STATES,
+} from "../js/appalachian/performance-state.js";
 import { InputManager } from "../js/input.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -382,6 +389,68 @@ test("two-foot instrument replay is deterministic", () => {
     });
   };
   assert.equal(run(), run());
+});
+
+test("support, contact, and landing drive bounded body dynamics without moving the stage", () => {
+  const base = {
+    tick: 96,
+    style: "flatfoot",
+    feet: {
+      left: { stage: "contact", phase: 0.48 },
+      right: { stage: "planted", phase: 0 },
+    },
+    weightDistribution: { left: 0.82, right: 0.18 },
+    jump: { state: "grounded" },
+    bodyLean: { forward: 0.25, lateral: -0.2, turn: 0.1 },
+    angularVelocity: 0.4,
+    expression: { id: "in-the-pocket", intensity: 0.72 },
+  };
+  const first = deriveBodyDynamics(base);
+  const second = deriveBodyDynamics(base);
+  assert.deepEqual(first, second);
+  assert.ok(first.pelvisVerticalMeters < -0.01);
+  assert.ok(first.leftLeg.kneeCompressionDegrees > first.rightLeg.kneeCompressionDegrees);
+  assert.ok(Math.abs(first.pelvisVerticalMeters) <= 0.09);
+  const landing = deriveBodyDynamics({
+    ...base,
+    jump: { state: "landing", landingAge: 0 },
+  });
+  assert.ok(landing.pelvisVerticalMeters < first.pelvisVerticalMeters);
+  assert.ok(landing.landingCompression > 0.9);
+});
+
+test("musical variety reaches cooking while dense one-foot mashing scrambles", () => {
+  const skilled = new AppalachianPerformanceState();
+  const articulations = ["flat", "brush", "heel", "toe"];
+  const moves = ["walkingStep", "shuffle", "heelToeChange", "backstep", "rockStep"];
+  for (let index = 0; index < 11; index += 1) {
+    skilled.recordContact({
+      tick: index * 36,
+      foot: index % 2 ? "right" : "left",
+      articulation: articulations[index % articulations.length],
+      moveId: moves[index % moves.length],
+      timingOffsetTicks: index % 2 ? 3 : -2,
+    });
+  }
+  assert.equal(
+    skilled.update(384, { averageTransitionScore: 0.92 }).id,
+    PERFORMANCE_STATES.COOKING,
+  );
+
+  const mash = new AppalachianPerformanceState();
+  for (let index = 0; index < 20; index += 1) {
+    mash.recordContact({
+      tick: index * 12,
+      foot: "left",
+      articulation: "flat",
+      moveId: "walkingStep",
+      timingOffsetTicks: 0,
+    });
+  }
+  assert.equal(
+    mash.update(240, { averageTransitionScore: 0.8 }).id,
+    PERFORMANCE_STATES.SCRAMBLING,
+  );
 });
 
 function edgeMeta(value) {

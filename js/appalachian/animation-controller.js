@@ -131,6 +131,11 @@ export class AppalachianAnimationController {
       armInputDistance: 0,
       maxFootDriftMeters: 0,
     };
+    this.expression = Object.freeze({
+      id: "cold",
+      intensity: 0.28,
+      quality: 0,
+    });
   }
 
   request(moveId, {
@@ -348,6 +353,14 @@ export class AppalachianAnimationController {
     this.updateWeight(safeDt);
   }
 
+  setPerformanceState(value = {}) {
+    this.expression = Object.freeze({
+      id: String(value.id ?? "cold"),
+      intensity: clamp(Number(value.intensity) || 0.28, 0.2, 1),
+      quality: clamp(Number(value.quality) || 0, 0, 1),
+    });
+  }
+
   update(tick, { dt = DEFAULT_DT, input = null } = {}) {
     const currentTick = Number(tick) || 0;
     if (input) this.applyPerformanceInput(dt, input, currentTick);
@@ -439,6 +452,29 @@ export class AppalachianAnimationController {
     const lateralVelocity = this.world.vx * Math.cos(this.world.facing)
       - this.world.vz * Math.sin(this.world.facing);
     const travelSpeed = STYLE_TRAVEL[this.style].speed;
+    const bodyLean = Object.freeze({
+      forward: clamp(forwardVelocity / travelSpeed, -1, 1),
+      lateral: clamp(lateralVelocity / travelSpeed, -1, 1),
+      turn: clamp(this.world.angularVelocity / 4, -1, 1),
+    });
+    const feet = Object.freeze({
+      left: footSnapshot(this.feet.left, this.jump.state, supportingFoot),
+      right: footSnapshot(this.feet.right, this.jump.state, supportingFoot),
+    });
+    const weightDistribution = Object.freeze({
+      left: this.weight.left,
+      right: this.weight.right,
+    });
+    const bodyDynamics = deriveBodyDynamics({
+      tick: currentTick,
+      style: this.style,
+      feet,
+      weightDistribution,
+      jump: this.jump,
+      bodyLean,
+      angularVelocity: this.world.angularVelocity,
+      expression: this.expression,
+    });
     return freezeSnapshot({
       ...lower,
       presentationClip,
@@ -450,14 +486,12 @@ export class AppalachianAnimationController {
       rootVelocity: Object.freeze({ x: this.world.vx, y: 0, z: this.world.vz }),
       facing: this.world.facing,
       angularVelocity: this.world.angularVelocity,
-      bodyLean: Object.freeze({
-        forward: clamp(forwardVelocity / travelSpeed, -1, 1),
-        lateral: clamp(lateralVelocity / travelSpeed, -1, 1),
-        turn: clamp(this.world.angularVelocity / 4, -1, 1),
-      }),
+      bodyLean,
+      bodyDynamics,
+      performanceState: this.expression,
       centerOfMass: Object.freeze({
         x: this.world.x + this.centerOfMassOffset(),
-        y: 2.7 + this.jump.height,
+        y: 2.7 + this.jump.height + bodyDynamics.pelvisVerticalMeters,
         z: this.world.z,
       }),
       upperBody: Object.freeze({
@@ -514,15 +548,9 @@ export class AppalachianAnimationController {
           ? this.metrics.transitionScoreTotal / this.metrics.transitionCount
           : 0,
       }),
-      footLayers: Object.freeze(["left", "right"].map((side) => footSnapshot(this.feet[side]))),
-      feet: Object.freeze({
-        left: footSnapshot(this.feet.left),
-        right: footSnapshot(this.feet.right),
-      }),
-      weightDistribution: Object.freeze({
-        left: this.weight.left,
-        right: this.weight.right,
-      }),
+      footLayers: Object.freeze([feet.left, feet.right]),
+      feet,
+      weightDistribution,
       activeMovementFamily: this.activeFamily,
       modifierChord: this.lastModifierChord,
     });
@@ -1053,6 +1081,118 @@ function finiteOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+export function deriveBodyDynamics({
+  tick = 0,
+  style = "flatfoot",
+  feet = {},
+  weightDistribution = {},
+  jump = {},
+  bodyLean = {},
+  angularVelocity = 0,
+  expression = {},
+} = {}) {
+  const intensity = clamp(Number(expression.intensity) || 0.28, 0.2, 1);
+  const styleScale = { flatfoot: 0.72, buck: 0.88, clog: 1 }[normalizeFrolicStyle(style)];
+  const leftResponse = footBodyResponse(feet.left);
+  const rightResponse = footBodyResponse(feet.right);
+  const contactCompression = Math.max(leftResponse.compression, rightResponse.compression);
+  const liftDifference = rightResponse.lift - leftResponse.lift;
+  const supportBias = clamp(
+    (Number(weightDistribution.right) || 0.5) - (Number(weightDistribution.left) || 0.5),
+    -1,
+    1,
+  );
+  const musicalPulse = Math.sin((Number(tick) || 0) / (GROOVE_TICKS / 2) * Math.PI);
+  const jumpCompression = jump.state === "compression"
+    ? clamp((Number(jump.chargeSeconds) || 0) / 0.32, 0, 1)
+    : 0;
+  const landingCompression = jump.state === "landing"
+    ? clamp(1 - (Number(jump.landingAge) || 0) / 0.14, 0, 1)
+    : 0;
+  const pelvisVerticalMeters = clamp(
+    musicalPulse * 0.006 * intensity
+    - contactCompression * 0.032 * styleScale
+    - jumpCompression * 0.062
+    - landingCompression * 0.072,
+    -0.09,
+    0.012,
+  );
+  const turn = clamp(Number(angularVelocity) || 0, -4, 4);
+  const looseness = intensity * styleScale;
+  const shoulderDelay = clamp(
+    -(Number(bodyLean.turn) || 0) * 5.2 + liftDifference * 3.4,
+    -7,
+    7,
+  ) * looseness;
+  const headNod = clamp(
+    -musicalPulse * (1.2 + intensity * 2.2)
+    + landingCompression * 4.2,
+    -5,
+    7,
+  );
+  const supportKnee = 2.4 + contactCompression * 8.6 + landingCompression * 12;
+  const freeKnee = 1.4 + Math.max(leftResponse.lift, rightResponse.lift) * 7.2;
+  return Object.freeze({
+    pelvisVerticalMeters: round4(pelvisVerticalMeters),
+    pelvisEulerDegrees: Object.freeze([
+      round4((Number(bodyLean.forward) || 0) * -1.6 - contactCompression * 1.1),
+      round4(turn * -0.86 * looseness),
+      round4(supportBias * 3.4 + liftDifference * 2.2),
+    ]),
+    chestEulerDegrees: Object.freeze([
+      round4(contactCompression * 1.8 + headNod * -0.18),
+      round4(turn * 1.14 * looseness + shoulderDelay),
+      round4(supportBias * -3.1 - liftDifference * 1.8),
+    ]),
+    headEulerDegrees: Object.freeze([
+      round4(headNod),
+      round4(turn * -0.42 * looseness),
+      round4(supportBias * 1.2),
+    ]),
+    leftLeg: Object.freeze({
+      kneeCompressionDegrees: round4((supportBias < 0 ? supportKnee : freeKnee) * styleScale),
+      hipCounterDegrees: round4((turn * -0.7 - liftDifference * 2.4) * looseness),
+    }),
+    rightLeg: Object.freeze({
+      kneeCompressionDegrees: round4((supportBias >= 0 ? supportKnee : freeKnee) * styleScale),
+      hipCounterDegrees: round4((turn * 0.7 + liftDifference * 2.4) * looseness),
+    }),
+    shoulderDelayDegrees: round4(shoulderDelay),
+    wristLoosenessDegrees: Object.freeze({
+      left: round4((musicalPulse * 2.8 - turn * 0.6) * looseness),
+      right: round4((-musicalPulse * 2.4 + turn * 0.6) * looseness),
+    }),
+    contactCompression: round4(contactCompression),
+    landingCompression: round4(landingCompression),
+    expressionIntensity: round4(intensity),
+  });
+}
+
+function footBodyResponse(foot = {}) {
+  const phase = clamp(Number(foot.phase) || 0, 0, 1);
+  const stage = String(foot.stage ?? "planted");
+  if (stage === "anticipation" || stage === "weight-transfer") {
+    return { lift: clamp(phase * 2.8, 0, 0.55), compression: 0 };
+  }
+  if (stage === "attack") {
+    return { lift: Math.sin(phase / 0.24 * Math.PI) * 0.82, compression: 0 };
+  }
+  if (stage === "contact") {
+    return {
+      lift: clamp((0.48 - phase) * 1.4, 0, 0.24),
+      compression: Math.sin(clamp((phase - 0.24) / 0.48, 0, 1) * Math.PI),
+    };
+  }
+  if (stage === "recover") {
+    return { lift: clamp((1 - phase) * 0.34, 0, 0.2), compression: (1 - phase) * 0.28 };
+  }
+  return { lift: 0, compression: 0 };
+}
+
+function round4(value) {
+  return Math.round((Number(value) || 0) * 10_000) / 10_000;
+}
+
 function footState(side) {
   return {
     side,
@@ -1066,7 +1206,7 @@ function footState(side) {
   };
 }
 
-function footSnapshot(state) {
+function footSnapshot(state, jumpState = "grounded", supportingFoot = "none") {
   const layer = state.active;
   return Object.freeze({
     side: state.side,
@@ -1082,7 +1222,26 @@ function footSnapshot(state) {
     queueDepth: state.queue.length,
     validated: layer?.validated ?? false,
     anticipation: state.anticipation,
+    motionState: footMotionState(state, layer, jumpState),
+    weightBearing: jumpState !== "airborne" && supportingFoot === state.side,
   });
+}
+
+function footMotionState(state, layer, jumpState) {
+  if (jumpState === "airborne") return "airborne";
+  if (state.stage === "planted") return "planted";
+  if (state.stage === "recover") return "recovering";
+  if (state.stage === "anticipation" || state.stage === "weight-transfer") return "lifting";
+  const articulation = String(state.articulation ?? state.contact ?? "");
+  if (state.stage === "contact") {
+    if (articulation === "brush") return "brushing";
+    if (articulation === "heel") return "heel-contact";
+    if (["toe", "ball"].includes(articulation)) return "toe-contact";
+    if (["drag", "slide"].includes(articulation)) return "sliding";
+    return "full-foot-tap";
+  }
+  if (layer?.gesture?.moveId === "crossStep") return "crossing";
+  return "swinging";
 }
 
 function now() {

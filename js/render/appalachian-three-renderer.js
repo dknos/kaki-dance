@@ -364,6 +364,7 @@ export class AppalachianThreeRenderer {
     this.contactShadow.material.opacity = clamp(0.36 - height * 0.16, 0.12, 0.36);
     this.applyAnimation(dancer);
     this.applyUpperBody(dancer);
+    this.applyBodyDynamics(dancer);
     this.applyCostumeMotion(dancer);
     this.model.updateMatrixWorld(true);
     this.applyContactLock(dancer);
@@ -506,6 +507,27 @@ export class AppalachianThreeRenderer {
       addBoneEuler(getBone(this.bones, "upperArm.L"), accent.left, upper.handAccentWeight * safety);
       addBoneEuler(getBone(this.bones, "upperArm.R"), accent.right, upper.handAccentWeight * safety);
     }
+  }
+
+  applyBodyDynamics(dancer) {
+    const dynamics = dancer.bodyDynamics;
+    if (!dynamics) return;
+    const pelvis = getBone(this.bones, "pelvis");
+    if (pelvis) pelvis.position.y += clamp(Number(dynamics.pelvisVerticalMeters) || 0, -0.1, 0.02);
+    addBoneEuler(pelvis, dynamics.pelvisEulerDegrees, 1);
+    addBoneEuler(getBone(this.bones, "chest"), dynamics.chestEulerDegrees, 1);
+    addBoneEuler(getBone(this.bones, "head"), dynamics.headEulerDegrees, 1);
+    const leftKnee = clamp(Number(dynamics.leftLeg?.kneeCompressionDegrees) || 0, 0, 18);
+    const rightKnee = clamp(Number(dynamics.rightLeg?.kneeCompressionDegrees) || 0, 0, 18);
+    addBoneEuler(getBone(this.bones, "thigh.L"), [leftKnee * 0.24, dynamics.leftLeg?.hipCounterDegrees, 0], 1);
+    addBoneEuler(getBone(this.bones, "shin.L"), [-leftKnee * 0.52, 0, 0], 1);
+    addBoneEuler(getBone(this.bones, "thigh.R"), [rightKnee * 0.24, dynamics.rightLeg?.hipCounterDegrees, 0], 1);
+    addBoneEuler(getBone(this.bones, "shin.R"), [-rightKnee * 0.52, 0, 0], 1);
+    const shoulderDelay = Number(dynamics.shoulderDelayDegrees) || 0;
+    addBoneEuler(getBone(this.bones, "clavicle.L"), [0, shoulderDelay, shoulderDelay * -0.32], 1);
+    addBoneEuler(getBone(this.bones, "clavicle.R"), [0, shoulderDelay, shoulderDelay * 0.32], 1);
+    addBoneEuler(getBone(this.bones, "hand.L"), [0, 0, dynamics.wristLoosenessDegrees?.left], 1);
+    addBoneEuler(getBone(this.bones, "hand.R"), [0, 0, dynamics.wristLoosenessDegrees?.right], 1);
   }
 
   applyCostumeMotion(dancer) {
