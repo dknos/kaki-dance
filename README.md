@@ -1,5 +1,10 @@
 # Kaki-Dance
 
+The current gameplay-first overhaul is tracked in
+[`docs/FUN-OVERHAUL-AUDIT.md`](docs/FUN-OVERHAUL-AUDIT.md). It distinguishes
+the fixed-step/live-rig foundation worth preserving from the controls, game
+loop, body dynamics, workbench, and public presentation being rebuilt.
+
 **The band plays the tune. Your feet answer.**
 
 Kaki-Dance is a 384×216 Canvas 2D rhythm game starring KittyKaki and Soder.
