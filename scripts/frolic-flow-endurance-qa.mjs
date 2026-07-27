@@ -252,7 +252,7 @@ async function readFrame(page) {
       leftWeightBearing: dancer.feet.left.weightBearing,
       rightWeightBearing: dancer.feet.right.weightBearing,
       jumpState: dancer.jump.state,
-      performanceState: snapshot.frolic.performanceState.id,
+      performanceState: snapshot.frolic.performanceState,
       score: snapshot.playerScore.total,
       boardTop,
     };
@@ -316,7 +316,7 @@ function buildReport({
     ) airborneWeightBearingFrames += 1;
   }
   const boardTops = samples.map((sample) => sample.boardTop).filter(Number.isFinite);
-  const states = samples.map((sample) => sample.performanceState);
+  const states = samples.map((sample) => sample.performanceState.id);
   const completedContacts = final.latency.filter(
     (record) => Number.isFinite(record.contactEmissionTimestamp)
       && Number.isFinite(record.audioSchedulingTimestamp),
@@ -365,6 +365,15 @@ function buildReport({
         [...new Set(states)].map((state) => [state, states.filter((value) => value === state).length]),
       ),
       scramblingShare: states.filter((state) => state === "scrambling").length / states.length,
+      maximumConflictRate: Math.max(...samples.map(
+        (sample) => Number(sample.performanceState.conflictRate) || 0,
+      )),
+      maximumRepeatedFootRuns: Math.max(...samples.map(
+        (sample) => Number(sample.performanceState.repeatedFootRuns) || 0,
+      )),
+      maximumActionDensity: Math.max(...samples.map(
+        (sample) => Number(sample.performanceState.density) || 0,
+      )),
       finalState: final.snapshot.simulation.frolic.performanceState.id,
     },
     renderer: {

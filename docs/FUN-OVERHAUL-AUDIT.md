@@ -6,7 +6,7 @@ Status: implementation checklist, not a quality claim
 
 ## What was actually run
 
-- `npm run verify`: 103 JavaScript modules passed syntax checking and all 127
+- `npm run verify`: 103 JavaScript modules passed syntax checking and all 128
   deterministic assertions passed.
 - Local forced-WebGL2 browser smoke: passed with no console or request errors.
 - Public Pages forced-WebGL2 browser smoke: passed with no console or request
@@ -63,8 +63,10 @@ Status: implementation checklist, not a quality claim
   Pocket, Cooking, Scrambling, Recovery) driven by recent timing, clarity,
   transitions, conflicts, and recoveries rather than raw button count.
 - [x] **Strengthened:** multi-contact brushes count as one player action for
-  density and independence, and a requested articulation can ride a compatible
-  base-motion handoff instead of collapsing into generic recovery.
+  density and independence, contact offsets cannot reorder the player's
+  authoritative left/right action sequence, and a requested articulation can
+  ride a compatible base-motion handoff instead of collapsing into generic
+  recovery.
 - [x] **Bounded:** travel steering and low-pivot accents share a single
   five-radian-per-second facing budget.
 - [ ] **Inspect visually:** the automatic basis and drift checks pass, but

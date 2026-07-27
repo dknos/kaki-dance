@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "url": "http://127.0.0.1:4177",
-  "generatedAt": "2026-07-27T23:10:07.119Z",
+  "url": "https://dknos.github.io/kaki-dance",
+  "generatedAt": "2026-07-27T23:16:33.325Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -21,7 +21,7 @@
   "maximumPlantedFootDriftMeters": 3.1401849173675503e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 842,
+    "maximumOpaquePixels": 848,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -196,7 +196,7 @@
       "actionId": 4,
       "timeline": 3
     },
-    "recordedFrames": 22
+    "recordedFrames": 20
   },
   "atlasFallback": true,
   "bothHeroes": true,
@@ -206,7 +206,7 @@
     "action": 1,
     "arm": {
       "x": 0,
-      "y": -0.14302768207782307
+      "y": -0.1365031553856742
     },
     "renderer": {
       "ready": true,
@@ -270,37 +270,37 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 1.1443916996305594e-16,
+      "plantedFootDriftMeters": 1.1102230246251565e-16,
       "footBasis": {
         "intendedForward": [
-          0.6505689298222358,
+          0.7401768531960369,
           0,
-          0.75944721182578
+          0.6724122440830569
         ],
-        "facingRadians": 0.7083333333333331,
+        "facingRadians": 0.833333333333333,
         "left": {
           "vector": [
-            0.6900745436836689,
+            0.7981085440689024,
             0,
-            0.723738298115953
+            0.6025136943540926
           ],
-          "dot": 0.9985820899775479,
+          "dot": 0.9958790559691992,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.6385349672622426,
+            0.7153814494496079,
             0,
-            0.7695928115460844
+            0.69873412810838
           ],
-          "dot": 0.9998761252757102,
+          "dot": 0.9993461731872044,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.9985820899775479
+        "minimumDot": 0.9958790559691992
       },
-      "renderP95Milliseconds": 5.700000047683716,
+      "renderP95Milliseconds": 5.399999976158142,
       "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"

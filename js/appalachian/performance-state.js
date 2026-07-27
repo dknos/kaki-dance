@@ -133,8 +133,9 @@ export function performanceDiagnostics(
   const independence = actions.length > 1 ? alternations / (actions.length - 1) : 0;
   const articulationVariety = uniqueRatio(ordered.map((value) => value.articulation), 4);
   const moveVariety = uniqueRatio(actions.map((value) => value.moveId), 5);
+  const actionTicks = actions.map((value) => value.tick);
   const spanBeats = actions.length > 1
-    ? Math.max(1, (actions.at(-1).tick - actions[0].tick) / FROLIC_PPQ)
+    ? Math.max(1, (Math.max(...actionTicks) - Math.min(...actionTicks)) / FROLIC_PPQ)
     : 1;
   const density = actions.length / spanBeats;
   const dominantFoot = dominantRatio(actions.map((value) => value.foot));
@@ -206,7 +207,14 @@ function collapseContactsByAction(contacts) {
     seen.add(key);
     values.push(Object.freeze({ ...contact, key }));
   }
-  return values;
+  return values.sort((left, right) => {
+    if (
+      Number.isFinite(left.actionId)
+      && Number.isFinite(right.actionId)
+      && left.actionId !== right.actionId
+    ) return left.actionId - right.actionId;
+    return left.tick - right.tick;
+  });
 }
 
 function stateSnapshot(state, ageTicks, diagnostics) {

@@ -530,6 +530,29 @@ test("authored multi-contact brushes count as one intentional foot action", () =
   assert.notEqual(state.id, PERFORMANCE_STATES.SCRAMBLING);
 });
 
+test("foot independence follows input action order when articulations contact out of order", () => {
+  const performance = new AppalachianPerformanceState();
+  const actions = [
+    { actionId: 1, tick: 48, foot: "left", articulation: "brush" },
+    { actionId: 2, tick: 40, foot: "right", articulation: "flat" },
+    { actionId: 3, tick: 144, foot: "left", articulation: "heel" },
+    { actionId: 4, tick: 136, foot: "right", articulation: "toe" },
+    { actionId: 5, tick: 240, foot: "left", articulation: "brush" },
+    { actionId: 6, tick: 232, foot: "right", articulation: "flat" },
+  ];
+  for (const action of actions) {
+    performance.recordContact({
+      ...action,
+      moveId: "walkingStep",
+      timingOffsetTicks: 0,
+    });
+  }
+  const state = performance.update(288, { averageTransitionScore: 0.82 });
+  assert.equal(state.independence, 1);
+  assert.equal(state.repeatedFootRuns, 0);
+  assert.equal(state.mash, false);
+});
+
 test("travel facing changes are responsive without snapping", () => {
   const controller = new AppalachianAnimationController({ style: "flatfoot" });
   controller.update(1, { dt: DT, input: { travelX: 1, travelY: 0 } });
