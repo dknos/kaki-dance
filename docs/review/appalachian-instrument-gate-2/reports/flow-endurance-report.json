@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
-  "generatedAt": "2026-07-27T23:18:38.896Z",
-  "url": "http://127.0.0.1:4177",
+  "generatedAt": "2026-07-27T23:20:43.050Z",
+  "url": "https://dknos.github.io/kaki-dance",
   "errors": [],
   "failedRequests": [],
-  "durationSeconds": 30.371703125,
+  "durationSeconds": 30.348484374999998,
   "tickRange": [
     2.196,
     5762.196
@@ -19,32 +19,32 @@
     "airborneWeightBearingFrames": 0
   },
   "motion": {
-    "travelDistanceMeters": 38.79436224831558,
-    "armInputDistance": 10.949481226155992,
+    "travelDistanceMeters": 38.76852891498224,
+    "armInputDistance": 10.892187901601268,
     "jumps": 2,
     "cleanLandings": 2,
     "recoveries": 0,
     "transitions": 120,
-    "averageTransitionScore": 0.5090166666666668,
+    "averageTransitionScore": 0.5001833333333333,
     "maximumBoardSpeedMetersPerSecond": 1.55,
-    "maximumObservedBoardSpeedMetersPerSecond": 1.9065190656099813,
+    "maximumObservedBoardSpeedMetersPerSecond": 1.762164619995365,
     "maximumBoardSpeedSegment": {
-      "seconds": 0.05419999998807907,
+      "seconds": 0.07330000001192093,
       "previous": {
-        "wallTimeMilliseconds": 6229.399999976158,
+        "wallTimeMilliseconds": 8292.399999976158,
         "tick": 1000.84,
         "world": {
           "x": 4.25,
           "y": 0,
-          "z": 1.6940694444444466
+          "z": 1.6682361111111133
         },
         "rootVelocity": {
           "x": 0,
           "y": 0,
           "z": 1.55
         },
-        "facing": 0.0000818417683923926,
-        "angularVelocity": -0.000764901196576581,
+        "facing": 0.00009508656900371901,
+        "angularVelocity": -0.0008886884024865096,
         "pelvis": 0.002,
         "support": "right",
         "leftWeightBearing": false,
@@ -58,22 +58,22 @@
           "ageTicks": 31.208,
           "contactCount": 11,
           "actionCount": 9,
-          "timing": 0.851,
+          "timing": 0.872,
           "independence": 0.875,
           "vocabulary": 0.683,
-          "density": 2.645,
+          "density": 2.617,
           "dominantFoot": 0.556,
           "conflictRate": 0,
           "cleanLanding": 0.72,
           "repeatedFootRuns": 1,
           "mash": false,
-          "quality": 0.771
+          "quality": 0.774
         },
         "score": 56,
         "boardTop": 130
       },
       "current": {
-        "wallTimeMilliseconds": 6283.599999964237,
+        "wallTimeMilliseconds": 8365.699999988079,
         "tick": 1014.215,
         "world": {
           "x": 4.25,
@@ -98,118 +98,118 @@
           "intensity": 0.72,
           "crowdResponse": "with-you",
           "ageTicks": 44.582,
-          "contactCount": 11,
-          "actionCount": 9,
-          "timing": 0.851,
-          "independence": 0.875,
-          "vocabulary": 0.683,
-          "density": 2.645,
-          "dominantFoot": 0.556,
+          "contactCount": 10,
+          "actionCount": 8,
+          "timing": 0.874,
+          "independence": 0.857,
+          "vocabulary": 0.593,
+          "density": 2.65,
+          "dominantFoot": 0.5,
           "conflictRate": 0,
           "cleanLanding": 0.72,
           "repeatedFootRuns": 1,
           "mash": false,
-          "quality": 0.771
+          "quality": 0.753
         },
         "score": 56,
         "boardTop": 130
       }
     },
     "maximumFacingSpeedRadiansPerSecond": 5.0000000000000355,
-    "maximumObservedFacingSpeedRadiansPerSecond": 5.327005469788899,
+    "maximumObservedFacingSpeedRadiansPerSecond": 5.372492838052543,
     "maximumFacingSpeedSegment": {
-      "seconds": 0.12480000001192093,
+      "seconds": 0.13959999996423722,
       "previous": {
-        "wallTimeMilliseconds": 13166,
-        "tick": 2333.851,
+        "wallTimeMilliseconds": 3107.5,
+        "tick": 2.196,
         "world": {
-          "x": -1.9567777777777497,
-          "y": 0.11225028905075728,
-          "z": 2.597250000000001
-        },
-        "rootVelocity": {
-          "x": -0.593333333333333,
+          "x": 0,
           "y": 0,
-          "z": -0.651
-        },
-        "facing": -1.911972461309158,
-        "angularVelocity": -4.584563164855071,
-        "pelvis": 0.004,
-        "support": "none",
-        "leftWeightBearing": false,
-        "rightWeightBearing": false,
-        "jumpState": "airborne",
-        "performanceState": {
-          "id": "in-the-pocket",
-          "label": "IN THE POCKET",
-          "intensity": 0.72,
-          "crowdResponse": "with-you",
-          "ageTicks": 17.833,
-          "contactCount": 11,
-          "actionCount": 9,
-          "timing": 0.829,
-          "independence": 0.875,
-          "vocabulary": 0.683,
-          "density": 2.474,
-          "dominantFoot": 0.556,
-          "conflictRate": 0,
-          "cleanLanding": 0.72,
-          "repeatedFootRuns": 1,
-          "mash": false,
-          "quality": 0.761
-        },
-        "score": 63,
-        "boardTop": 130
-      },
-      "current": {
-        "wallTimeMilliseconds": 13290.800000011921,
-        "tick": 2356.143,
-        "world": {
-          "x": -1.9758333333333056,
-          "y": 0.15815524916175283,
-          "z": 2.5104500000000045
+          "z": 0
         },
         "rootVelocity": {
           "x": 0,
           "y": 0,
-          "z": -0.651
+          "z": 0
         },
-        "facing": -2.5767827440023154,
-        "angularVelocity": -4.999999999999982,
-        "pelvis": -0.0012,
-        "support": "none",
+        "facing": 0,
+        "angularVelocity": 0,
+        "pelvis": 0.0002,
+        "support": "right",
         "leftWeightBearing": false,
-        "rightWeightBearing": false,
-        "jumpState": "airborne",
+        "rightWeightBearing": true,
+        "jumpState": "grounded",
         "performanceState": {
-          "id": "in-the-pocket",
-          "label": "IN THE POCKET",
-          "intensity": 0.72,
-          "crowdResponse": "with-you",
-          "ageTicks": 40.124,
-          "contactCount": 9,
-          "actionCount": 8,
-          "timing": 0.83,
-          "independence": 0.857,
-          "vocabulary": 0.683,
-          "density": 2.725,
-          "dominantFoot": 0.5,
+          "id": "cold",
+          "label": "COLD",
+          "intensity": 0.28,
+          "crowdResponse": "quiet",
+          "ageTicks": 2.196,
+          "contactCount": 0,
+          "actionCount": 0,
+          "timing": 0,
+          "independence": 0,
+          "vocabulary": 0,
+          "density": 0,
+          "dominantFoot": 0,
           "conflictRate": 0,
           "cleanLanding": 0.72,
-          "repeatedFootRuns": 1,
+          "repeatedFootRuns": 0,
           "mash": false,
-          "quality": 0.756
+          "quality": 0.058
         },
-        "score": 63,
+        "score": 11,
+        "boardTop": 130
+      },
+      "current": {
+        "wallTimeMilliseconds": 3247.099999964237,
+        "tick": 28.946,
+        "world": {
+          "x": 0.09737500000000002,
+          "y": 0,
+          "z": 0
+        },
+        "rootVelocity": {
+          "x": 1.2300000000000002,
+          "y": 0,
+          "z": 0
+        },
+        "facing": 0.7499999999999998,
+        "angularVelocity": 4.999999999999996,
+        "pelvis": 0.0016,
+        "support": "left",
+        "leftWeightBearing": true,
+        "rightWeightBearing": false,
+        "jumpState": "grounded",
+        "performanceState": {
+          "id": "cold",
+          "label": "COLD",
+          "intensity": 0.28,
+          "crowdResponse": "quiet",
+          "ageTicks": 28.946,
+          "contactCount": 0,
+          "actionCount": 0,
+          "timing": 0,
+          "independence": 0,
+          "vocabulary": 0,
+          "density": 0,
+          "dominantFoot": 0,
+          "conflictRate": 0,
+          "cleanLanding": 0.72,
+          "repeatedFootRuns": 0,
+          "mash": false,
+          "quality": 0.058
+        },
+        "score": 11,
         "boardTop": 130
       }
     },
-    "maximumPelvisDeltaMeters": 0.0286,
+    "maximumPelvisDeltaMeters": 0.0282,
     "maximumAbsoluteX": 4.25,
     "maximumAbsoluteZ": 2.65
   },
   "stage": {
-    "boardTopSamples": 242,
+    "boardTopSamples": 241,
     "boardTopRangePixels": 0
   },
   "performance": {
@@ -221,10 +221,10 @@
       "cooking"
     ],
     "stateSamples": {
-      "cold": 5,
-      "settling-in": 8,
-      "in-the-pocket": 223,
-      "cooking": 6
+      "cold": 4,
+      "settling-in": 10,
+      "in-the-pocket": 220,
+      "cooking": 7
     },
     "scramblingShare": 0,
     "maximumConflictRate": 0,
@@ -237,8 +237,8 @@
     "actual": "webgl2",
     "forced": false,
     "reason": "WebGPU remains capability-gated until animation and capture parity pass.",
-    "p95Milliseconds": 1.300000011920929,
-    "plantedFootDriftMeters": 2.220446049250313e-16
+    "p95Milliseconds": 1.399999976158142,
+    "plantedFootDriftMeters": 0
   },
   "captures": [
     "docs/review/appalachian-instrument-gate-2/captures/flow-endurance-01.png",
