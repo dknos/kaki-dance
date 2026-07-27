@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "audio",
-  "generatedAt": "2026-07-24T23:27:43.122Z",
+  "generatedAt": "2026-07-27T09:40:50.520Z",
   "sourceType": "real Foley-derived shoe recordings",
   "noSynthesis": true,
   "requiredContactFamilies": [
@@ -32,5 +32,5 @@
   ],
   "trigger": "authored visual contact metadata",
   "boardResonanceAffectsGain": true,
-  "elapsedMilliseconds": 1.307
+  "elapsedMilliseconds": 1.274
 }

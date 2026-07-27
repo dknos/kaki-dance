@@ -1,11 +1,11 @@
 {
-  "name": "Kaki-Dance: Plush Pocket Breaks",
+  "name": "Kaki-Dance: Two Feet in the Band",
   "short_name": "Kaki-Dance",
   "start_url": "./",
   "display": "fullscreen",
   "orientation": "landscape",
-  "background_color": "#11142d",
-  "theme_color": "#11142d",
+  "background_color": "#101b18",
+  "theme_color": "#101b18",
   "icons": [
     {
       "src": "./assets/ui/favicon.svg",

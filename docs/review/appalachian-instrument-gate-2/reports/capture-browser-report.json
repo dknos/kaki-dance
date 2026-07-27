@@ -2,10 +2,13 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "capture",
-  "generatedAt": "2026-07-27T01:56:00.157Z",
+  "generatedAt": "2026-07-27T09:40:07.302Z",
   "errors": [],
   "failedRequests": [],
   "captures": [
+    "docs/review/appalachian-instrument-gate-2/captures/shipping-title.png",
+    "docs/review/appalachian-instrument-gate-2/captures/shipping-free-frolic.png",
+    "docs/review/appalachian-instrument-gate-2/captures/shipping-trade-call.png",
     "docs/review/appalachian-instrument-gate-2/captures/before-foot-basis-repair.png",
     "docs/review/appalachian-instrument-gate-2/captures/after-foot-basis-repair.png",
     "docs/review/appalachian-instrument-gate-2/captures/neutral-front.png",
@@ -43,5 +46,5 @@
     "docs/review/appalachian-instrument-gate-2/captures/gamepad-play.png",
     "docs/review/appalachian-instrument-gate-2/captures/touch-play.png"
   ],
-  "count": 36
+  "count": 39
 }

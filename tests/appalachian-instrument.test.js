@@ -205,6 +205,35 @@ test("gamepad parity maps feet, families, arms, modifiers, jump, and pause", () 
   input.destroy();
 });
 
+test("controller disconnect clears held feet and modifiers before reconnect", () => {
+  const buttons = Array.from({ length: 16 }, () => ({ pressed: false, value: 0 }));
+  buttons[4] = { pressed: true, value: 1 };
+  buttons[14] = { pressed: true, value: 1 };
+  let pads = [{ axes: [0, 0, 0, 0], buttons }];
+  const input = new InputManager({
+    target: null,
+    profile: "appalachian",
+    getGamepads: () => pads,
+  });
+  input.update(DT);
+  let step = input.consumeStep();
+  assert.equal(step.leftFootPressed, true);
+  assert.equal(step.brushModifier, true);
+
+  pads = [];
+  input.update(DT);
+  step = input.consumeStep();
+  assert.equal(step.leftFoot, false);
+  assert.equal(step.leftFootReleased, true);
+  assert.equal(step.brushModifier, false);
+
+  pads = [{ axes: [0, 0, 0, 0], buttons }];
+  input.update(DT);
+  step = input.consumeStep();
+  assert.equal(step.leftFootPressed, true);
+  input.destroy();
+});
+
 test("persistent arm height and isolation never restart active feet", () => {
   const controller = new AppalachianAnimationController({ style: "buck" });
   const started = controller.requestFootGesture({

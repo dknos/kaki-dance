@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-27T02:08:55.420Z",
+  "generatedAt": "2026-07-27T09:44:19.017Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -20,7 +20,7 @@
   "maximumPlantedFootDriftMeters": 2.482534153247273e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 791,
+    "maximumOpaquePixels": 790,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -269,7 +269,7 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 1.2412670766236366e-16,
+      "plantedFootDriftMeters": 0,
       "footBasis": {
         "intendedForward": [
           0.9294821711763092,
@@ -279,27 +279,27 @@
         "facingRadians": 1.1930065162241472,
         "left": {
           "vector": [
-            0.9576783183189206,
+            0.933411742132209,
             0,
-            0.28784064796662084
+            0.35880707859477146
           ],
-          "dot": 0.9963198505108563,
+          "dot": 0.9999416778206729,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.9155373215137961,
+            0.9155509701233112,
             0,
-            0.40223303309815833
+            0.4022019655673801
           ],
-          "dot": 0.9993461258483083,
+          "dot": 0.9993473521993843,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.9963198505108563
+        "minimumDot": 0.9993473521993843
       },
-      "renderP95Milliseconds": 1.800000011920929,
+      "renderP95Milliseconds": 5.700000047683716,
       "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"

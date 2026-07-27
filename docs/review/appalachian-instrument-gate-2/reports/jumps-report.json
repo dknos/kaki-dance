@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "jumps",
-  "generatedAt": "2026-07-24T23:27:43.038Z",
+  "generatedAt": "2026-07-27T09:40:50.438Z",
   "anticipationStepMilliseconds": 8.333,
   "styles": {
     "flatfoot": {
@@ -31,5 +31,5 @@
     }
   },
   "genericSharedJump": false,
-  "elapsedMilliseconds": 3.826
+  "elapsedMilliseconds": 4.72
 }

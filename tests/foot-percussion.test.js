@@ -37,6 +37,15 @@ test("foot percussion follows the real input timestamp, latency, and round-robin
   assert.deepEqual(starts, [10.035, 10.045]);
   assert.equal(sources[0].playbackRate.value, 1);
   assert.equal(sources[1].playbackRate.value, 1);
+  assert.deepEqual(context.panners.map((panner) => panner.pan.value), [-0.12, 0.12]);
+  assert.deepEqual(
+    context.filters.filter((filter) => filter.type === "peaking").map((filter) => filter.frequency.value),
+    [420, 760],
+  );
+  assert.deepEqual(
+    [player.lastSchedule.foot, player.lastSchedule.sampleGroup, player.lastSchedule.roundRobinIndex],
+    ["right", "softSole", 0],
+  );
 });
 
 test("clog contacts select authored tap timbres without affecting other profiles", () => {
@@ -64,8 +73,10 @@ test("clog contacts select authored tap timbres without affecting other profiles
 });
 
 function fakeContext(starts, sources) {
-  return {
+  const context = {
     currentTime: 10,
+    panners: [],
+    filters: [],
     createBufferSource() {
       const source = {
         buffer: null,
@@ -86,10 +97,24 @@ function fakeContext(starts, sources) {
       };
     },
     createStereoPanner() {
-      return {
+      const panner = {
         pan: { value: 0 },
         connect() {},
       };
+      context.panners.push(panner);
+      return panner;
+    },
+    createBiquadFilter() {
+      const filter = {
+        type: "",
+        frequency: { value: 0 },
+        Q: { value: 0 },
+        gain: { value: 0 },
+        connect() {},
+      };
+      context.filters.push(filter);
+      return filter;
     },
   };
+  return context;
 }

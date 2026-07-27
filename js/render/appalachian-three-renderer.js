@@ -191,6 +191,11 @@ export class AppalachianThreeRenderer {
       value.visible = false;
       this.scene.add(value);
     });
+    this.contactGlows = {
+      left: contactGlow(0x69c7b5),
+      right: contactGlow(0xd66b45),
+    };
+    Object.values(this.contactGlows).forEach((value) => this.scene.add(value));
     const rootGeometry = new THREE.BufferGeometry();
     rootGeometry.setAttribute("position", new THREE.Float32BufferAttribute(new Array(180 * 3).fill(0), 3));
     this.rootTrailLine = new THREE.Line(
@@ -315,12 +320,13 @@ export class AppalachianThreeRenderer {
       front: [0, 3.1, 14],
       side: [14, 3.1, 0],
       gameplay: [7.4, 7.6, 11.6],
+      wide: [8.8, 8.2, 14.5],
     }[value] ?? [7.4, 7.6, 11.6];
     this.freeCamera = false;
     this.camera.position.set(...preset);
     this.camera.lookAt(this.cameraTarget);
     this.camera.updateProjectionMatrix();
-    return ["front", "side", "gameplay"].includes(value) ? value : "gameplay";
+    return ["front", "side", "gameplay", "wide"].includes(value) ? value : "gameplay";
   }
 
   setFreeCamera(enabled) {
@@ -368,6 +374,7 @@ export class AppalachianThreeRenderer {
     this.applyCostumeMotion(dancer);
     this.model.updateMatrixWorld(true);
     this.applyContactLock(dancer);
+    this.updateContactFeedback(dancer);
     this.updateDiagnostics(dancer);
     // Keep this explicit as a guard against effect/backend changes. The live
     // canvas is composited over the Canvas 2D stage and must contain one pose,
@@ -602,6 +609,24 @@ export class AppalachianThreeRenderer {
       current.y - this.supportLock.target.y,
       current.z - this.supportLock.target.z,
     );
+  }
+
+  updateContactFeedback(dancer) {
+    for (const [side, boneName] of [["left", "foot.L"], ["right", "foot.R"]]) {
+      const glow = this.contactGlows[side];
+      const foot = dancer.feet?.[side];
+      const active = ["contact", "recover"].includes(foot?.stage);
+      glow.visible = active;
+      if (!active) continue;
+      getBone(this.bones, boneName)?.getWorldPosition(glow.position);
+      glow.position.y = Math.max(0.018, glow.position.y + 0.012);
+      const phase = clamp(Number(foot.phase) || 0, 0, 1);
+      const envelope = foot.stage === "recover"
+        ? clamp((1 - phase) / 0.28, 0, 1)
+        : Math.sin(clamp((phase - 0.24) / 0.48, 0, 1) * Math.PI);
+      glow.material.opacity = 0.16 + envelope * 0.38;
+      glow.scale.setScalar(0.82 + envelope * 0.28);
+    }
   }
 
   updateDiagnostics(dancer) {
@@ -895,6 +920,10 @@ export class AppalachianThreeRenderer {
     this.lockMarker?.material.dispose();
     this.lockLine?.geometry.dispose();
     this.lockLine?.material.dispose();
+    for (const glow of Object.values(this.contactGlows ?? {})) {
+      glow.geometry.dispose();
+      glow.material.dispose();
+    }
     for (const label of this.boneLabels) {
       label.material?.map?.dispose?.();
       label.material?.dispose?.();
@@ -943,6 +972,23 @@ function marker(color, radius = 0.055) {
     new THREE.SphereGeometry(radius, 8, 6),
     new THREE.MeshBasicMaterial({ color, depthTest: false, transparent: true, opacity: 0.9 }),
   );
+}
+
+function contactGlow(color) {
+  const value = new THREE.Mesh(
+    new THREE.RingGeometry(0.075, 0.145, 20),
+    new THREE.MeshBasicMaterial({
+      color,
+      side: THREE.DoubleSide,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.42,
+    }),
+  );
+  value.rotation.x = -Math.PI / 2;
+  value.visible = false;
+  return value;
 }
 
 function diagnosticLabel(text, color) {

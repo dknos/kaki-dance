@@ -123,13 +123,13 @@ export const APPALACHIAN_TUNE_MAP = deepFreeze({
     },
   },
   stemManifest: {
-    master: "./assets/audio/frolic/board-and-bow.wav",
+    master: "./assets/audio/frolic/board-and-bow.mp3",
     fiddle: "./assets/audio/frolic/stems/board-and-bow-fiddle.wav",
     banjo: "./assets/audio/frolic/stems/board-and-bow-banjo.wav",
     guitar: "./assets/audio/frolic/stems/board-and-bow-guitar.wav",
     bass: "./assets/audio/frolic/stems/board-and-bow-bass.wav",
   },
-  trackUrl: "./assets/audio/frolic/board-and-bow.wav",
+  trackUrl: "./assets/audio/frolic/board-and-bow.mp3",
 });
 
 export function validateAppalachianTuneMap(value) {

@@ -95,7 +95,7 @@ assert.equal(frolicPages.length, 2);
 assert.match(frolicAtlases[0], /kitty\/frolic\/flatfoot/);
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/models/appalachian/kaki-appalachian-simulator.glb")));
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/models/appalachian/simulator-manifest.json")));
-assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/board-and-bow.wav")));
+assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/board-and-bow.mp3")));
 assert.ok(runtime.resources.some((url) => url.endsWith("/assets/audio/frolic/feet/manifest.json")));
 assert.ok(runtime.frameProfile.p95Ms < 24);
 

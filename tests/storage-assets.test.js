@@ -26,6 +26,7 @@ test("save migration repairs old, corrupt, and out-of-range values", () => {
       audioLatencyMs: -999,
       visualLatencyMs: Number.POSITIVE_INFINITY,
       screenShake: -4,
+      cameraView: "ceiling-cam",
       musicVolume: 2,
       bindings: { action: "KeyZ" },
     },
@@ -38,6 +39,7 @@ test("save migration repairs old, corrupt, and out-of-range values", () => {
   assert.equal(migrated.settings.audioLatencyMs, -200);
   assert.equal(migrated.settings.visualLatencyMs, 0);
   assert.equal(migrated.settings.screenShake, 0);
+  assert.equal(migrated.settings.cameraView, "gameplay");
   assert.equal(migrated.settings.musicVolume, 1);
   assert.equal(migrated.settings.bindings.action, "KeyZ");
   assert.deepEqual(migrated.calibration.samples, [1, 2]);

@@ -236,11 +236,14 @@ revision is explicitly `candidate-1-unretouched-toon`; Aseprite/LibreSprite
 manual cleanup is pending. The old six Pillow packs and original synthesized
 foot kit are preserved only in `docs/review/rejected-0c82fe7/`.
 
-The checked-in “Board & Bow” master and synchronized stems are unchanged:
+The checked-in “Board & Bow” source master and synchronized stems are
+unchanged. Shipping playback uses a deterministic 160 kb/s MP3 derivative to
+reduce the initial tune transfer by 77%:
 
-| Runtime master | Format | Duration | Bytes | SHA-256 |
+| Asset | Format | Duration | Bytes | SHA-256 |
 | --- | --- | ---: | ---: | --- |
-| `assets/audio/frolic/board-and-bow.wav` | stereo 16-bit PCM, 22.05 kHz | 68.000 s | 5,997,644 | `373e900960546d3fea36876aa3b2982a10992fde273d7f07697f05a6d0ab307b` |
+| `assets/audio/frolic/board-and-bow.wav` | source: stereo 16-bit PCM, 22.05 kHz | 68.000 s | 5,997,644 | `373e900960546d3fea36876aa3b2982a10992fde273d7f07697f05a6d0ab307b` |
+| `assets/audio/frolic/board-and-bow.mp3` | runtime: stereo MP3, 160 kb/s | 68.075 s container duration | 1,362,068 | `6035a98ce34077e61d3f265a41e6e07e1ee561a1cd6803f3c124fdb9aa716447` |
 
 The tune is deterministic code synthesis and remains audibly unapproved.
 

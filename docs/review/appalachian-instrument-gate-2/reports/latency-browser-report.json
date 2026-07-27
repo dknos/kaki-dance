@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "latency",
-  "generatedAt": "2026-07-24T23:28:57.335Z",
+  "generatedAt": "2026-07-27T09:42:07.278Z",
   "errors": [],
   "failedRequests": [],
   "samples": {
@@ -11,22 +11,22 @@
     "jumps": 8
   },
   "arms": {
-    "minimumMilliseconds": 9.5,
-    "averageMilliseconds": 13.46,
-    "p95Milliseconds": 14.7,
-    "maximumMilliseconds": 14.7
+    "minimumMilliseconds": 10.6,
+    "averageMilliseconds": 14.18,
+    "p95Milliseconds": 16,
+    "maximumMilliseconds": 16
   },
   "feet": {
-    "minimumMilliseconds": 13,
-    "averageMilliseconds": 14.48,
-    "p95Milliseconds": 15.6,
-    "maximumMilliseconds": 15.6
+    "minimumMilliseconds": 12.8,
+    "averageMilliseconds": 14.53,
+    "p95Milliseconds": 15.8,
+    "maximumMilliseconds": 15.8
   },
   "jumps": {
-    "minimumMilliseconds": 12.2,
-    "averageMilliseconds": 14.14,
-    "p95Milliseconds": 17,
-    "maximumMilliseconds": 17
+    "minimumMilliseconds": 13.3,
+    "averageMilliseconds": 14.19,
+    "p95Milliseconds": 15.1,
+    "maximumMilliseconds": 15.1
   },
   "targetsMilliseconds": {
     "arms": 33,

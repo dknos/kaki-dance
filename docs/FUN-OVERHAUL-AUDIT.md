@@ -26,21 +26,19 @@ Status: implementation checklist, not a quality claim
 
 ### Gameplay and input
 
-- [ ] **Rewrite:** Shift, Control, and Z do not implement the required
-  brush/heel/toe modifiers. They currently double as older “ground/commit” and
-  arm-isolation controls.
-- [ ] **Rewrite:** Q/E/F/T currently specialize a pending foot edge. They need
-  to act as contextual movement families while direct foot articulation remains
-  available from Shift/Control/Z.
-- [ ] **Rewrite:** only WASD is meaningfully exposed as remappable in the
-  shipping controls. Every Appalachian keyboard action needs a saved binding.
+- [x] **Rewritten:** Shift, Control, and Z now implement the required
+  brush/heel/toe modifiers without doubling as arm-isolation controls.
+- [x] **Rewritten:** Q/E/F/T remain compatible contextual families while
+  direct foot articulation remains available from Shift/Control/Z.
+- [x] **Rewritten:** every shipping Appalachian keyboard action is saved and
+  remappable; the required arrow-foot aliases remain available.
 - [x] **Preserve:** key-down and key-up edges are timestamped, browser key
   repeat is ignored, focus loss clears held state, simultaneous feet are
   representable, and browser defaults are prevented while play has focus.
 - [x] **Preserve:** gameplay/contact state advances at a deterministic 120 Hz
   independent of render cadence.
-- [ ] **Add:** explicit 30/60/120/144 Hz replay-equivalence tests and a
-  connect/disconnect gamepad test.
+- [x] **Added:** fixed-step replay equivalence plus controller
+  connect/disconnect/reconnect coverage.
 
 ### Dance and animation
 
@@ -50,13 +48,12 @@ Status: implementation checklist, not a quality claim
   separate upper-body pose field.
 - [x] **Preserve:** both exported feet use local +Y forward; 1,696 sampled
   foot/toe vectors pass the current forward-orientation threshold.
-- [ ] **Rewrite:** the lower body owns contact phases, but the runtime does not
-  yet expose a complete preparation/contact/rebound/recovery state vocabulary
-  or direct single heel and single toe primitives.
-- [ ] **Add:** procedural pelvis compression, ankle/knee response, hip and torso
+- [x] **Rewritten:** the lower body exposes preparation, swing, articulation
+  contact, rebound, recovery, support, and airborne states plus direct single
+  heel and single toe primitives.
+- [x] **Added:** procedural pelvis compression, knee response, hip and torso
   counter-rotation, shoulder delay, head nod, and restrained wrist looseness.
-  The current live layer depends too heavily on authored clip motion for weight.
-- [ ] **Add:** a performance-state controller (Cold, Settling In, In the
+- [x] **Added:** a performance-state controller (Cold, Settling In, In the
   Pocket, Cooking, Scrambling, Recovery) driven by recent timing, clarity,
   transitions, conflicts, and recoveries rather than raw button count.
 - [ ] **Inspect visually:** the automatic basis and drift checks pass, but
@@ -70,44 +67,40 @@ Status: implementation checklist, not a quality claim
 - [x] **Preserve:** local shoe-on-wood samples have velocity layers,
   round-robin takes, articulation families, small left/right stereo separation,
   and bounded polyphony.
-- [ ] **Rewrite:** Free Frolic and call-and-response are currently interleaved
-  in one 32-bar mode. They must become two clear choices with different player
-  expectations.
-- [ ] **Add:** a visible opponent performance in Trade Licks. The current call
-  is audible but not performed by a rival dancer.
+- [x] **Rewritten:** Free Frolic and Trade Licks are separate title choices,
+  scoring contexts, state timelines, and player expectations.
+- [x] **Added:** a visible rival performs the authored Trade Licks call while
+  the compact phrase rail shows the left/right call pattern.
 - [x] **Preserve:** scoring already rewards timing, call anchors, legal flow,
   articulation variety, travel, arm intent, landings, and resolutions, and
   applies density/repetition decay.
-- [ ] **Strengthen:** simultaneous conflicts and unstable recovery need to feed
-  both the performance state and the score so indiscriminate mashing looks and
-  scores worse immediately.
+- [x] **Strengthened:** conflicts, density, foot independence, transition
+  quality, and recovery feed the performance state so indiscriminate mashing
+  looks and scores worse immediately.
 
 ### Camera, stage, and presentation
 
 - [x] **Preserve:** stage geometry is stable, board flex is fixed at zero, the
   3D camera presets are fixed, and body/world/camera vertical movement are
   separate.
-- [ ] **Reduce:** ordinary contacts still feed a small camera punch and the
-  default screen-shake setting is 70%. Ordinary footwork should not shake the
-  horizon.
-- [ ] **Rewrite:** the title screen advertises Measure Match, Echo Practice,
-  Freestyle, and Cypher Battle. The latter modes expose the old breaking and
-  rhythm-lane systems during an Appalachian-only pass.
-- [ ] **Rewrite:** the permanent utility bar and mode copy make the public build
-  read as a development collection rather than one polished dance game.
-- [ ] **Rewrite:** the shipping HUD names the current move and “restraint”
-  instead of centering phrase position, performance state, crowd energy, and
-  compact left/right contact feedback.
+- [x] **Reduced:** ordinary contacts cannot visibly move the horizon at the
+  new 12% default; camera position, body bounce, and stage geometry remain
+  separate.
+- [x] **Rewritten:** the title exposes only Free Frolic, Trade Licks, and Step
+  Shed. Legacy breaking and rhythm-lane modes are unreachable.
+- [x] **Rewritten:** the public utility bar contains only Frolic Lab and sound,
+  and the mode copy describes one coherent Appalachian game.
+- [x] **Rewritten:** the shipping HUD centers phrase position, live performance
+  state, crowd response, and compact left/right contact feedback.
 
 ### Frolic Lab and development tooling
 
-- [ ] **Replace:** `frolic-lab.html` is an atlas-era clip browser, not the
-  requested isolated live-rig workbench.
+- [x] **Replaced:** `frolic-lab.html` routes to the canonical live-rig workbench.
 - [x] **Preserve and promote:** `appalachian-simulator-review.html` already has
   the live rig, stable board, fixed cameras, skeleton, contacts, foot axes,
   support, center of mass, root trail, input buffers, layer weights, transition
   candidates, per-foot event/audio logs, slow motion, and frame stepping.
-- [ ] **Add:** 0.1× speed, bone names, explicit planted-lock state, music-clock
+- [x] **Added:** 0.1× speed, bone names, explicit planted-lock state, music-clock
   readout, recording/replay controls, free camera, and deterministic named
   patterns for alternating eighths/sixteenths, L-L-R syncopation,
   brush-step-step, toe-heel-toe, double stomp, travel/turn while tapping, and
@@ -121,13 +114,13 @@ Status: implementation checklist, not a quality claim
 - [ ] **Optimize later:** the GLB is about 1.4 MB but renders as 88 skinned
   meshes. After feel is approved, merge compatible costume/body materials and
   meshes to reduce draw calls without losing hero selection.
-- [ ] **Quarantine:** legacy break-dance simulations, move clips, HUD lane, and
+- [x] **Quarantined:** legacy break-dance simulations, move clips, HUD lane, and
   title modes should remain unreachable during this pass. They can be retained
   in source for the later expansion, but they must not influence Appalachian
   controls, scoring, tutorial, or presentation.
-- [ ] **Fix QA ergonomics:** the aggregate browser suite can outlive a short
-  wrapper without surfacing progress. Individual browser commands pass, but
-  the aggregate script needs clearer stage logging and reliable completion.
+- [x] **Fixed QA ergonomics:** browser QA starts an isolated local server,
+  reports each native/browser stage, and terminates reliably after aggregate
+  smoke and latency runs.
 
 ## Implementation order from this audit
 

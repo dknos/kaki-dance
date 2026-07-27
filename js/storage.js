@@ -67,6 +67,9 @@ export function migrateSave(value) {
       audioLatencyMs: finiteClamp(value.settings?.audioLatencyMs, -200, 200, 0),
       visualLatencyMs: finiteClamp(value.settings?.visualLatencyMs, -200, 200, 0),
       screenShake: finiteClamp(value.settings?.screenShake, 0, 1, 0.12),
+      cameraView: ["gameplay", "front", "side", "wide"].includes(value.settings?.cameraView)
+        ? value.settings.cameraView
+        : "gameplay",
       musicVolume: finiteClamp(value.settings?.musicVolume, 0, 1, 0.8),
       effectsVolume: finiteClamp(value.settings?.effectsVolume, 0, 1, 0.8),
       crowdVolume: finiteClamp(value.settings?.crowdVolume, 0, 1, 0.75),

@@ -17,7 +17,7 @@ import { loadSave, saveGame } from "./storage.js";
 
 const EMPTY_INPUT = Object.freeze(createInputStep());
 const MEASURE_TRACK_URL = new URL("../assets/audio/moon-block-party.wav", import.meta.url);
-const FROLIC_TRACK_URL = new URL("../assets/audio/frolic/board-and-bow.wav", import.meta.url);
+const FROLIC_TRACK_URL = new URL("../assets/audio/frolic/board-and-bow.mp3", import.meta.url);
 const FROLIC_MODES = new Set(["frolic", "tradeLicks", "stepShed"]);
 
 export class KakiDanceGame {
@@ -119,7 +119,7 @@ export class KakiDanceGame {
     return this.getSnapshot();
   }
 
-  async startMode(mode = this.mode, { offsetSeconds = 0 } = {}) {
+  async startMode(mode = this.mode, { offsetSeconds = null } = {}) {
     if (this.destroyed) return;
     this.mode = ["frolic", "tradeLicks", "stepShed"].includes(mode) ? mode : "frolic";
     this.host.dataset.mode = this.mode;
@@ -136,6 +136,7 @@ export class KakiDanceGame {
         this.transport.unlock?.(),
         this.renderer.enterMode(this.mode, this.selectedCharacter, this.selectedFrolicStyle),
       ]);
+      this.renderer.setAppalachianCameraPreset?.(this.settings.cameraView);
       if (isFrolic) await this.footPercussion.preload();
     } catch {
       // The fallback clock still permits play if audio hardware is unavailable.
@@ -143,7 +144,13 @@ export class KakiDanceGame {
     this.applyAudioSettings();
     this.transport.setLatency?.(this.settings.latencyMs);
     this.footPercussion.setLatency(this.settings.audioLatencyMs);
-    this.transport.start?.({ offsetSeconds: Math.max(0, Number(offsetSeconds) || 0) });
+    const defaultOffset = isFrolic && this.mode !== "stepShed"
+      ? Number(this.activeBeatmap.offsetSeconds) || 0
+      : 0;
+    const resolvedOffset = offsetSeconds === null || offsetSeconds === undefined
+      ? defaultOffset
+      : Math.max(0, Number(offsetSeconds) || 0);
+    this.transport.start?.({ offsetSeconds: resolvedOffset });
     const beatSnapshot = this.transport.clock.getSnapshot();
     this.simulation = this.createSimulation();
     this.simulation.begin(beatSnapshot);
@@ -655,6 +662,7 @@ export class KakiDanceGame {
     const definitions = [
       ["controlMode", this.elements.controlMode, (value) => value],
       ["timingWindow", this.elements.timing, (value) => value],
+      ["cameraView", this.elements.camera, (value) => value],
       ["latencyMs", this.elements.latency, Number],
       ["audioLatencyMs", this.elements.audioLatency, Number],
       ["visualLatencyMs", this.elements.visualLatency, Number],
@@ -675,6 +683,7 @@ export class KakiDanceGame {
         if (key === "controlMode") this.input.setControlMode?.(this.settings.controlMode);
         if (key === "latencyMs") this.transport.setLatency?.(this.settings.latencyMs);
         if (key === "audioLatencyMs") this.footPercussion.setLatency(this.settings.audioLatencyMs);
+        if (key === "cameraView") this.renderer.setAppalachianCameraPreset?.(this.settings.cameraView);
         if (["musicVolume", "effectsVolume", "crowdVolume"].includes(key)) this.applyAudioSettings();
         this.syncSettingOutputs();
         saveGame(this.save, this.storage);
@@ -709,6 +718,7 @@ export class KakiDanceGame {
   syncUiFromSettings() {
     this.elements.controlMode.value = this.settings.controlMode;
     this.elements.timing.value = this.settings.timingWindow;
+    this.elements.camera.value = this.settings.cameraView;
     this.elements.latency.value = this.settings.latencyMs;
     this.elements.audioLatency.value = this.settings.audioLatencyMs;
     this.elements.visualLatency.value = this.settings.visualLatencyMs;
@@ -863,6 +873,7 @@ function collectElements(host) {
     liveStatus: byId("live-status"),
     controlMode: byId("setting-control-mode"),
     timing: byId("setting-timing"),
+    camera: byId("setting-camera"),
     latency: byId("setting-latency"),
     latencyOutput: byId("latency-output"),
     audioLatency: byId("setting-audio-latency"),

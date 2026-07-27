@@ -41,6 +41,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   visualLatencyMs: 0,
   reducedMotion: false,
   screenShake: 0.12,
+  cameraView: "gameplay",
   reduceFlashes: false,
   beatPulse: true,
   timingLabels: true,

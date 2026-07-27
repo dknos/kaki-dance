@@ -79,7 +79,7 @@ function drawFrolicHud(ctx, snapshot, settings) {
   } else if (frolic.practice) {
     drawStepShedCoach(ctx, frolic.practice, palette);
   } else {
-    drawMoveBadge(ctx, snapshot, palette);
+    drawFlowBadge(ctx, snapshot, palette);
     drawFootInstrument(ctx, snapshot, palette);
     drawPerformanceMeter(ctx, frolic.performanceState, frolic.restraint, palette);
   }
@@ -140,18 +140,17 @@ function drawFrolicPhraseRail(ctx, frolic, palette) {
   }
 }
 
-function drawMoveBadge(ctx, snapshot, palette) {
-  const move = snapshot.dancer.moveName || "Walking Step";
-  const queued = snapshot.frolic.queuedMove;
-  const width = Math.min(94, Math.max(62, move.length * 4 + 12));
-  pixelRect(ctx, 7, 35, width, queued ? 24 : 17, palette.ink);
-  pixelRect(ctx, 8, 36, width - 2, queued ? 22 : 15, palette.panel);
-  drawPixelText(ctx, move.toUpperCase(), 12, 40, { color: palette.chalk, scale: 1 });
-  drawPixelText(ctx, `WEIGHT ${snapshot.frolic.supportingFoot.toUpperCase()}`, 12, 47, {
+function drawFlowBadge(ctx, snapshot, palette) {
+  pixelRect(ctx, 7, 35, 79, 17, palette.ink);
+  pixelRect(ctx, 8, 36, 77, 15, palette.panel);
+  drawPixelText(ctx, `CROWD ${Math.round(snapshot.crowdHeat)}%`, 12, 40, {
+    color: palette.chalk,
+    scale: 1,
+  });
+  drawPixelText(ctx, `SCORE ${String(snapshot.playerScore?.total ?? 0).padStart(2, "0")}`, 12, 47, {
     color: palette.mint,
     scale: 1,
   });
-  if (queued) drawPixelText(ctx, `NEXT ${queued.toUpperCase()}`, 12, 54, { color: palette.amber, scale: 1 });
 }
 
 function drawPerformanceMeter(ctx, state, restraint, palette) {

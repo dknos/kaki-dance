@@ -58,14 +58,16 @@ All six generated reports have:
 
 | Audio set | Checked-in bytes | Approx. decoded AudioBuffer bytes | Runtime-loaded |
 | --- | ---: | ---: | --- |
-| 68-second stereo master | 5,997,644 | 11,995,200 | yes |
+| 68-second stereo runtime MP3 | 1,362,068 | 11,995,200 | yes |
+| 68-second stereo PCM authoring master | 5,997,644 | 11,995,200 | no |
 | 66 velocity/round-robin foot cuts + manifest | 2,405,090 | about 3,121,920 | yes |
 | Four synchronized mono stems | 11,995,376 | 23,990,400 | no |
 
-The Frolic-specific loaded audio is about 8.40 MB on disk and 15.12 MB
+The Frolic-specific loaded audio is about 3.77 MB on disk and 15.12 MB
 decoded, excluding the application’s shared UI, live GLB, and Web Audio graph.
-Authored stems are source assets for future responsive mixing and are not
-requested by the current runtime.
+The PCM master and authored stems are source assets for future responsive
+mixing and are not requested by the current runtime. The MP3 cuts tune transfer
+bytes by 77% while retaining the exact PCM master for deterministic analysis.
 
 ## Touch layout
 

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,6 +16,7 @@ const executablePath = process.env.CHROMIUM_PATH || undefined;
 mkdirSync(REPORT_ROOT, { recursive: true });
 mkdirSync(CAPTURE_ROOT, { recursive: true });
 
+const server = await ensureServer();
 const browser = await chromium.launch({
   ...(executablePath ? { executablePath } : {}),
   headless: true,
@@ -47,6 +49,7 @@ try {
   console.log(`report=${output}`);
 } finally {
   await browser.close();
+  server?.kill();
 }
 
 async function smoke() {
@@ -327,8 +330,40 @@ async function latency() {
 }
 
 async function capture() {
-  const page = await reviewPage("?renderer=webgl2", { width: 1440, height: 1000 });
   const captures = [];
+  const shipping = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  watch(shipping);
+  await shipping.goto(BASE_URL, { waitUntil: "networkidle" });
+  await shippingShot(shipping, captures, "shipping-title");
+  await shipping.click("[data-start-mode='frolic']");
+  await shipping.waitForFunction(
+    () => kakiDance?.getSnapshot?.().state === "running"
+      && kakiDance.getAppalachianDiagnostics?.().ready,
+  );
+  await shipping.keyboard.press("ArrowLeft");
+  await shipping.waitForTimeout(90);
+  await shipping.keyboard.press("ArrowRight");
+  await shipping.waitForTimeout(90);
+  await shipping.keyboard.down("ShiftLeft");
+  await shipping.keyboard.press("ArrowLeft");
+  await shipping.keyboard.up("ShiftLeft");
+  await shipping.waitForTimeout(120);
+  await shippingShot(shipping, captures, "shipping-free-frolic");
+  await shipping.goto(BASE_URL, { waitUntil: "networkidle" });
+  await shipping.evaluate(() => kakiDance.start({
+    mode: "tradeLicks",
+    immediate: true,
+    offsetSeconds: 20,
+  }));
+  await shipping.waitForFunction(
+    () => kakiDance?.getSnapshot?.().simulation?.frolic?.state === "TRADE_CALL"
+      && kakiDance.getAppalachianDiagnostics?.().ready,
+  );
+  await shipping.waitForTimeout(180);
+  await shippingShot(shipping, captures, "shipping-trade-call");
+  await shipping.close();
+
+  const page = await reviewPage("?renderer=webgl2", { width: 1440, height: 1000 });
   for (const [source, name] of [
     ["/tmp/kaki-baseline-front.png", "before-foot-basis-repair.png"],
     ["/tmp/kaki-footfix-front.png", "after-foot-basis-repair.png"],
@@ -539,6 +574,12 @@ async function shot(page, captures, name) {
   captures.push(relative(path));
 }
 
+async function shippingShot(page, captures, name) {
+  const path = resolve(CAPTURE_ROOT, `${name}.png`);
+  await page.locator("#game-host").screenshot({ path });
+  captures.push(relative(path));
+}
+
 function summarize(values) {
   const sorted = [...values].sort((left, right) => left - right);
   return {
@@ -556,7 +597,7 @@ function watch(page) {
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("requestfailed", (request) => {
     const failure = request.failure()?.errorText ?? "";
-    if (failure === "net::ERR_ABORTED" && /board-and-bow\.wav$/.test(request.url())) return;
+    if (failure === "net::ERR_ABORTED" && /board-and-bow\.(?:wav|mp3)$/.test(request.url())) return;
     failedRequests.push({ url: request.url(), error: failure });
   });
 }
@@ -567,4 +608,30 @@ function relative(path) {
 
 function round(value) {
   return Math.round(Number(value) * 100) / 100;
+}
+
+async function ensureServer() {
+  try {
+    const response = await fetch(`${BASE_URL}/index.html`);
+    if (response.ok) return null;
+  } catch {
+    // Start a local static server below.
+  }
+  const url = new URL(BASE_URL);
+  const port = url.port || "80";
+  const child = spawn("python3", ["-m", "http.server", port, "--bind", url.hostname], {
+    cwd: ROOT,
+    stdio: "ignore",
+  });
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    await new Promise((resolveWait) => setTimeout(resolveWait, 100));
+    try {
+      const response = await fetch(`${BASE_URL}/index.html`);
+      if (response.ok) return child;
+    } catch {
+      // Continue waiting for the child server.
+    }
+  }
+  child.kill();
+  throw new Error(`Could not start Appalachian simulator QA server at ${BASE_URL}`);
 }

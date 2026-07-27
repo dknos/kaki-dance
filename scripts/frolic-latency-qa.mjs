@@ -54,6 +54,7 @@ try {
   });
   await page.goto(`${baseUrl}/?latency-candidate=1&dancer=atlas`, { waitUntil: "networkidle" });
   await page.click("[data-start-mode='frolic']");
+  await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().state === "running");
   await page.waitForFunction(() => globalThis.kakiDance?.getSnapshot?.().simulation?.frolic?.tick >= 0);
   await page.evaluate(() => globalThis.kakiDance.setFrolicQaMode(true));
   const samples = [];
@@ -109,7 +110,16 @@ try {
               Number.isFinite(candidate?.audioSchedulingTimestamp)
               && Number.isFinite(candidate?.contactEmissionTimestamp)
             ) resolveRecord(candidate);
-            else if (performance.now() > timeout) reject(new Error(`${device} contact scheduling timed out`));
+            else if (performance.now() > timeout) {
+              const snapshot = globalThis.kakiDance.getSnapshot().simulation;
+              reject(new Error(`${device} contact scheduling timed out: ${JSON.stringify({
+                existingRecords,
+                records: records.slice(-3),
+                tick: snapshot?.frolic?.tick,
+                lastInput: snapshot?.frolic?.lastInput,
+                feet: snapshot?.dancer?.feet,
+              })}`));
+            }
             else requestAnimationFrame(poll);
           };
           poll();
@@ -236,7 +246,8 @@ async function ensureServer() {
   } catch {
     // Start a local static server below.
   }
-  const child = spawn("python3", ["-m", "http.server", "4177", "--bind", "127.0.0.1"], {
+  const url = new URL(baseUrl);
+  const child = spawn("python3", ["-m", "http.server", url.port || "80", "--bind", url.hostname], {
     cwd: root,
     stdio: "ignore",
   });

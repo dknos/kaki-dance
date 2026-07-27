@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A deterministic plush-pocket breaking game for the browser.",
+  "description": "A deterministic Appalachian footwork performance game for the browser.",
   "scripts": {
     "serve": "python3 -m http.server 4177 --bind 127.0.0.1",
     "audio:build": "node scripts/build-breakbeat.mjs",

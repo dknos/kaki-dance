@@ -123,13 +123,15 @@ export class FootPercussionPlayer {
     const definition = this.manifest?.groups?.[group] ?? {};
     const layer = velocityLayer(event.intensity);
     const layerFiles = definition.layers?.[layer] ?? definition.files ?? [];
-    const cursorKey = `${group}:${layer}`;
+    const foot = event.foot === "right" ? "right" : event.foot === "left" ? "left" : "both";
+    const cursorKey = `${group}:${layer}:${foot}`;
     const cursor = this.cursors.get(cursorKey) ?? 0;
-    const filename = layerFiles[cursor % Math.max(1, layerFiles.length)];
+    const footOffset = foot === "right" && Math.max(layerFiles.length, variants.length) > 1 ? 1 : 0;
+    const filename = layerFiles[(cursor + footOffset) % Math.max(1, layerFiles.length)];
     const fileIndex = definition.files?.indexOf(filename) ?? -1;
     const buffer = fileIndex >= 0
       ? variants[fileIndex]
-      : variants[cursor % variants.length];
+      : variants[(cursor + footOffset) % variants.length];
     this.cursors.set(cursorKey, cursor + 1);
     if (!buffer) return false;
 
@@ -144,10 +146,19 @@ export class FootPercussionPlayer {
     source.connect(gain);
 
     let tail = gain;
+    if (context.createBiquadFilter && foot !== "both") {
+      const shoeColor = context.createBiquadFilter();
+      shoeColor.type = "peaking";
+      shoeColor.frequency.value = foot === "left" ? 420 : 760;
+      shoeColor.Q.value = 0.62;
+      shoeColor.gain.value = 0.8;
+      gain.connect(shoeColor);
+      tail = shoeColor;
+    }
     if (context.createStereoPanner) {
       const panner = context.createStereoPanner();
-      panner.pan.value = event.foot === "left" ? -0.055 : event.foot === "right" ? 0.055 : 0;
-      gain.connect(panner);
+      panner.pan.value = foot === "left" ? -0.12 : foot === "right" ? 0.12 : 0;
+      tail.connect(panner);
       tail = panner;
     }
     tail.connect(this.ensureFootBus() ?? destination);
@@ -168,6 +179,9 @@ export class FootPercussionPlayer {
       contextCurrentTime: context.currentTime,
       baseLatency: Number(context.baseLatency) || 0,
       outputLatency: Number(context.outputLatency) || 0,
+      foot,
+      sampleGroup: group,
+      roundRobinIndex: cursor,
     });
     source.start(scheduled);
     this.active.add(source);
