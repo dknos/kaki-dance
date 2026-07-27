@@ -92,12 +92,17 @@ export class AppalachianPerformanceState {
     this.landings = this.landings.filter((value) => value.tick >= windowStart);
     const recent = this.contacts.filter((value) => value.tick >= currentTick - FROLIC_TICKS_PER_BAR);
     const diagnostics = performanceDiagnostics(recent, this.conflicts, this.landings, performance);
-    const next = selectState(this.state, currentTick - this.stateSinceTick, diagnostics);
+    const stateAge = Math.max(0, currentTick - this.stateSinceTick);
+    const next = selectState(this.state, stateAge, diagnostics);
     if (next !== this.state) {
       this.state = next;
       this.stateSinceTick = currentTick;
     }
-    this.lastSnapshot = stateSnapshot(this.state, currentTick - this.stateSinceTick, diagnostics);
+    this.lastSnapshot = stateSnapshot(
+      this.state,
+      Math.max(0, currentTick - this.stateSinceTick),
+      diagnostics,
+    );
     return this.lastSnapshot;
   }
 

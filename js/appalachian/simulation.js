@@ -25,6 +25,7 @@ import {
 } from "./tune-map.js";
 
 const TURNAROUND_BARS = new Set([8, 16, 24, 32]);
+const EMPTY_PERFORMANCE_INPUT = Object.freeze({});
 export const PRACTICE_LESSONS = Object.freeze([
   Object.freeze({
     id: "pulse",
@@ -87,18 +88,21 @@ export class AppalachianJamSimulation {
     reducedMotion = false,
     seed = 0x46524f4c,
   } = {}) {
-    this.mode = mode === "stepShed" ? "stepShed" : "frolic";
+    this.mode = ["stepShed", "tradeLicks"].includes(mode) ? mode : "frolic";
     this.character = characterDefinition(character);
+    this.rivalCharacter = characterDefinition(this.character.id === "kitty" ? "soder" : "kitty");
     this.style = normalizeFrolicStyle(style);
     this.tuneMap = tuneMap;
     this.difficulty = tuneMap.difficultyLayers[difficulty] ? difficulty : "standard";
     this.reducedMotion = reducedMotion;
     this.seed = seed >>> 0;
     this.animation = new AppalachianAnimationController({ style: this.style });
+    this.rivalAnimation = new AppalachianAnimationController({ style: this.style });
     this.judge = new AppalachianPhraseJudge({
       tuneMap,
       style: this.style,
       difficulty: this.difficulty,
+      tradeMode: this.mode === "tradeLicks",
     });
     this.performanceState = new AppalachianPerformanceState();
     this.events = [];
@@ -106,6 +110,8 @@ export class AppalachianJamSimulation {
     this.started = false;
     this.complete = false;
     this.result = null;
+    this.highlightSnapshot = null;
+    this.highlightQuality = -1;
     this.lastSnapshot = null;
     this.lastTick = -Infinity;
     this.lastState = FROLIC_STATES.COUNT_IN;
@@ -135,9 +141,11 @@ export class AppalachianJamSimulation {
     this.started = true;
     this.complete = false;
     this.result = null;
+    this.highlightSnapshot = null;
+    this.highlightQuality = -1;
     this.lastSnapshot = beatSnapshot;
     this.lastTick = tick;
-    this.lastState = frolicStateAtTick(tick);
+    this.lastState = modeStateAtTick(this.mode, tick);
     this.events.length = 0;
     this.replay.length = 0;
     this.callCursor.clear();
@@ -161,10 +169,13 @@ export class AppalachianJamSimulation {
     this.lastBar = Math.floor(Math.max(0, tick) / FROLIC_TICKS_PER_BAR) + 1;
     this.animation = new AppalachianAnimationController({ style: this.style });
     this.animation.reset(Math.max(0, tick));
+    this.rivalAnimation = new AppalachianAnimationController({ style: this.style });
+    this.rivalAnimation.reset(Math.max(0, tick));
     this.judge = new AppalachianPhraseJudge({
       tuneMap: this.tuneMap,
       style: this.style,
       difficulty: this.difficulty,
+      tradeMode: this.mode === "tradeLicks",
     });
     this.emit("roundStarted", {
       mode: this.mode,
@@ -172,7 +183,9 @@ export class AppalachianJamSimulation {
       round: 1,
       message: this.mode === "stepShed"
         ? "Step Shed: alternate Left and Right Arrow with the pulse."
-        : "Free Frolic. Your feet are in the band.",
+        : this.mode === "tradeLicks"
+          ? "Trade Licks. Hear the caller, then answer in your own voice."
+          : "Free Frolic. Your feet are in the band.",
     });
   }
 
@@ -184,6 +197,8 @@ export class AppalachianJamSimulation {
     if (this.calloutAge > 1.25) this.callout = "";
     this.handleStateChange(tick);
     this.emitTradeCalls(this.lastTick, tick);
+    this.rivalAnimation.update(Math.max(0, tick), { dt, input: EMPTY_PERFORMANCE_INPUT });
+    this.rivalAnimation.consumeContacts(() => {});
     this.handlePerformanceEdges(input, tick, beatSnapshot);
     this.flushPerformanceIntents(tick, input, beatSnapshot);
     this.animation.update(Math.max(0, tick), { dt, input });
@@ -208,7 +223,7 @@ export class AppalachianJamSimulation {
     this.handleBarBoundary(tick);
     this.lastSnapshot = beatSnapshot;
     this.lastTick = tick;
-    if (this.mode === "frolic" && tick >= FROLIC_RUN_TICKS) this.finish();
+    if (["frolic", "tradeLicks"].includes(this.mode) && tick >= FROLIC_RUN_TICKS) this.finish();
   }
 
   handleImmediateInput(input, beatSnapshot) {
@@ -332,7 +347,7 @@ export class AppalachianJamSimulation {
   }
 
   handleStateChange(tick) {
-    const state = frolicStateAtTick(tick);
+    const state = modeStateAtTick(this.mode, tick);
     if (state === this.lastState) return;
     this.lastState = state;
     this.emit("frolicState", {
@@ -379,7 +394,7 @@ export class AppalachianJamSimulation {
 
   requestMovement(kind, input, tick, beatSnapshot, edge = null) {
     const simulationReceiptTimestamp = now();
-    const state = frolicStateAtTick(tick);
+    const state = modeStateAtTick(this.mode, tick);
     const direction = inputDirection(input, kind);
     const moveId = moveForInput(kind, direction, {
       style: this.style,
@@ -589,6 +604,7 @@ export class AppalachianJamSimulation {
   }
 
   emitTradeCalls(previousTick, currentTick) {
+    if (!["tradeLicks", "stepShed"].includes(this.mode)) return;
     if (!(currentTick >= previousTick)) return;
     for (const call of this.tuneMap.calls) {
       const barStart = (call.callBar - 1) * FROLIC_TICKS_PER_BAR;
@@ -597,6 +613,20 @@ export class AppalachianJamSimulation {
         const key = `${call.id}:${index}`;
         if (absoluteTick <= previousTick || absoluteTick > currentTick || this.callCursor.has(key)) return;
         this.callCursor.add(key);
+        const foot = index % 2 ? "right" : "left";
+        const family = index % 5 === 4 ? "drive" : index % 3 === 2 ? "brush" : "basic";
+        this.rivalAnimation.requestFootGesture({
+          id: 10_000 + this.callCursor.size,
+          foot,
+          family,
+          modifiers: Object.freeze({ grounded: false, committed: index === call.rhythmTicks.length - 1 }),
+          rawTimeStamp: null,
+          sourceCodes: Object.freeze(["trade-call"]),
+        }, {
+          tick: absoluteTick,
+          direction: index === call.rhythmTicks.length - 1 ? "turn-right" : "neutral",
+          phrasePhase: localTick / FROLIC_TICKS_PER_BAR,
+        });
         this.emit("tradeCall", {
           callId: call.id,
           tick: absoluteTick,
@@ -752,7 +782,7 @@ export class AppalachianJamSimulation {
       step: this.replay.length,
       tick: round(tick),
       style: this.style,
-      state: frolicStateAtTick(tick),
+      state: modeStateAtTick(this.mode, tick),
       moveId: this.animation.current?.move.id ?? "",
       queuedMove: this.animation.queued?.move.id ?? "",
       input: Object.freeze({
@@ -808,18 +838,30 @@ export class AppalachianJamSimulation {
   }
 
   getHighlightSnapshot() {
-    return null;
+    return this.highlightSnapshot;
   }
 
   getSnapshot(beatSnapshot = this.lastSnapshot) {
     const tick = beatToTick(beatSnapshot?.beat);
     const displayTick = Math.max(0, tick);
-    const state = frolicStateAtTick(tick);
+    const state = modeStateAtTick(this.mode, tick);
     const bar = Math.min(32, Math.max(1, Math.floor(displayTick / FROLIC_TICKS_PER_BAR) + 1));
     const localTick = localTickInBar(displayTick);
     const strain = strainAtTick(displayTick, this.tuneMap);
-    const activeCall = callAtTick(displayTick, this.tuneMap);
+    const activeCall = ["tradeLicks", "stepShed"].includes(this.mode)
+      ? callAtTick(displayTick, this.tuneMap)
+      : null;
     const dancer = this.animation.getSnapshot(displayTick);
+    const rivalSnapshot = this.rivalAnimation.getSnapshot(displayTick);
+    const rivalLayer = rivalSnapshot.footLayers.find((foot) => foot.stage !== "planted");
+    const opponent = rivalLayer
+      ? Object.freeze({
+          ...rivalSnapshot,
+          presentationClip: rivalLayer.moveId || rivalSnapshot.presentationClip,
+          presentationPhase: rivalLayer.phase,
+          moveId: rivalLayer.moveId || rivalSnapshot.moveId,
+        })
+      : rivalSnapshot;
     const board = this.boardLines.getSnapshot();
     this.judge.setPerformanceMetrics?.({
       ...dancer.performance,
@@ -830,16 +872,16 @@ export class AppalachianJamSimulation {
     const liveScore = this.liveScore ?? this.judge.getResult();
     const lesson = PRACTICE_LESSONS[this.practiceLesson] ?? null;
     const countInBeat = tick < 0 ? Math.floor((tick + this.tuneMap.countInBars * 4 * FROLIC_PPQ) / FROLIC_PPQ) + 1 : 0;
-    return Object.freeze({
+    const snapshot = Object.freeze({
       mode: this.mode,
       started: this.started,
       complete: this.complete,
       performer: "player",
       character: this.character,
-      waitingCharacter: null,
+      waitingCharacter: this.mode === "tradeLicks" ? this.rivalCharacter : null,
       dancer,
       player: dancer,
-      opponent: null,
+      opponent: this.mode === "tradeLicks" ? opponent : null,
       beat: beatSnapshot,
       elapsedBeats: Math.max(0, tick / FROLIC_PPQ),
       remainingBeats: Math.max(0, (FROLIC_RUN_TICKS - tick) / FROLIC_PPQ),
@@ -869,6 +911,7 @@ export class AppalachianJamSimulation {
         callPhase: activeCall
           ? bar === activeCall.callBar ? "call" : "response"
           : "",
+        rivalVisible: this.mode === "tradeLicks",
         currentMove: dancer.moveId,
         queuedMove: dancer.queuedMove,
         supportingFoot: dancer.supportingFoot,
@@ -896,6 +939,14 @@ export class AppalachianJamSimulation {
         }) : null,
       }),
     });
+    const highlightQuality = this.performanceState.getSnapshot().quality
+      + (dancer.jump.state === "landing" && dancer.jump.landingQuality >= 0.72 ? 0.18 : 0)
+      + (this.bankHistory.length ? 0.08 : 0);
+    if (!this.complete && tick >= 0 && this.judge.events.length >= 4 && highlightQuality > this.highlightQuality) {
+      this.highlightQuality = highlightQuality;
+      this.highlightSnapshot = snapshot;
+    }
+    return snapshot;
   }
 }
 
@@ -1007,13 +1058,24 @@ function isAnyBarTurnaround(tick) {
   return localTickInBar(tick) >= FROLIC_TICKS_PER_BAR - FROLIC_PPQ;
 }
 
+function modeStateAtTick(mode, tick) {
+  const state = frolicStateAtTick(tick);
+  if (mode !== "frolic") return state;
+  if ([
+    FROLIC_STATES.TRADE_CALL,
+    FROLIC_STATES.TRADE_RESPONSE,
+    FROLIC_STATES.BREAKDOWN,
+  ].includes(state)) return FROLIC_STATES.OPEN_JAM;
+  return state;
+}
+
 function stateLabel(state, strain) {
   if (state === FROLIC_STATES.COUNT_IN) return "COUNT IT IN";
   if (state === FROLIC_STATES.OPEN_JAM) return strain?.id === "B1" ? "BUILD THE FROLIC" : "FIND THE GROOVE";
   if (state === FROLIC_STATES.TRADE_CALL) return "HEAR THE LICK";
   if (state === FROLIC_STATES.TRADE_RESPONSE) return "ANSWER THE LICK";
   if (state === FROLIC_STATES.TURNAROUND) return "TURNAROUND";
-  if (state === FROLIC_STATES.BREAKDOWN) return "BREAKDOWN";
+  if (state === FROLIC_STATES.BREAKDOWN) return "DANCE IT OUT";
   if (state === FROLIC_STATES.FINISH) return "BRING IT HOME";
   return "RESULTS";
 }

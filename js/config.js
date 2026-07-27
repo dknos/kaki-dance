@@ -5,14 +5,11 @@ export const MAX_FRAME_DELTA = 0.1;
 export const MAX_CATCH_UP_STEPS = 14;
 export const GAME_VERSION = "0.1.0";
 
-export const MODE_IDS = Object.freeze(["measure", "practice", "frolic", "stepShed", "freestyle", "battle"]);
+export const MODE_IDS = Object.freeze(["frolic", "tradeLicks", "stepShed"]);
 export const ROUND_BARS = Object.freeze({
-  measure: 16,
-  practice: 999,
   frolic: 32,
+  tradeLicks: 32,
   stepShed: 999,
-  freestyle: 25,
-  battle: 8,
 });
 
 export const COLORS = Object.freeze({

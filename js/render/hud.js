@@ -36,7 +36,10 @@ function drawFrolicHud(ctx, snapshot, settings) {
   };
   pixelRect(ctx, 6, 6, 124, 19, palette.ink);
   pixelRect(ctx, 7, 7, 122, 17, palette.panel);
-  drawPixelText(ctx, snapshot.mode === "stepShed" ? "STEP SHED" : "FREE FROLIC", 12, 10, {
+  const modeLabel = snapshot.mode === "stepShed"
+    ? "STEP SHED"
+    : snapshot.mode === "tradeLicks" ? "TRADE LICKS" : "FREE FROLIC";
+  drawPixelText(ctx, modeLabel, 12, 10, {
     color: palette.amber,
     scale: 1,
   });
@@ -117,6 +120,23 @@ function drawFrolicPhraseRail(ctx, frolic, palette) {
   const localBar = (frolic.bar - 1) % 8;
   for (let index = 0; index < 8; index += 1) {
     pixelEllipse(ctx, 151 + index * 12, 21, index === localBar ? 2 : 1, index === localBar ? 2 : 1, index === localBar ? palette.amber : palette.indigo);
+  }
+  if (frolic.call) {
+    for (const [index, tick] of frolic.call.rhythmTicks.entries()) {
+      const x = 144 + Math.round(tick / 384 * 96);
+      pixelEllipse(
+        ctx,
+        x,
+        28,
+        frolic.callPhase === "call" ? 2 : 1,
+        2,
+        index % 2 ? palette.cedar : palette.mint,
+      );
+    }
+    drawPixelText(ctx, frolic.callPhase === "call" ? "HEAR" : "ANSWER", 250, 26, {
+      color: frolic.callPhase === "call" ? palette.amber : palette.mint,
+      scale: 1,
+    });
   }
 }
 

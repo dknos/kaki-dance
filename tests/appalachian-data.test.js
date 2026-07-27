@@ -137,6 +137,27 @@ test("high-frequency repeated input scores well below a clean varied routine", (
   assert.ok(spamScore.restraint < 0.5);
 });
 
+test("Trade Licks scores listening separately from answering and counts missed calls", () => {
+  const silent = scoreAppalachianRoutine([], { tradeMode: true });
+  assert.equal(silent.callResponses.length, APPALACHIAN_TUNE_MAP.calls.length);
+  assert.equal(silent.listening, 100);
+  assert.equal(silent.responseQuality, 0);
+
+  const interruptions = APPALACHIAN_TUNE_MAP.calls.flatMap((call) => (
+    Array.from({ length: 5 }, (_, index) => ({
+      tick: (call.callBar - 1) * FROLIC_TICKS_PER_BAR + index * 48,
+      moveId: "walkingStep",
+      articulation: "flat",
+      timingOffsetTicks: 0,
+      style: "flatfoot",
+      foot: index % 2 ? "right" : "left",
+    }))
+  ));
+  const noisy = scoreAppalachianRoutine(interruptions, { tradeMode: true });
+  assert.equal(noisy.listening, 0);
+  assert.ok(noisy.total < silent.total);
+});
+
 test("intentional A/B motif returns are rewarded rather than classified as spam", () => {
   const events = [];
   for (const bar of [1, 9, 17, 25]) {
@@ -193,7 +214,7 @@ test("rapid valid rhythm retargets the body immediately without a hidden queue",
 });
 
 test("trade calls emit on their exact authored ticks", () => {
-  const simulation = new AppalachianJamSimulation({ style: "buck" });
+  const simulation = new AppalachianJamSimulation({ mode: "tradeLicks", style: "buck" });
   const call = APPALACHIAN_TUNE_MAP.calls[0];
   const start = (call.callBar - 1) * FROLIC_TICKS_PER_BAR;
   simulation.begin(snapshotAtTick(start - 12));
@@ -203,10 +224,19 @@ test("trade calls emit on their exact authored ticks", () => {
   const event = values.find((value) => value.type === "tradeCall");
   assert.equal(event?.tick, start);
   assert.equal(event?.anchor, true);
+  const snapshot = simulation.getSnapshot(snapshotAtTick(start + 12));
+  assert.equal(snapshot.mode, "tradeLicks");
+  assert.equal(snapshot.frolic.rivalVisible, true);
+  assert.equal(snapshot.waitingCharacter.id, "soder");
+  assert.ok(snapshot.opponent.footLayers.some((foot) => foot.stage !== "planted"));
 });
 
 test("live trade-response scoring refreshes after a complete anchor-preserving variation", () => {
-  const simulation = new AppalachianJamSimulation({ style: "buck", difficulty: "advanced" });
+  const simulation = new AppalachianJamSimulation({
+    mode: "tradeLicks",
+    style: "buck",
+    difficulty: "advanced",
+  });
   const call = APPALACHIAN_TUNE_MAP.calls[0];
   const responseStart = (call.responseBar - 1) * FROLIC_TICKS_PER_BAR;
   simulation.begin(snapshotAtTick(responseStart - 12));
@@ -221,6 +251,21 @@ test("live trade-response scoring refreshes after a complete anchor-preserving v
   assert.equal(live.callResponses[0].accepted, true);
   assert.equal(live.callResponses[0].type, "variation");
   assert.equal(live.callResponses[0].anchorAccuracy, 1);
+});
+
+test("Free Frolic stays improvisational and emits no hidden trade calls", () => {
+  const simulation = new AppalachianJamSimulation({ mode: "frolic", style: "flatfoot" });
+  const call = APPALACHIAN_TUNE_MAP.calls[0];
+  const start = (call.callBar - 1) * FROLIC_TICKS_PER_BAR;
+  simulation.begin(snapshotAtTick(start - 12));
+  simulation.update(0.1, snapshotAtTick(start + 12), frolicInput());
+  const events = [];
+  simulation.consumeEvents((value) => events.push(value));
+  const snapshot = simulation.getSnapshot(snapshotAtTick(start + 12));
+  assert.equal(events.some((value) => value.type === "tradeCall"), false);
+  assert.equal(snapshot.frolic.state, FROLIC_STATES.OPEN_JAM);
+  assert.equal(snapshot.frolic.call, null);
+  assert.equal(snapshot.opponent, null);
 });
 
 test("turnaround credit is recorded only inside the final beat window", () => {

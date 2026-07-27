@@ -42,6 +42,7 @@ test("save migration repairs old, corrupt, and out-of-range values", () => {
   assert.equal(migrated.settings.bindings.action, "KeyZ");
   assert.deepEqual(migrated.calibration.samples, [1, 2]);
   assert.equal(migrated.records.frolicBest, 0);
+  assert.equal(migrated.records.tradeLicksBest, 0);
   assert.equal(migrated.records.stepShedComplete, false);
   assert.equal(migrateSave(null).selectedCharacter, "kitty");
 });

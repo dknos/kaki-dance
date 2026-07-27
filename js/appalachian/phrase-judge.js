@@ -12,10 +12,12 @@ export class AppalachianPhraseJudge {
     tuneMap = APPALACHIAN_TUNE_MAP,
     style = "flatfoot",
     difficulty = "standard",
+    tradeMode = false,
   } = {}) {
     this.tuneMap = tuneMap;
     this.style = normalizeFrolicStyle(style);
     this.difficulty = tuneMap.difficultyLayers[difficulty] ? difficulty : "standard";
+    this.tradeMode = Boolean(tradeMode);
     this.events = [];
     this.transitions = [];
     this.turnarounds = [];
@@ -63,6 +65,7 @@ export class AppalachianPhraseJudge {
       transitions: this.transitions,
       turnarounds: this.turnarounds,
       performance: this.performanceMetrics,
+      tradeMode: this.tradeMode,
     });
   }
 }
@@ -154,6 +157,7 @@ export function scoreAppalachianRoutine(events, {
   transitions = [],
   turnarounds = [],
   performance = {},
+  tradeMode = false,
 } = {}) {
   const normalized = events.map(normalizeEvent).sort((a, b) => a.tick - b.tick);
   const restraint = restraintFactor(normalized);
@@ -167,7 +171,9 @@ export function scoreAppalachianRoutine(events, {
     const start = (call.responseBar - 1) * FROLIC_TICKS_PER_BAR;
     const end = start + FROLIC_TICKS_PER_BAR;
     const response = normalized.filter((event) => event.tick >= start && event.tick < end);
-    if (response.length) callResults.push(evaluateCallResponse(call, response, { difficulty }));
+    if (response.length || tradeMode) {
+      callResults.push(evaluateCallResponse(call, response, { difficulty }));
+    }
   }
   const callQuality = callResults.length ? average(callResults.map((value) => value.score / 100)) : 0.55;
   const legalFlow = transitions.length
@@ -239,7 +245,21 @@ export function scoreAppalachianRoutine(events, {
     + bankQuality * 0.16
     + legalFlow * 0.14,
   );
-  const total = Math.round((
+  const listening = tradeMode
+    ? score100(average(tuneMap.calls.map((call) => {
+        const callStart = (call.callBar - 1) * FROLIC_TICKS_PER_BAR;
+        const callEnd = callStart + FROLIC_TICKS_PER_BAR;
+        const interruptions = normalized.filter((event) => event.tick >= callStart && event.tick < callEnd).length;
+        return clamp(1 - interruptions / 5, 0, 1);
+      })))
+    : time;
+  const responseQuality = tradeMode ? score100(callQuality) : phraseFit;
+  const clarity = footClarity;
+  const creativity = personalStyle;
+  const resolution = landingResolution;
+  const total = tradeMode
+    ? Math.round((listening + responseQuality + clarity + creativity + resolution) / 5)
+    : Math.round((
     time
     + phraseFit
     + footClarity
@@ -265,6 +285,11 @@ export function scoreAppalachianRoutine(events, {
     useOfSpace,
     personalStyle,
     landingResolution,
+    listening,
+    responseQuality,
+    clarity,
+    creativity,
+    resolution,
     // Compatibility aliases for retained Gate 1 result artifacts.
     tune: phraseFit,
     footwork: footClarity,

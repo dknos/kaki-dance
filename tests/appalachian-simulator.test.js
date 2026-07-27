@@ -333,6 +333,18 @@ test("review surface and Pages-safe runtime paths expose all required control fa
   assert.doesNotMatch(runtime, /https?:\/\//);
 });
 
+test("shipping title exposes only the Appalachian vertical slice", () => {
+  const page = readFileSync(resolve(ROOT, "index.html"), "utf8");
+  assert.match(page, /data-start-mode="frolic"/);
+  assert.match(page, /data-start-mode="tradeLicks"/);
+  assert.match(page, /data-start-mode="stepShed"/);
+  for (const retired of ["measure", "practice", "freestyle", "battle"]) {
+    assert.doesNotMatch(page, new RegExp(`data-start-mode="${retired}"`));
+  }
+  assert.match(page, /Two feet join the band/);
+  assert.doesNotMatch(page, /headspin|floorwork|breaking/i);
+});
+
 function manifestValue() {
   return JSON.parse(readFileSync(
     resolve(ROOT, "assets/models/appalachian/simulator-manifest.json"),

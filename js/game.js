@@ -18,7 +18,7 @@ import { loadSave, saveGame } from "./storage.js";
 const EMPTY_INPUT = Object.freeze(createInputStep());
 const MEASURE_TRACK_URL = new URL("../assets/audio/moon-block-party.wav", import.meta.url);
 const FROLIC_TRACK_URL = new URL("../assets/audio/frolic/board-and-bow.wav", import.meta.url);
-const FROLIC_MODES = new Set(["frolic", "stepShed"]);
+const FROLIC_MODES = new Set(["frolic", "tradeLicks", "stepShed"]);
 
 export class KakiDanceGame {
   constructor({
@@ -72,7 +72,7 @@ export class KakiDanceGame {
       seed: 0x5245504c,
     });
     this.state = "title";
-    this.mode = "measure";
+    this.mode = "frolic";
     this.simulation = null;
     this.attract = null;
     this.snapshot = null;
@@ -121,7 +121,7 @@ export class KakiDanceGame {
 
   async startMode(mode = this.mode, { offsetSeconds = 0 } = {}) {
     if (this.destroyed) return;
-    this.mode = ["measure", "practice", "frolic", "stepShed", "freestyle", "battle"].includes(mode) ? mode : "measure";
+    this.mode = ["frolic", "tradeLicks", "stepShed"].includes(mode) ? mode : "frolic";
     this.host.dataset.mode = this.mode;
     const isFrolic = FROLIC_MODES.has(this.mode);
     this.activeBeatmap = isFrolic ? APPALACHIAN_TUNE_MAP : this.beatmap;
@@ -391,16 +391,17 @@ export class KakiDanceGame {
     }
     if (this.state === "title" && this.attract) {
       const time = performance.now() / 1000;
-      const beat = time * this.beatmap.bpm / 60;
-      const beatSnapshot = syntheticBeatSnapshot(beat, time, this.beatmap);
+      const beat = attractBeat(time);
+      const beatSnapshot = syntheticBeatSnapshot(beat, time, APPALACHIAN_TUNE_MAP);
       this.attract.update(dt, beatSnapshot, EMPTY_INPUT);
     }
   }
 
   render(dt) {
     if (this.state === "title" && this.attract) {
-      const beat = performance.now() / 1000 * this.beatmap.bpm / 60;
-      const beatSnapshot = syntheticBeatSnapshot(beat, performance.now() / 1000, this.beatmap);
+      const time = performance.now() / 1000;
+      const beat = attractBeat(time);
+      const beatSnapshot = syntheticBeatSnapshot(beat, time, APPALACHIAN_TUNE_MAP);
       const value = this.attract.getSnapshot(beatSnapshot);
       this.snapshot = Object.freeze({ ...value, started: false, callout: "", crowdHeat: 42 });
     } else if (this.simulation) {
@@ -513,13 +514,17 @@ export class KakiDanceGame {
       }));
     }
     this.elements.resultsKicker.textContent = isFrolic
-      ? this.mode === "stepShed" ? "STEP SHED COMPLETE" : "THE TUNE RESOLVES"
+      ? this.mode === "stepShed"
+        ? "STEP SHED COMPLETE"
+        : this.mode === "tradeLicks" ? "FINAL ANSWER" : "THE TUNE RESOLVES"
       : this.mode === "battle"
       ? won ? "CYPHER WON" : result.winner === "tie" ? "TIE BREAK ENERGY" : "MIKAN TAKES IT"
       : this.mode === "measure" || this.mode === "practice" ? "PHRASE COMPLETE"
       : "ROUND COMPLETE";
     this.elements.resultsTitle.textContent = isFrolic
-      ? player.total >= 82 ? "Board & band, together!" : player.total >= 62 ? "The board found the tune!" : "Leave a little more air"
+      ? this.mode === "tradeLicks"
+        ? player.total >= 82 ? "You answered and raised it!" : player.total >= 62 ? "A true musical answer!" : "Listen, leave space, answer"
+        : player.total >= 82 ? "Board & band, together!" : player.total >= 62 ? "The board found the tune!" : "Leave a little more air"
       : this.mode === "battle"
       ? won
         ? `${characterDefinition(this.selectedCharacter).displayName} cooked!`
@@ -528,7 +533,9 @@ export class KakiDanceGame {
         ? player.total >= 82 ? "PURRFECT echo!" : player.total >= 62 ? "In the pocket!" : "Run the echo again"
         : player.total >= 70 ? "Clean round!" : "Build the next phrase";
     const resultCategories = isFrolic
-      ? ["time", "phraseFit", "footClarity", "flow", "useOfSpace", "personalStyle", "landingResolution"]
+      ? this.mode === "tradeLicks"
+        ? ["listening", "responseQuality", "clarity", "creativity", "resolution"]
+        : ["time", "phraseFit", "footClarity", "flow", "useOfSpace", "personalStyle", "landingResolution"]
       : ["musicality", "vocabulary", "originality", "technique", "execution"];
     this.elements.judgeGrid.replaceChildren(...resultCategories.map((category) => {
       const cell = document.createElement("div");
@@ -542,6 +549,7 @@ export class KakiDanceGame {
         useOfSpace: "use of space",
         personalStyle: "personal style",
         landingResolution: "landing / resolve",
+        responseQuality: "response",
       }[category] ?? category;
       cell.append(score, label);
       return cell;
@@ -558,6 +566,9 @@ export class KakiDanceGame {
   updateRecords(result) {
     const player = result.player;
     if (this.mode === "frolic") this.save.records.frolicBest = Math.max(this.save.records.frolicBest, player.total);
+    if (this.mode === "tradeLicks") {
+      this.save.records.tradeLicksBest = Math.max(this.save.records.tradeLicksBest ?? 0, player.total);
+    }
     if (this.mode === "stepShed") this.save.records.stepShedComplete = true;
     if (this.mode === "freestyle") this.save.records.freestyleBest = Math.max(this.save.records.freestyleBest, player.total);
     if (this.mode === "battle" && result.winner === "player") this.save.records.battleWins += 1;
@@ -566,14 +577,15 @@ export class KakiDanceGame {
   }
 
   createAttractSimulation() {
-    this.renderer.preloadCharacter(this.selectedCharacter);
-    const beat = performance.now() / 1000 * this.beatmap.bpm / 60;
-    const snapshot = syntheticBeatSnapshot(beat, performance.now() / 1000, this.beatmap);
-    this.attract = new DanceSimulation({
-      mode: "practice",
+    void this.renderer.enterMode("frolic", this.selectedCharacter, this.selectedFrolicStyle);
+    const time = performance.now() / 1000;
+    const beat = attractBeat(time);
+    const snapshot = syntheticBeatSnapshot(beat, time, APPALACHIAN_TUNE_MAP);
+    this.attract = new AppalachianJamSimulation({
+      mode: "frolic",
       character: this.selectedCharacter,
-      beatmap: this.beatmap,
-      timingWindows: TIMING_WINDOWS.standard,
+      style: this.selectedFrolicStyle,
+      tuneMap: APPALACHIAN_TUNE_MAP,
       reducedMotion: this.motion.reducedMotion,
     });
     this.attract.begin(snapshot);
@@ -748,15 +760,17 @@ export class KakiDanceGame {
   }
 
   updateModePresentation() {
-    const isFrolic = FROLIC_MODES.has(this.mode) && this.state !== "title";
+    const isFrolic = FROLIC_MODES.has(this.mode);
     if (this.elements.nowPlaying) {
       this.elements.nowPlaying.textContent = isFrolic
-        ? "BOARD & BOW · 120 BPM · AABB"
+        ? `${this.mode === "tradeLicks" ? "TRADE LICKS" : this.mode === "stepShed" ? "STEP SHED" : "FREE FROLIC"} · BOARD & BOW · 120 BPM`
         : "MOON BLOCK PARTY · 100 BPM";
     }
     if (this.elements.railMotto) {
       this.elements.railMotto.textContent = isFrolic
-        ? "FOUNDATION / LICK / TRADE / FROLIC"
+        ? this.mode === "tradeLicks"
+          ? "HEAR / ANSWER / RAISE / RESOLVE"
+          : "TAP / BRUSH / TRAVEL / RESOLVE"
         : "LISTEN / COPY / FREEZE";
     }
     const labels = isFrolic
@@ -900,6 +914,11 @@ function syntheticBeatSnapshot(beat, time, beatmap) {
   });
 }
 
+function attractBeat(time) {
+  const runBeats = APPALACHIAN_TUNE_MAP.loopBars * APPALACHIAN_TUNE_MAP.beatsPerBar;
+  return (Number(time) || 0) * APPALACHIAN_TUNE_MAP.bpm / 60 % runBeats;
+}
+
 function keyLabel(code) {
   return {
     Space: "Space",
@@ -930,6 +949,7 @@ function modeLabel(mode) {
     measure: "Measure Match",
     practice: "Practice",
     frolic: "Appalachian Frolic",
+    tradeLicks: "Trade Licks",
     stepShed: "Step Shed",
     freestyle: "60 second Freestyle",
     battle: "Cypher Battle",

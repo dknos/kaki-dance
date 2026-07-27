@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="theme-color" content="#11142d">
-    <meta name="description" content="Kaki-Dance: freeform Appalachian footwork and Measure Match rhythm play.">
+    <meta name="theme-color" content="#101b18">
+    <meta name="description" content="Kaki-Dance is a two-foot Appalachian dance instrument: tap, brush, travel, trade licks, and answer the band.">
     <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="stylesheet" href="./styles.css">
-    <title>Kaki-Dance — Appalachian Frolic</title>
+    <title>Kaki-Dance — Two Feet in the Band</title>
   </head>
   <body>
     <main class="arcade" id="app">
@@ -17,13 +17,8 @@
           <span class="wordmark__paw" aria-hidden="true">●</span>
           <span>KAKI—DANCE</span>
         </a>
-        <nav class="utility-nav" aria-label="Development tools">
-          <a href="./hero-lab.html">Hero Lab</a>
-          <a href="./frolic-lab.html">Footwork Lab</a>
-          <a href="./appalachian-simulator-review.html">Simulator review</a>
-          <a href="./hero-rescue.html">Review board</a>
-          <a href="./lab.html">Labs</a>
-          <a href="./qa.html">QA gallery</a>
+        <nav class="utility-nav" aria-label="Game utilities">
+          <a href="./frolic-lab.html">Frolic Lab</a>
           <button class="sound-toggle" id="mute-button" type="button" aria-pressed="false">Sound on</button>
         </nav>
       </header>
@@ -38,9 +33,9 @@
 
           <section class="screen-layer title-layer is-visible" id="title-layer" aria-labelledby="game-title">
             <div class="title-lockup">
-              <p class="eyebrow">TWO FLOORS · ONE PAIR OF FEET</p>
+              <p class="eyebrow">CEDAR RIDGE · SATURDAY NIGHT</p>
               <h1 id="game-title">KAKI<br><span>DANCE</span></h1>
-              <p class="tagline">The band plays the tune. Your feet answer.</p>
+              <p class="tagline">Two feet join the band. Tap the board, shape a phrase, and answer back.</p>
             </div>
             <div class="mode-stitches" role="group" aria-label="Choose a mode">
               <div class="character-picks" role="radiogroup" aria-label="Choose a dancer">
@@ -54,9 +49,14 @@
                 </button>
               </div>
               <button class="mode-card mode-card--primary mode-card--frolic" type="button" data-start-mode="frolic">
-                <span class="mode-card__kicker">NEW MODE · 32-BAR AABB</span>
-                <span class="mode-card__name">Appalachian Frolic</span>
-                <span class="mode-card__detail">Free Frolic · Trade Licks / Measure Echo · two-foot instrument</span>
+                <span class="mode-card__kicker">PERFORMANCE TOY · 32-BAR AABB</span>
+                <span class="mode-card__name">Free Frolic</span>
+                <span class="mode-card__detail">Improvise, travel, build a phrase, and bring the tune home.</span>
+              </button>
+              <button class="mode-card mode-card--primary mode-card--trade" type="button" data-start-mode="tradeLicks">
+                <span class="mode-card__kicker">MAIN GAME · CALL AND RESPONSE</span>
+                <span class="mode-card__name">Trade Licks</span>
+                <span class="mode-card__detail">Hear the other dancer. Echo, answer, vary, or raise the phrase.</span>
               </button>
               <div class="frolic-style-picks" role="radiogroup" aria-label="Choose an Appalachian Frolic gameplay profile">
                 <button class="frolic-style-pick is-selected" type="button" role="radio" aria-checked="true" data-frolic-style="flatfoot">
@@ -72,28 +72,9 @@
               <div class="supporting-modes">
                 <button class="mode-card" type="button" data-start-mode="stepShed">
                   <span class="mode-card__name">Step Shed</span>
-                  <span class="mode-card__detail">Ten learn-by-doing lessons</span>
-                </button>
-                <button class="mode-card" type="button" data-start-mode="measure">
-                  <span class="mode-card__name">Measure Match</span>
-                  <span class="mode-card__detail">Listen · echo · finish</span>
-                </button>
-                <button class="mode-card" type="button" data-start-mode="practice">
-                  <span class="mode-card__name">Echo Practice</span>
-                  <span class="mode-card__detail">Replay opening echoes</span>
+                  <span class="mode-card__detail">Seven short, playable fundamentals. No arrow highway.</span>
                 </button>
               </div>
-              <details class="more-modes">
-                <summary>More modes · experimental</summary>
-                <button class="mode-card" type="button" data-start-mode="freestyle">
-                  <span class="mode-card__name">60s Freestyle</span>
-                  <span class="mode-card__detail">Advanced direct move controls</span>
-                </button>
-                <button class="mode-card" type="button" data-start-mode="battle">
-                  <span class="mode-card__name">Cypher Battle</span>
-                  <span class="mode-card__detail">Experimental round system</span>
-                </button>
-              </details>
             </div>
             <div class="title-actions">
               <button type="button" class="text-button" id="settings-button">Settings</button>
@@ -131,8 +112,8 @@
                 <label>Full-body visual offset <output id="visual-latency-output">0 ms</output>
                   <input id="setting-visual-latency" type="range" min="-200" max="200" value="0" step="5">
                 </label>
-                <label>Screen shake <output id="shake-output">70%</output>
-                  <input id="setting-shake" type="range" min="0" max="100" value="70" step="5">
+                <label>Landing vibration <output id="shake-output">12%</output>
+                  <input id="setting-shake" type="range" min="0" max="100" value="12" step="1">
                 </label>
                 <label>Music <output id="music-output">80%</output>
                   <input id="setting-music" type="range" min="0" max="100" value="80" step="5">
@@ -142,20 +123,19 @@
                 </label>
                 <label>Crowd <output id="crowd-output">75%</output>
                   <input id="setting-crowd" type="range" min="0" max="100" value="75" step="5">
-                </label>
                 <label>Public beat pulse <input id="setting-beat-pulse" type="checkbox" checked></label>
                 <label>Timing labels <input id="setting-timing-labels" type="checkbox" checked></label>
                 <label>Reduced motion <input id="setting-reduced-motion" type="checkbox"></label>
                 <label>Reduce flashes <input id="setting-flash" type="checkbox"></label>
               </div>
-              <p class="settings-note">Calibration and key remapping live in the Rhythm Lab and Controls panel.</p>
+              <p class="settings-note">Foot audio and the dancer share one musical clock. Remap every performance key in Controls.</p>
             </div>
           </section>
 
           <section class="screen-layer panel-layer" id="controls-layer" aria-labelledby="controls-title" hidden>
             <div class="sewn-panel controls-panel">
               <div class="panel-heading">
-                <p class="eyebrow">ONE BUTTON TO START</p>
+                <p class="eyebrow">TWO FEET · NO KEY REPEAT</p>
                 <h2 id="controls-title">Controls</h2>
                 <button type="button" class="close-button" data-close-layer aria-label="Close controls">×</button>
               </div>
@@ -240,7 +220,6 @@
               <button type="button" class="touch-jump" data-control="jump" aria-label="Hold and release jump">JUMP</button>
               <button type="button" class="touch-foot" data-control="leftFoot" aria-label="Left foot">L FOOT</button>
               <button type="button" class="touch-foot" data-control="rightFoot" aria-label="Right foot">R FOOT</button>
-              <button type="button" class="touch-action touch-measure-action" data-control="action" aria-label="Copy measure cell">PAW</button>
             </div>
             <div class="touch-modifiers" aria-label="Expression modifiers">
               <button type="button" data-control="brushModifier" aria-label="Brush articulation">BRUSH</button>
@@ -252,14 +231,14 @@
         </div>
         <footer class="cabinet__rail" aria-label="Now playing">
           <span class="rail-light" aria-hidden="true"></span>
-          <span id="now-playing">MOON BLOCK PARTY · 100 BPM</span>
-          <span class="rail-motto">LISTEN / COPY / FREEZE</span>
+          <span id="now-playing">FREE FROLIC · BOARD & BOW · 120 BPM</span>
+          <span class="rail-motto">TAP / BRUSH / TRAVEL / RESOLVE</span>
         </footer>
       </section>
 
       <aside class="portrait-gate" aria-live="polite">
         <span aria-hidden="true">↻</span>
-        Rotate your phone for the cypher.
+        Rotate your phone for the full dance board.
       </aside>
       <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
     </main>

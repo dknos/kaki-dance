@@ -97,8 +97,9 @@ export class KakiDanceRenderer {
   }
 
   async enterMode(mode, character, style = "flatfoot") {
-    if (mode === "frolic" || mode === "stepShed") {
+    if (mode === "frolic" || mode === "tradeLicks" || mode === "stepShed") {
       const fallbackStyle = "flatfoot";
+      const rival = character === "kitty" ? "soder" : "kitty";
       this.heroes.library.releaseAll?.();
       this.frolicHeroes.library.releaseExcept(character, fallbackStyle);
       if (!this.appalachian3d || this.appalachian3d.disposed) {
@@ -107,6 +108,7 @@ export class KakiDanceRenderer {
       }
       return Promise.all([
         this.frolicHeroes.preload(character, fallbackStyle),
+        ...(mode === "tradeLicks" ? [this.frolicHeroes.preload(rival, fallbackStyle)] : []),
         this.appalachian3d.load(character, style),
       ]);
     }
@@ -177,6 +179,7 @@ export class KakiDanceRenderer {
 
   renderFrolic(ctx, snapshot) {
     if (!this.frolicQaMode) this.effects.drawBehind(ctx);
+    this.renderTradeCaller(ctx, snapshot);
     const useLive = this.appalachianRenderMode === "live"
       && this.appalachian3d?.ready
       && this.appalachian3d.render(snapshot);
@@ -195,6 +198,18 @@ export class KakiDanceRenderer {
     }
     if (!this.frolicQaMode) this.effects.drawFront(ctx);
     drawHud(ctx, snapshot, this.settings);
+  }
+
+  renderTradeCaller(ctx, snapshot) {
+    if (snapshot.mode !== "tradeLicks" || !snapshot.opponent || !snapshot.waitingCharacter) return;
+    const calling = snapshot.frolic?.state === "TRADE_CALL";
+    this.frolicHeroes.draw(ctx, snapshot.opponent, snapshot.waitingCharacter, "flatfoot", {
+      x: 306,
+      floorY: 145,
+      scale: calling ? 0.72 : 0.64,
+      alpha: calling ? 1 : 0.58,
+      phase: heroPhase(snapshot, snapshot.opponent),
+    });
   }
 
   renderFrolicAtlas(ctx, snapshot) {

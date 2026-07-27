@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-27T01:58:28.160Z",
+  "generatedAt": "2026-07-27T02:08:55.420Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -20,7 +20,7 @@
   "maximumPlantedFootDriftMeters": 2.482534153247273e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 790,
+    "maximumOpaquePixels": 791,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -195,7 +195,7 @@
       "actionId": 4,
       "timeline": 3
     },
-    "recordedFrames": 20
+    "recordedFrames": 22
   },
   "atlasFallback": true,
   "bothHeroes": true,
@@ -299,10 +299,29 @@
         },
         "minimumDot": 0.9963198505108563
       },
-      "renderP95Milliseconds": 1.699999988079071,
+      "renderP95Milliseconds": 1.800000011920929,
       "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"
     }
+  },
+  "shippingModes": [
+    "frolic",
+    "tradeLicks",
+    "stepShed"
+  ],
+  "tradeLicks": {
+    "mode": "tradeLicks",
+    "state": "TRADE_CALL",
+    "call": "a2-call-1",
+    "rival": "soder",
+    "rivalVisible": true,
+    "scoreCategories": [
+      100,
+      0,
+      0,
+      0,
+      29
+    ]
   }
 }

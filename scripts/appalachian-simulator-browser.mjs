@@ -82,6 +82,50 @@ async function smoke() {
   assert.equal(integrated.renderer.ready, true);
   await gamePage.close();
 
+  const tradePage = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  watch(tradePage);
+  await tradePage.goto(BASE_URL, { waitUntil: "networkidle" });
+  const shippingModes = await tradePage.locator("[data-start-mode]").evaluateAll(
+    (elements) => elements.map((element) => element.dataset.startMode),
+  );
+  assert.deepEqual(shippingModes, ["frolic", "tradeLicks", "stepShed"]);
+  await tradePage.evaluate(() => kakiDance.start({
+    mode: "tradeLicks",
+    immediate: true,
+    offsetSeconds: 20,
+  }));
+  await tradePage.waitForFunction(() => kakiDance?.getSnapshot?.().state === "running");
+  await tradePage.waitForFunction(
+    () => kakiDance.getSnapshot().simulation?.frolic?.state === "TRADE_CALL"
+      && kakiDance.getAppalachianDiagnostics?.().ready,
+    undefined,
+    { timeout: 15_000 },
+  );
+  const trade = await tradePage.evaluate(() => {
+    const snapshot = kakiDance.getSnapshot().simulation;
+    return {
+      mode: snapshot.mode,
+      state: snapshot.frolic.state,
+      call: snapshot.frolic.call?.id,
+      rival: snapshot.waitingCharacter?.id,
+      rivalVisible: snapshot.frolic.rivalVisible,
+      scoreCategories: [
+        snapshot.playerScore.listening,
+        snapshot.playerScore.responseQuality,
+        snapshot.playerScore.clarity,
+        snapshot.playerScore.creativity,
+        snapshot.playerScore.resolution,
+      ],
+    };
+  });
+  assert.equal(trade.mode, "tradeLicks");
+  assert.equal(trade.state, "TRADE_CALL");
+  assert.ok(trade.call);
+  assert.equal(trade.rivalVisible, true);
+  assert.ok(["kitty", "soder"].includes(trade.rival));
+  assert.equal(trade.scoreCategories.every(Number.isFinite), true);
+  await tradePage.close();
+
   const page = await reviewPage("?renderer=webgl2");
   const forced = await diagnostics(page);
   assert.equal(forced.ready, true);
@@ -245,6 +289,8 @@ async function smoke() {
     bothHeroes: true,
     allStyles: true,
     integratedGame: integrated,
+    shippingModes,
+    tradeLicks: trade,
   };
 }
 
