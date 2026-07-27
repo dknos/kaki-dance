@@ -27,6 +27,11 @@ class AppalachianSimulatorReview {
     this.debug = {};
     this.eventLog = [];
     this.contactTimeline = [];
+    this.recording = false;
+    this.recordedSteps = [];
+    this.replayCursor = -1;
+    this.freeCamera = false;
+    this.cameraDrag = null;
     this.renderer = new KakiDanceRenderer(canvas, {
       settings: {
         reducedMotion: false,
@@ -89,8 +94,21 @@ class AppalachianSimulatorReview {
     this.beat += stepDt * APPALACHIAN_TUNE_MAP.bpm / 60;
     this.demoTime += stepDt;
     const live = forcedInput ?? this.input.consumeStep();
-    const scripted = this.demo ? demoInput(this.demo, this.demoTime, this.style) : null;
-    const input = scripted ? mergeInput(live, scripted) : live;
+    let input = live;
+    if (this.replayCursor >= 0) {
+      input = this.recordedSteps[this.replayCursor] ?? createInputStep();
+      this.replayCursor += 1;
+      if (this.replayCursor >= this.recordedSteps.length) {
+        this.replayCursor = -1;
+        this.updateRecordingStatus();
+      }
+    } else if (this.demo) {
+      input = mergeInput(live, demoInput(this.demo, this.demoTime, this.style));
+    }
+    if (this.recording) {
+      this.recordedSteps.push(cloneInputStep(input));
+      if (this.recordedSteps.length >= 120 * 90) this.stopRecording();
+    }
     this.lastInput = input;
     const beat = beatSnapshot(this.beat);
     this.simulation.update(stepDt, beat, input);
@@ -161,6 +179,27 @@ class AppalachianSimulatorReview {
       this.update(1 / 120, createInputStep());
       this.render(0);
     });
+    document.getElementById("record-input").addEventListener("click", async () => {
+      this.demo = "";
+      this.recordedSteps = [];
+      this.replayCursor = -1;
+      this.recording = true;
+      this.paused = false;
+      document.getElementById("pause-review").textContent = "Pause";
+      await this.resetPerformer();
+      this.updateRecordingStatus();
+    });
+    document.getElementById("stop-recording").addEventListener("click", () => this.stopRecording());
+    document.getElementById("replay-recording").addEventListener("click", async () => {
+      if (!this.recordedSteps.length) return;
+      this.recording = false;
+      this.demo = "";
+      this.replayCursor = 0;
+      this.paused = false;
+      document.getElementById("pause-review").textContent = "Pause";
+      await this.resetPerformer();
+      this.updateRecordingStatus();
+    });
     document.getElementById("sound-review").addEventListener("click", async (event) => {
       this.soundEnabled = !this.soundEnabled;
       if (this.soundEnabled && this.musicEnabled) {
@@ -205,10 +244,44 @@ class AppalachianSimulatorReview {
         this.render(0);
       });
     }
+    document.getElementById("free-camera").addEventListener("change", (event) => {
+      this.freeCamera = event.target.checked;
+      this.renderer.setAppalachianFreeCamera?.(this.freeCamera);
+      if (!this.freeCamera) this.renderer.setAppalachianCameraPreset("gameplay");
+      canvas.focus({ preventScroll: true });
+    });
+    canvas.addEventListener("pointerdown", (event) => {
+      if (!this.freeCamera) return;
+      this.cameraDrag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+      canvas.setPointerCapture?.(event.pointerId);
+    });
+    canvas.addEventListener("pointermove", (event) => {
+      if (!this.cameraDrag || this.cameraDrag.pointerId !== event.pointerId) return;
+      const dx = event.clientX - this.cameraDrag.x;
+      const dy = event.clientY - this.cameraDrag.y;
+      this.cameraDrag.x = event.clientX;
+      this.cameraDrag.y = event.clientY;
+      this.renderer.orbitAppalachianCamera?.(dx * 0.008, dy * 0.006, 0);
+      this.render(0);
+    });
+    const releaseCamera = (event) => {
+      if (this.cameraDrag?.pointerId === event.pointerId) this.cameraDrag = null;
+    };
+    canvas.addEventListener("pointerup", releaseCamera);
+    canvas.addEventListener("pointercancel", releaseCamera);
+    canvas.addEventListener("wheel", (event) => {
+      if (!this.freeCamera) return;
+      event.preventDefault();
+      this.renderer.orbitAppalachianCamera?.(0, 0, Math.sign(event.deltaY) * 0.5);
+      this.render(0);
+    }, { passive: false });
     for (const button of document.querySelectorAll("[data-demo]")) {
       button.addEventListener("click", () => {
         this.demo = button.dataset.demo;
         this.demoTime = 0;
+        this.recording = false;
+        this.replayCursor = -1;
+        this.updateRecordingStatus();
         selectButtons("[data-demo]", button);
         canvas.focus({ preventScroll: true });
       });
@@ -287,8 +360,38 @@ class AppalachianSimulatorReview {
       `render  ${fixed(diagnostics.renderP95Milliseconds)} ms p95`,
       `tail support ${diagnostics.tailSupportEligible}`,
     ].join("\n");
+    document.getElementById("clock-data").textContent = [
+      `fixed   120 Hz`,
+      `beat    ${fixed(snapshot.beat.beat)}`,
+      `bar     ${snapshot.beat.barIndex + 1}`,
+      `phase   ${fixed(snapshot.beat.beatPhase)}`,
+      `music   ${fixed(snapshot.beat.audioTime)} s`,
+      `sim     ${fixed(this.demoTime)} s @ ${this.speed}×`,
+      `state   ${frolic.state}`,
+      `record  ${this.recording ? `${this.recordedSteps.length} frames` : this.replayCursor >= 0 ? `replay ${this.replayCursor}/${this.recordedSteps.length}` : "idle"}`,
+    ].join("\n");
     document.getElementById("event-log").textContent = this.eventLog.join("\n") || "waiting for foot edges…";
     document.getElementById("contact-timeline").textContent = this.contactTimeline.join("\n") || "waiting for authored contact…";
+    if (this.recording || this.replayCursor >= 0) this.updateRecordingStatus();
+  }
+
+  stopRecording() {
+    this.recording = false;
+    this.replayCursor = -1;
+    this.updateRecordingStatus();
+  }
+
+  updateRecordingStatus() {
+    const status = document.getElementById("recording-status");
+    if (this.recording) {
+      status.textContent = `RECORDING · ${this.recordedSteps.length} FRAMES`;
+    } else if (this.replayCursor >= 0) {
+      status.textContent = `REPLAY · ${this.replayCursor}/${this.recordedSteps.length}`;
+    } else if (this.recordedSteps.length) {
+      status.textContent = `${this.recordedSteps.length} FRAMES · ${(this.recordedSteps.length / 120).toFixed(2)} S`;
+    } else {
+      status.textContent = "NO RECORDING";
+    }
   }
 }
 
@@ -296,6 +399,54 @@ function demoInput(name, time, style) {
   const input = createInputStep();
   input.profile = "appalachian";
   input.device = `review:${name}`;
+  const frame = Math.floor(time * 120 + 1e-5);
+  if (name === "eighths") addFootPattern(input, frame, 30, ["left", "right"]);
+  if (name === "sixteenths") addFootPattern(input, frame, 15, ["left", "right"]);
+  if (name === "leftLeftRight") addFootPattern(input, frame, 24, ["left", "left", "right"]);
+  if (name === "brushStepStep") {
+    addFootPattern(input, frame, 30, ["left", "right", "left"], ["brush", "basic", "basic"]);
+  }
+  if (name === "toeHeelToe") {
+    addFootPattern(
+      input,
+      frame,
+      30,
+      ["left", "right", "left"],
+      ["articulation", "articulation", "articulation"],
+      ["toe", "heel", "toe"],
+    );
+  }
+  if (name === "doubleStomp" && frame % 120 === 0) {
+    input.performanceEdges = Object.freeze([
+      reviewEdge("leftFoot", time),
+      reviewEdge("rightFoot", time),
+    ]);
+  }
+  if (name === "travelTap") {
+    input.travelX = Math.sin(time * 0.84) * 0.8;
+    input.travelY = Math.cos(time * 0.42) * 0.58;
+    input.x = input.travelX;
+    input.y = input.travelY;
+    addFootPattern(input, frame, 30, ["left", "right"]);
+  }
+  if (name === "turnTap") {
+    input.travelX = Math.sin(time * 0.8) * 0.55;
+    input.turnDirection = Math.sin(time * 0.4) < 0 ? -1 : 1;
+    addFootPattern(input, frame, 30, ["left", "right"], ["basic", "turn", "basic", "turn"]);
+  }
+  if (name === "jumpBeatOne") {
+    const barPhase = time % 2;
+    input.jump = barPhase >= 1.08 && barPhase < 1.42;
+    input.jumpPressed = frame % 240 === 130;
+    input.jumpReleased = frame % 240 === 170;
+    input.groundModifier = barPhase > 1.84 || barPhase < 0.12;
+    if (frame % 240 === 0) {
+      input.performanceEdges = Object.freeze([
+        reviewEdge("leftFoot", time),
+        reviewEdge("rightFoot", time),
+      ]);
+    }
+  }
   if (name === "figureEight") {
     input.travelX = Math.sin(time * 1.05);
     input.travelY = Math.sin(time * 2.1) * 0.72;
@@ -424,7 +575,7 @@ function buttonText(input) {
   ].filter(Boolean).join(" ") || "—";
 }
 
-function reviewEdge(action, time) {
+function reviewEdge(action, time, articulationModifier = "") {
   return Object.freeze({
     action,
     rawTimeStamp: time * 1000,
@@ -433,6 +584,27 @@ function reviewEdge(action, time) {
     code: "",
     grounded: false,
     committed: false,
+    articulationModifier,
+  });
+}
+
+function addFootPattern(input, frame, interval, feet, families = [], articulations = []) {
+  if (frame % interval !== 0) return;
+  const index = Math.floor(frame / interval);
+  const foot = feet[index % feet.length];
+  const family = families.length ? families[index % families.length] : "basic";
+  const articulationModifier = articulations.length ? articulations[index % articulations.length] : "";
+  const time = frame / 120;
+  input.performanceEdges = Object.freeze([
+    reviewEdge(foot === "right" ? "rightFoot" : "leftFoot", time, articulationModifier),
+    ...(family === "basic" ? [] : [reviewEdge(family, time, articulationModifier)]),
+  ]);
+}
+
+function cloneInputStep(input) {
+  return Object.freeze({
+    ...input,
+    performanceEdges: Object.freeze((input.performanceEdges ?? []).map((edge) => Object.freeze({ ...edge }))),
   });
 }
 

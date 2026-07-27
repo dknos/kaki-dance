@@ -84,6 +84,14 @@ export class KakiDanceRenderer {
     return this.appalachian3d?.setCameraPreset?.(value) ?? "gameplay";
   }
 
+  setAppalachianFreeCamera(enabled) {
+    return this.appalachian3d?.setFreeCamera?.(enabled) ?? false;
+  }
+
+  orbitAppalachianCamera(yawDelta, pitchDelta, zoomDelta) {
+    return this.appalachian3d?.orbitCamera?.(yawDelta, pitchDelta, zoomDelta) ?? false;
+  }
+
   preloadCharacter(character) {
     return this.heroes.preload(character);
   }

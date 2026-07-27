@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED",
   "mode": "smoke",
-  "generatedAt": "2026-07-24T23:37:10.003Z",
+  "generatedAt": "2026-07-27T01:39:52.312Z",
   "errors": [],
   "failedRequests": [],
   "forcedWebGL2": {
@@ -17,10 +17,10 @@
     "forced": false,
     "reason": "WebGPU remains capability-gated until animation and capture parity pass."
   },
-  "maximumPlantedFootDriftMeters": 4.440892098500626e-16,
+  "maximumPlantedFootDriftMeters": 5.578801654593729e-16,
   "liveCanvasFrameClearing": {
     "samples": 24,
-    "maximumOpaquePixels": 785,
+    "maximumOpaquePixels": 853,
     "maximumAllowedPixels": 1658.88
   },
   "liveRig": {
@@ -183,6 +183,20 @@
       }
     }
   },
+  "frolicLab": {
+    "diagnosticsVisible": {
+      "axes": 28,
+      "names": 28,
+      "lock": true
+    },
+    "freeCamera": true,
+    "deterministicPattern": {
+      "device": "review:sixteenths",
+      "actionId": 4,
+      "timeline": 3
+    },
+    "recordedFrames": 20
+  },
   "atlasFallback": true,
   "bothHeroes": true,
   "allStyles": true,
@@ -191,7 +205,7 @@
     "action": 1,
     "arm": {
       "x": 0,
-      "y": -0.12780378646280904
+      "y": -0.14085283984710678
     },
     "renderer": {
       "ready": true,
@@ -255,37 +269,38 @@
       "style": "buck",
       "clip": "walkingStep",
       "supportFoot": "right",
-      "plantedFootDriftMeters": 1.3597399555105182e-16,
+      "plantedFootDriftMeters": 2.7755575615628914e-17,
       "footBasis": {
         "intendedForward": [
-          0.9610903688216749,
+          0.9052072665585318,
           0,
-          0.27623414517075373
+          0.4249703572834599
         ],
-        "facingRadians": 1.2909227515361907,
+        "facingRadians": 1.1318671883199685,
         "left": {
           "vector": [
-            0.9734871197210369,
+            0.9120231250297319,
             0,
-            0.22874183643846094
+            0.4101387806718619
           ],
-          "dot": 0.9987954005892078,
+          "dot": 0.9998667842042575,
           "contact": "brush",
           "support": false
         },
         "right": {
           "vector": [
-            0.9663861380736704,
+            0.9194726902730516,
             0,
-            0.2570949866081736
+            0.3931538780707079
           ],
-          "dot": 0.999802823718773,
+          "dot": 0.9993921046683751,
           "contact": "flat",
           "support": true
         },
-        "minimumDot": 0.9987954005892078
+        "minimumDot": 0.9993921046683751
       },
-      "renderP95Milliseconds": 5.600000023841858,
+      "renderP95Milliseconds": 1.699999988079071,
+      "freeCamera": false,
       "tailSupportEligible": false,
       "candidateStatus": "CANDIDATE — HUMAN REVIEW REQUIRED"
     }

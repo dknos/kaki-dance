@@ -4,18 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#16283b">
-    <meta name="description" content="Human review surface for the Kaki-Dance live Appalachian simulator candidate.">
+    <meta name="description" content="Frolic Lab: the isolated live-rig workbench for Kaki Dance Appalachian footwork.">
     <link rel="icon" href="./assets/ui/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./appalachian-simulator-review.css">
-    <title>Kaki-Dance — Appalachian simulator review</title>
+    <title>Kaki-Dance — Frolic Lab</title>
   </head>
   <body>
     <main class="review-shell" id="sim-review">
       <header class="review-mast">
         <div>
           <a class="back-link" href="./">← KAKI-DANCE</a>
-          <p class="section-mark">GATE 2 / TWO-FOOT PERFORMANCE INSTRUMENT</p>
-          <h1>Play the board.</h1>
+          <p class="section-mark">FROLIC LAB / TWO-FOOT PERFORMANCE INSTRUMENT</p>
+          <h1>Prove the feet.</h1>
         </div>
         <div class="candidate-stamp" role="status">
           CANDIDATE<br>HUMAN REVIEW REQUIRED
@@ -97,6 +97,7 @@
             <button type="button" id="sound-review">Enable sound</button>
           </div>
           <div class="speed-row" role="group" aria-label="Playback speed">
+            <button type="button" data-speed="0.1">0.1×</button>
             <button type="button" data-speed="0.25">0.25×</button>
             <button type="button" data-speed="0.5">0.5×</button>
             <button type="button" class="is-selected" data-speed="1">1×</button>
@@ -114,10 +115,14 @@
           </div>
           <div class="check-grid">
             <label><input type="checkbox" data-debug="skeleton"> Skeleton</label>
+            <label><input type="checkbox" data-debug="boneAxes"> Bone axes</label>
+            <label><input type="checkbox" data-debug="boneNames"> Bone names</label>
             <label><input type="checkbox" data-debug="contacts"> Contacts</label>
+            <label><input type="checkbox" data-debug="plantedLocks"> Planted locks</label>
             <label><input type="checkbox" data-debug="centerOfMass"> Center of mass</label>
             <label><input type="checkbox" data-debug="rootTrail"> Root trail</label>
             <label><input type="checkbox" data-debug="footBasis"> Foot basis + L/R</label>
+            <label><input type="checkbox" id="free-camera"> Free camera</label>
           </div>
           <div class="segmented segmented--three" role="group" aria-label="Review camera">
             <button type="button" data-camera="front">Front</button>
@@ -133,17 +138,32 @@
 
       <section class="test-tape" aria-labelledby="test-tape-title">
         <div class="tape-title">
-          <p class="section-mark">AUTOMATED REVIEW MOTIONS</p>
+          <p class="section-mark">DETERMINISTIC INPUT PLAYBACK</p>
           <h2 id="test-tape-title">Caller’s tape</h2>
-          <p>These drive the same simulator state as live controls. They are capture aids, not approval.</p>
+          <p>Every pattern drives the same 120 Hz input/contact path as live play. They are proofs, not approval.</p>
         </div>
-        <div class="test-buttons">
+        <div class="test-buttons test-buttons--patterns">
+          <button type="button" data-demo="eighths">Alternating eighths</button>
+          <button type="button" data-demo="sixteenths">Alternating sixteenths</button>
+          <button type="button" data-demo="leftLeftRight">Left-left-right</button>
+          <button type="button" data-demo="brushStepStep">Brush-step-step</button>
+          <button type="button" data-demo="toeHeelToe">Toe-heel-toe</button>
+          <button type="button" data-demo="doubleStomp">Double stomp</button>
+          <button type="button" data-demo="travelTap">Travel while tapping</button>
+          <button type="button" data-demo="turnTap">Turn while tapping</button>
+          <button type="button" data-demo="jumpBeatOne">Jump → beat one</button>
           <button type="button" data-demo="figureEight">Figure-eight travel</button>
           <button type="button" data-demo="armCircle">Arm-circle test</button>
           <button type="button" data-demo="independentArms">Independent arms</button>
           <button type="button" data-demo="styleHop">Style hop</button>
           <button type="button" data-demo="danceLine">Eight-move Dance Line</button>
           <button type="button" data-demo="">Live control</button>
+        </div>
+        <div class="recording-row" role="group" aria-label="Deterministic recording controls">
+          <button type="button" id="record-input">Record</button>
+          <button type="button" id="stop-recording">Stop</button>
+          <button type="button" id="replay-recording">Replay</button>
+          <output id="recording-status">NO RECORDING</output>
         </div>
       </section>
 
@@ -173,6 +193,10 @@
           <pre id="runtime-data">loading GLB…</pre>
         </article>
         <article>
+          <h2>Music clock</h2>
+          <pre id="clock-data">waiting for clock…</pre>
+        </article>
+        <article>
           <h2>Input event log</h2>
           <pre id="event-log">waiting for foot edges…</pre>
         </article>
@@ -192,8 +216,8 @@
         <div class="review-actions">
           <button type="button" data-control="leftFoot">L FOOT</button>
           <button type="button" data-control="rightFoot">R FOOT</button>
-          <button type="button" data-control="brush">Q BRUSH</button>
-          <button type="button" data-control="articulation">E HEEL·TOE</button>
+          <button type="button" data-control="brush">BRUSH</button>
+          <button type="button" data-control="articulation">HEEL·TOE</button>
           <button type="button" data-control="drive">F DRIVE</button>
           <button type="button" data-control="turn">T TURN</button>
           <button type="button" data-control="jump">JUMP</button>
@@ -207,7 +231,7 @@
       </section>
 
       <footer class="review-footer">
-        <p><strong>Keyboard:</strong> WASD travel · ← left foot · → right foot · ↑/↓ persistent arms · Shift+↑/↓ left arm · Ctrl+↑/↓ right arm · Q/E/F/T families · Ctrl ground · Shift commit · Space hop.</p>
+        <p><strong>Keyboard:</strong> WASD travel · ←/→ independent feet · ↑/↓ arms · Shift brush · Ctrl heel · Z toe · Q/E/F/T families · Space hop.</p>
         <p id="review-status" aria-live="polite">Loading the live candidate…</p>
       </footer>
       <audio id="review-music" src="./assets/audio/frolic/board-and-bow.wav" loop preload="auto"></audio>

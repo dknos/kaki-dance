@@ -69,7 +69,10 @@ export class AppalachianThreeRenderer {
     this.renderMode = "live";
     this.debug = {
       skeleton: false,
+      boneAxes: false,
+      boneNames: false,
       contacts: false,
+      plantedLocks: false,
       centerOfMass: false,
       rootTrail: false,
       footBasis: false,
@@ -83,6 +86,10 @@ export class AppalachianThreeRenderer {
     this.footLayerActions = new Map();
     this.activeFootLayerKeys = new Set();
     this.footBasis = null;
+    this.freeCamera = false;
+    this.cameraTarget = new THREE.Vector3(0, 2.45, 0);
+    this.boneAxes = [];
+    this.boneLabels = [];
     this.supportLock = {
       foot: "none",
       target: null,
@@ -192,6 +199,28 @@ export class AppalachianThreeRenderer {
     );
     this.rootTrailLine.visible = false;
     this.scene.add(this.rootTrailLine);
+
+    this.lockMarker = new THREE.Mesh(
+      new THREE.RingGeometry(0.085, 0.125, 18),
+      new THREE.MeshBasicMaterial({
+        color: 0x69c7b5,
+        side: THREE.DoubleSide,
+        depthTest: false,
+        transparent: true,
+        opacity: 0.9,
+      }),
+    );
+    this.lockMarker.rotation.x = -Math.PI / 2;
+    this.lockMarker.visible = false;
+    this.scene.add(this.lockMarker);
+    const lockGeometry = new THREE.BufferGeometry();
+    lockGeometry.setAttribute("position", new THREE.Float32BufferAttribute(new Array(6).fill(0), 3));
+    this.lockLine = new THREE.Line(
+      lockGeometry,
+      new THREE.LineBasicMaterial({ color: 0x69c7b5, depthTest: false }),
+    );
+    this.lockLine.visible = false;
+    this.scene.add(this.lockLine);
   }
 
   async load(character = "kitty", style = "flatfoot") {
@@ -240,6 +269,7 @@ export class AppalachianThreeRenderer {
       }
       this.buildFootLayerActions();
       this.buildFootBasisDiagnostics();
+      this.buildBoneDiagnostics();
       this.skeletonHelper = new THREE.SkeletonHelper(this.model);
       this.skeletonHelper.material.depthTest = false;
       this.skeletonHelper.material.transparent = true;
@@ -274,6 +304,8 @@ export class AppalachianThreeRenderer {
   setDebug(value = {}) {
     this.debug = { ...this.debug, ...value };
     if (this.skeletonHelper) this.skeletonHelper.visible = Boolean(this.debug.skeleton);
+    for (const axes of this.boneAxes) axes.visible = Boolean(this.debug.boneAxes);
+    for (const label of this.boneLabels) label.visible = Boolean(this.debug.boneNames);
     this.rootTrailLine.visible = Boolean(this.debug.rootTrail);
     this.setFootBasisVisibility(Boolean(this.debug.footBasis));
   }
@@ -284,10 +316,29 @@ export class AppalachianThreeRenderer {
       side: [14, 3.1, 0],
       gameplay: [7.4, 7.6, 11.6],
     }[value] ?? [7.4, 7.6, 11.6];
+    this.freeCamera = false;
     this.camera.position.set(...preset);
-    this.camera.lookAt(0, 2.45, 0);
+    this.camera.lookAt(this.cameraTarget);
     this.camera.updateProjectionMatrix();
     return ["front", "side", "gameplay"].includes(value) ? value : "gameplay";
+  }
+
+  setFreeCamera(enabled) {
+    this.freeCamera = Boolean(enabled);
+    return this.freeCamera;
+  }
+
+  orbitCamera(yawDelta = 0, pitchDelta = 0, zoomDelta = 0) {
+    if (!this.freeCamera) return false;
+    const offset = this.camera.position.clone().sub(this.cameraTarget);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.theta += Number(yawDelta) || 0;
+    spherical.phi = clamp(spherical.phi + (Number(pitchDelta) || 0), 0.24, Math.PI - 0.24);
+    spherical.radius = clamp(spherical.radius + (Number(zoomDelta) || 0), 6, 24);
+    this.camera.position.copy(this.cameraTarget).add(new THREE.Vector3().setFromSpherical(spherical));
+    this.camera.lookAt(this.cameraTarget);
+    this.camera.updateProjectionMatrix();
+    return true;
   }
 
   render(snapshot) {
@@ -533,6 +584,8 @@ export class AppalachianThreeRenderer {
 
   updateDiagnostics(dancer) {
     this.skeletonHelper.visible = Boolean(this.debug.skeleton);
+    for (const axes of this.boneAxes) axes.visible = Boolean(this.debug.boneAxes);
+    for (const label of this.boneLabels) label.visible = Boolean(this.debug.boneNames);
     for (const [side, boneName] of [["left", "foot.L"], ["right", "foot.R"]]) {
       const value = this.contactMarkers[side];
       value.visible = Boolean(this.debug.contacts);
@@ -559,7 +612,46 @@ export class AppalachianThreeRenderer {
       this.rootTrailLine.geometry.setDrawRange(0, this.rootTrail.length);
     }
     this.rootTrailLine.visible = Boolean(this.debug.rootTrail);
+    this.updatePlantedLockDiagnostics(dancer);
     this.updateFootBasisDiagnostics(dancer);
+  }
+
+  buildBoneDiagnostics() {
+    const visibleBones = /^(root|pelvis|spine|chest|neck|head|clavicle|upperArm|forearm|hand|thigh|shin|foot|toe)/;
+    for (const [name, bone] of this.bones) {
+      if (!visibleBones.test(name)) continue;
+      const axes = new THREE.AxesHelper(0.18);
+      axes.material.depthTest = false;
+      axes.visible = false;
+      bone.add(axes);
+      this.boneAxes.push(axes);
+      const label = diagnosticTextLabel(name.replaceAll(".", "·"));
+      label.position.set(0, 0.16, 0);
+      label.visible = false;
+      bone.add(label);
+      this.boneLabels.push(label);
+    }
+  }
+
+  updatePlantedLockDiagnostics(dancer) {
+    const visible = Boolean(
+      this.debug.plantedLocks
+      && this.supportLock.target
+      && ["left", "right"].includes(this.supportLock.foot),
+    );
+    this.lockMarker.visible = visible;
+    this.lockLine.visible = visible;
+    if (!visible) return;
+    this.lockMarker.position.copy(this.supportLock.target);
+    this.lockMarker.position.y = 0.018;
+    const foot = getBone(this.bones, this.supportLock.foot === "left" ? "foot.L" : "foot.R");
+    const current = foot?.getWorldPosition(new THREE.Vector3()) ?? this.supportLock.target;
+    const positions = this.lockLine.geometry.getAttribute("position");
+    positions.setXYZ(0, current.x, current.y, current.z);
+    positions.setXYZ(1, this.supportLock.target.x, this.supportLock.target.y, this.supportLock.target.z);
+    positions.needsUpdate = true;
+    this.lockLine.geometry.setDrawRange(0, 2);
+    void dancer;
   }
 
   buildFootBasisDiagnostics() {
@@ -758,6 +850,7 @@ export class AppalachianThreeRenderer {
       plantedFootDriftMeters: this.supportLock.drift,
       footBasis: this.footBasis,
       renderP95Milliseconds: p95,
+      freeCamera: this.freeCamera,
       tailSupportEligible: false,
       candidateStatus: this.manifest?.candidateStatus ?? "CANDIDATE — HUMAN REVIEW REQUIRED",
     });
@@ -776,6 +869,14 @@ export class AppalachianThreeRenderer {
     this.contactShadow?.material.dispose();
     this.rootTrailLine?.geometry.dispose();
     this.rootTrailLine?.material.dispose();
+    this.lockMarker?.geometry.dispose();
+    this.lockMarker?.material.dispose();
+    this.lockLine?.geometry.dispose();
+    this.lockLine?.material.dispose();
+    for (const label of this.boneLabels) {
+      label.material?.map?.dispose?.();
+      label.material?.dispose?.();
+    }
     this.renderer?.dispose();
     this.ready = false;
   }
@@ -848,6 +949,30 @@ function diagnosticLabel(text, color) {
     depthTest: false,
   }));
   sprite.scale.set(0.48, 0.48, 0.48);
+  return sprite;
+}
+
+function diagnosticTextLabel(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 48;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "rgba(8, 20, 29, 0.84)";
+  context.fillRect(0, 4, canvas.width, 40);
+  context.font = "bold 22px monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "#fff6d8";
+  context.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+  }));
+  sprite.scale.set(0.92, 0.18, 0.18);
   return sprite;
 }
 

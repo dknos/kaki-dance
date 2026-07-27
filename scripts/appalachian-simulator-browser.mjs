@@ -100,6 +100,62 @@ async function smoke() {
   assert.ok(exportedFootBasis.minimumDot >= exportedFootBasis.minimumAllowed);
   assert.equal(exportedFootBasis.sampledVectors, 1696);
 
+  await page.click("[data-speed='0.1']");
+  assert.equal(await page.evaluate(() => appalachianSimulatorReview.speed), 0.1);
+  await page.click("[data-speed='1']");
+  await page.check("[data-debug='boneAxes']");
+  await page.check("[data-debug='boneNames']");
+  await page.check("[data-debug='plantedLocks']");
+  await page.waitForTimeout(50);
+  const diagnosticsVisible = await page.evaluate(() => {
+    const live = appalachianSimulatorReview.renderer.appalachian3d;
+    return {
+      axes: live.boneAxes.filter((value) => value.visible).length,
+      names: live.boneLabels.filter((value) => value.visible).length,
+      lock: live.lockMarker.visible,
+    };
+  });
+  assert.ok(diagnosticsVisible.axes >= 20);
+  assert.equal(diagnosticsVisible.names, diagnosticsVisible.axes);
+  assert.equal(diagnosticsVisible.lock, true);
+
+  await page.check("#free-camera");
+  const cameraBefore = await page.evaluate(
+    () => appalachianSimulatorReview.renderer.appalachian3d.camera.position.toArray(),
+  );
+  await page.evaluate(
+    () => appalachianSimulatorReview.renderer.orbitAppalachianCamera(0.3, -0.1, 0.5),
+  );
+  const cameraAfter = await page.evaluate(() => ({
+    position: appalachianSimulatorReview.renderer.appalachian3d.camera.position.toArray(),
+    free: appalachianSimulatorReview.renderer.getAppalachianDiagnostics().freeCamera,
+  }));
+  assert.notDeepEqual(cameraAfter.position, cameraBefore);
+  assert.equal(cameraAfter.free, true);
+  await page.uncheck("#free-camera");
+
+  await page.click("[data-demo='sixteenths']");
+  await page.waitForTimeout(650);
+  const patternProof = await page.evaluate(() => ({
+    device: appalachianSimulatorReview.lastInput.device,
+    actionId: appalachianSimulatorReview.lastSnapshot.dancer.actionId,
+    timeline: appalachianSimulatorReview.contactTimeline.length,
+  }));
+  assert.equal(patternProof.device, "review:sixteenths");
+  assert.ok(patternProof.actionId > 0);
+  assert.ok(patternProof.timeline >= 2);
+
+  await page.click("[data-demo='']");
+  await page.click("#record-input");
+  await page.keyboard.press("ArrowLeft");
+  await page.waitForTimeout(120);
+  await page.click("#stop-recording");
+  const recording = await page.evaluate(() => appalachianSimulatorReview.recordedSteps.length);
+  assert.ok(recording >= 4);
+  await page.click("#replay-recording");
+  await page.waitForTimeout(100);
+  assert.ok(await page.evaluate(() => appalachianSimulatorReview.replayCursor >= 0));
+
   await page.click("[data-demo='figureEight']");
   const drifts = [];
   const liveCanvasOpaquePixels = [];
@@ -178,6 +234,12 @@ async function smoke() {
       actions: forced.actionCount,
       independentFootLayers: forced.footLayerActionCount,
       exportedFootBasis,
+    },
+    frolicLab: {
+      diagnosticsVisible,
+      freeCamera: true,
+      deterministicPattern: patternProof,
+      recordedFrames: recording,
     },
     atlasFallback: true,
     bothHeroes: true,

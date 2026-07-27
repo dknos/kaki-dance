@@ -234,10 +234,8 @@ h1 {
   margin-bottom: 7px;
 }
 
-.segmented--three,
-.speed-row {
-  grid-template-columns: repeat(3, 1fr);
-}
+.segmented--three { grid-template-columns: repeat(3, 1fr); }
+.speed-row { grid-template-columns: repeat(4, 1fr); }
 
 .control-ledger button,
 .control-ledger select {
@@ -342,6 +340,27 @@ h1 {
   padding: 17px 18px;
   border-left: 6px solid var(--fiddle);
   background: #13283a;
+}
+
+.test-buttons--patterns {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.recording-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 140px)) minmax(160px, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.recording-row output {
+  color: var(--mint);
+  font: 800 0.64rem/1.2 ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-align: right;
 }
 
 .tape-title h2 {
@@ -516,6 +535,22 @@ h1 {
 
   .diagnostic-rack {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .test-buttons--patterns {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .test-buttons--patterns,
+  .recording-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .recording-row output {
+    grid-column: 1 / -1;
+    text-align: left;
   }
 }
 
